@@ -686,6 +686,7 @@ int main(int argc, char *argv[]){
         max_pc+=4;  
     }
     while(pc<max_pc){
+        int_registers[0]=0;
         handle_instruction(memory+4*pc);
         getchar();
     }
