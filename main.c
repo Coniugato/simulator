@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-char memory[4000000];
+char memory[40000000];
 
 int pc=0;
-int int_registers[32];
-float float_registers[32];
+int pc_flag=0;
+long long int_registers[32];
+double float_registers[32];
 
 
 //NOTE: from >= to
@@ -19,8 +20,13 @@ unsigned long long extract(unsigned long long input, unsigned long long from, un
 
 
 void handle_instruction(char* buf){
+    printf("Instruction: ");
     int* buf_int=(int*)buf;
     int i, j;
+    for(i=0; i<32; i+=4){
+        printf("%llx ", extract(*buf_int, i+3,i));
+    }
+    printf("\n");
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
@@ -252,12 +258,14 @@ void handle_instruction(char* buf){
                 offset=extract(*buf_int, 31,31)<<20+extract(*buf_int, 19,12)<<12+extract(*buf_int, 20,20)<<1+extract(*buf_int, 30,21)<<1;
                 int_registers[rd]=pc+4;
                 pc+=offset;
+                pc_flag=1;
                 break;
             case 0b11001: 
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         printf("JALR\n");
                         int t=pc+4;
+                        pc_flag=1;
                         pc=(int_registers[rs1]+offset)&~1;
                         int_registers[rd]=t;
                         break;
@@ -270,27 +278,27 @@ void handle_instruction(char* buf){
                     
                     case 0b000:
                         printf("BEQ\n");
-                        if(int_registers[rs1]==int_registers[rs2]) pc+=offset;
+                        if(int_registers[rs1]==int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b001:
                         printf("BNE\n");
-                        if(int_registers[rs1]!=int_registers[rs2]) pc+=offset;
+                        if(int_registers[rs1]!=int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b100:
                         printf("BLT\n");
-                        if(int_registers[rs1]<int_registers[rs2]) pc+=offset;
+                        if(int_registers[rs1]<int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b101:
                         printf("BGE\n");
-                        if(int_registers[rs1]>=int_registers[rs2]) pc+=offset;
+                        if(int_registers[rs1]>=int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                     case 0b110:
                         printf("BLTU\n");
-                        if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) pc+=offset;
+                        if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                     case 0b111:
                         printf("BGEU\n");
-                        if((unsigned int)int_registers[rs1]>=(unsigned int)int_registers[rs2]) pc+=offset;
+                        if((unsigned int)int_registers[rs1]>=(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                 }   
                 break;
@@ -649,7 +657,175 @@ void handle_instruction(char* buf){
                 }
         }
     }
-
+    if(extract(*buf_int, 1,0)==0b00){
+        int rd = extract(*buf_int, 4, 2);
+        int rs1 = extract(*buf_int, 9,7);
+        int uimm = (extract(*buf_int, 5,5)<<6)+(extract(*buf_int, 12,10)<<3) + (extract(*buf_int, 6,6)<<2);
+        switch(extract(*buf_int, 15,13)){
+            case 0b000:
+                printf("C.ADDI4SPN\n");
+                int_registers[8+rd]=int_registers[2]+extract(*buf_int, 12, 5);
+                break;
+            case 0b001:
+                printf("C.FLD\n");
+                float_registers[8+rd]=*(double*) (memory+int_registers[8+rs1]+uimm);
+                break;
+            case 0b010:
+                printf("C.FLW\n");
+                float_registers[8+rd]=*(float*) (memory+int_registers[8+rs1]+uimm);
+                break;
+            case 0b011:
+                printf("C.LD\n");
+                int_registers[8+rd]=*(long long*) (memory+int_registers[8+rs1]+uimm);
+                break;
+            case 0b100:
+                //regarding 0b101, not 0b011
+                printf("C.LD\n");
+                uimm = (extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 12,10)<<3);
+                int_registers[8+rd]=*(long long*) (memory+int_registers[8+rs1]+uimm);
+                break;
+            case 0b101:
+                int rs2=rd;
+                printf("C.FSD\n");
+                uimm = (extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 12,10)<<3);
+                *(double*) (memory+int_registers[8+rs1]+uimm)=float_registers[8+rs2];
+                break;
+            case 0b110:
+                rs2=rd;
+                printf("C.SW\n");
+                *(int*) (memory+int_registers[8+rs1]+uimm)=int_registers[8+rs2];
+                break;
+            case 0b111:
+                rs2=rd;
+                printf("C.FSW\n");
+                *(float*) (memory+int_registers[8+rs1]+uimm)=float_registers[8+rs2];
+                break;
+            //how to implement c.sd?
+            //15-13:111 and 1-0: 00
+            //same as c.fsw?
+        }
+    }
+    if(*buf_int==1){
+        printf("C.NOP\n");
+        return;
+    }
+    if(extract(*buf_int, 1, 0)==0b01){
+        int rd = extract(*buf_int, 11,7);
+        switch(extract(*buf_int, 15, 13)){
+            case 0b000:
+                printf("C.ADDI\n");
+                int nzimm=extract(*buf_int, 12, 12)<<5+extract(*buf_int, 6,2);
+                int_registers[rd]=int_registers[rd]+nzimm;
+                break;
+            case 0b001:
+                printf("C.JAL\n");
+                //maybe have to add 4, not 2
+                int offset = (extract(*buf_int, 12,12)<<11)+(extract(*buf_int,8,8)<<10)+(extract(*buf_int,10,9)<<8)+(extract(*buf_int,6,6)<<7)+(extract(*buf_int,7,7)<<6)+(extract(*buf_int,2,2)<<5)+(extract(*buf_int,11,11)<<4)+(extract(*buf_int,5,3)<<1);
+                int_registers[1]=pc+4;
+                pc+=offset;
+                break;
+            //how to implement c.addiw?
+            //15-13:001 and 1-0: 01
+            //same as c.jal
+            case 0b010:
+                printf("C.LI\n");
+                //maybe have to add 4, not 2
+                int imm=(extract(*buf_int, 12,12)<<5)+extract(*buf_int, 6,2);
+                int_registers[1]=pc+4;
+                pc+=offset;
+                int_registers[rd]=imm;
+                break;
+            case 0b011:
+                if(extract(*buf_int, 11,7)){
+                    printf("C.ADDI16sp\n");
+                    int imm=(extract(*buf_int, 12,12)<<9)+(extract(*buf_int, 4,3)<<7)+(extract(*buf_int, 5,5)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 6,6)<<4);
+                    int_registers[2]=int_registers[2]+imm;
+                    break;
+                }
+                else{
+                   printf("C.LUI\n");
+                    int imm=(extract(*buf_int, 12,12)<<17)+(extract(*buf_int, 6,2)<<12);
+                    int_registers[rd]=imm; 
+                    break;
+                }
+            case 0b100:
+                int uimm = (extract(*buf_int, 12,12)<<5)+(extract(*buf_int, 6,2));
+                imm=uimm;
+                rd=extract(*buf_int, 9,7);
+                switch(extract(*buf_int, 11,10)){
+                    case 0b00:
+                        printf("C.SRLI\n");
+                        int_registers[8+rd]=(unsigned int) int_registers[8+rd] >> uimm;
+                        break;
+                    case 0b01:
+                        printf("C.ANRI\n");
+                        int_registers[8+rd]= int_registers[8+rd] >> imm;
+                        break;
+                    case 0b10:
+                        printf("C.ANDI\n");
+                        int_registers[8+rd]= int_registers[8+rd] & imm;
+                        break;
+                    case 0b11:  
+                        if(extract(*buf_int,11,11)==0b0){
+                            rd = extract(*buf_int,9,7);
+                            int rs2 = extract(*buf_int,4,2);
+                            switch(extract(*buf_int,6,5)){
+                                case 0b00:
+                                    printf("C.SUB\n");
+                                    int_registers[8+rd]=int_registers[8+rd]-int_registers[8+rs2];
+                                    break;
+                                case 0b01:
+                                    printf("C.XOR\n");
+                                    int_registers[8+rd]=int_registers[8+rd]^int_registers[8+rs2];
+                                    break;
+                                case 0b10:
+                                    printf("C.OR\n");
+                                    int_registers[8+rd]=int_registers[8+rd]|int_registers[8+rs2];
+                                    break;
+                                case 0b11:
+                                    printf("C.AND\n");
+                                    int_registers[8+rd]=int_registers[8+rd]&int_registers[8+rs2];
+                                    break;
+                            }
+                        }
+                        else{
+                            rd = extract(*buf_int,9,7);
+                            int rs2 = extract(*buf_int,4,2);
+                            switch(extract(*buf_int,6,5)){
+                                case 0b00:
+                                    printf("C.SUBW\n");
+                                    int_registers[8+rd]=(int)(int_registers[8+rd]-int_registers[8+rs2]);
+                                    break;
+                                case 0b01:
+                                    printf("C.ADDW\n");
+                                    int_registers[8+rd]=(int)(int_registers[8+rd]+int_registers[8+rs2]);
+                                    break;
+                            }
+                        }
+                }
+            case 0b101:
+                printf("C.J\n");
+                imm=(extract(*buf_int, 12,12)<<11)+(extract(*buf_int, 8,8)<<10)+(extract(*buf_int, 10,9)<<8)+(extract(*buf_int, 6,6)<<7)+(extract(*buf_int, 7,7)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 11,11)<<4)+(extract(*buf_int, 5,3)<<1);
+                break;
+            case 0b110:
+                printf("C.BEQZ\n");
+                int rs1=extract(*buf_int, 9,7);
+                offset=(extract(*buf_int, 12,12)<<8)+(extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 11,10)<<3)+(extract(*buf_int, 4,3)<<1);
+                if(int_registers[8+rs1]==0){
+                    pc+=offset;
+                }
+                break;
+            case 0b111:
+                printf("C.BNEZ\n");
+                rs1=extract(*buf_int, 9,7);
+                offset=(extract(*buf_int, 12,12)<<8)+(extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 11,10)<<3)+(extract(*buf_int, 4,3)<<1);
+                if(int_registers[8+rs1]!=0){
+                    pc+=offset;
+                }
+                break;
+            //c.slli~ かぶりがあるため省略(これは折衝して決めるべきなのか？)
+        }
+    }
 }
 
 int main(int argc, char *argv[]){
@@ -670,7 +846,7 @@ int main(int argc, char *argv[]){
     while(1){
         int read_count=0, read_offset=0;
         while(read_offset+read_count<4){
-            read_count=read(fd, memory+4*pc+read_offset, 4);
+            read_count=read(fd, memory+4*max_pc+read_offset, 4);
             if(read_count<0){
                 perror("ERROR: read failed"); exit(1);
             }
@@ -686,8 +862,23 @@ int main(int argc, char *argv[]){
         max_pc+=4;  
     }
     while(pc<max_pc){
+        pc_flag=0;
         int_registers[0]=0;
         handle_instruction(memory+4*pc);
+        printf("PC: %d\n", pc);
+        int i;
+        for(i=0; i<32; i++){
+            printf("x%d: %lld", i, int_registers[i]);
+            if((i+1)%4==0) printf("\n");
+            else printf(" "); 
+        }
+        for(i=0; i<32; i++){
+            printf("f%d: %f", i, float_registers[i]);
+            if((i+1)%4==0) printf("\n");
+            else printf(" "); 
+        }
+        printf("\n\n\n");
+        if(pc_flag==0) pc+=4;
         getchar();
     }
     return 0;
