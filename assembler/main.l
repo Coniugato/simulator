@@ -8,19 +8,23 @@ int yywrap(void){
 %}
 
 %%
-"+"		return ADD;
-"-"		return SUB;
-"*"		return MUL;
-"/"		return DIV;
-"\n"		return CR;
-[1-9][0-9]* {
-    double temp;
+"li"		return LI;
+"blt"		return BLT;
+"mv"		return MV;
+"j"		return J;
+"bge"		return BGE;
+"add"       return ADD;
+"addi"      return ADDI;
+t[0-6] {
+    char temp;
+    getchar();
     sscanf(yytext, "%lf", &temp);
     yylval.double_value = temp;
     return DOUBLE_LITERAL;
 }
-[0-9]*\.[0-9]* {
-    double temp;
+a[0-6] {
+    char temp;
+    getchar();
     sscanf(yytext, "%lf", &temp);
     yylval.double_value = temp;
     return DOUBLE_LITERAL;

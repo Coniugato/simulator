@@ -8,7 +8,7 @@
        double       double_value;
    }
   %token <double_value>      DOUBLE_LITERAL
-  %token ADD SUB MUL DIV CR
+  %token LI BLT MV J BGE ADD ADDI
   %type <double_value> expression term primary_expression
   %%
   line_list
