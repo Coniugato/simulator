@@ -23,10 +23,11 @@ void handle_instruction(char* buf){
     printf("Instruction: ");
     int* buf_int=(int*)buf;
     int i, j;
-    for(i=0; i<32; i+=4){
-        printf("%llx ", extract(*buf_int, i+3,i));
+    for(i=0; i<32; i+=1){
+        printf("%llx ", extract(*buf_int, i,i));
     }
     printf("\n");
+    printf("%llx\n", extract(*buf_int, 1,0));
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
@@ -274,6 +275,7 @@ void handle_instruction(char* buf){
             case 0b11000: 
                 rs1=extract(*buf_int, 19,15);
                 rs2=extract(*buf_int, 24,20);
+                offset=
                 switch(extract(*buf_int, 14,12)){
                     
                     case 0b000:

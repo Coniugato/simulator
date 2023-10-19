@@ -30,3 +30,4 @@ a[0-6] {
     return DOUBLE_LITERAL;
 }
 %%
+
