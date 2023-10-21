@@ -18,6 +18,15 @@ unsigned long long extract(unsigned long long input, unsigned long long from, un
   return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
 } 
 
+unsigned long long sext(unsigned long long input, unsigned long long n_dights){
+  if(extract(input, n_dights-1, n_dights-1)==0b1){
+    return -(1<<(n_dights-1))+extract(input, n_dights-2, 0);
+  }
+  else{
+    return extract(input, n_dights-2, 0);
+  }
+} 
+
 
 void handle_instruction(char* buf){
     printf("Instruction: ");
@@ -256,9 +265,12 @@ void handle_instruction(char* buf){
                 break;
             case 0b11011: 
                 printf("JAL\n");
-                offset=extract(*buf_int, 31,31)<<20+extract(*buf_int, 19,12)<<12+extract(*buf_int, 20,20)<<1+extract(*buf_int, 30,21)<<1;
+                rd=extract(*buf_int, 11,7);
+                offset=(extract(*buf_int, 31,31)<<20)+(extract(*buf_int, 19,12)<<12)+(extract(*buf_int, 20,20)<<11)+(extract(*buf_int, 30,21)<<1);
+                //printf("%lld, %lld %lld %lld\n", extract(*buf_int, 31,31)<<20, extract(*buf_int, 19,12)<<12, extract(*buf_int, 20,20)<<11,extract(*buf_int, 30,21)<<1);
+                printf("%lld, %lld, %lld\n", offset, sext(offset, 21));
                 int_registers[rd]=pc+4;
-                pc+=offset;
+                pc+=sext(offset, 21);
                 pc_flag=1;
                 break;
             case 0b11001: 
@@ -275,7 +287,8 @@ void handle_instruction(char* buf){
             case 0b11000: 
                 rs1=extract(*buf_int, 19,15);
                 rs2=extract(*buf_int, 24,20);
-                offset=
+                offset=(extract(*buf_int, 31,31)<<12)+(extract(*buf_int, 7,7)<<11)+(extract(*buf_int, 30,25)<<5)+(extract(*buf_int, 11,8)<<1);
+                //printf("%lld, %lld, %lld, %lld, %lld, %lld\n", extract(*buf_int, 31,31),extract(*buf_int, 7,7),extract(*buf_int, 30,25),extract(*buf_int, 11,8),pc, offset);
                 switch(extract(*buf_int, 14,12)){
                     
                     case 0b000:
@@ -867,6 +880,9 @@ int main(int argc, char *argv[]){
         pc_flag=0;
         int_registers[0]=0;
         handle_instruction(memory+4*pc);
+        int_registers[0]=0;
+
+        if(pc_flag==0) pc+=4;
         printf("PC: %d\n", pc);
         int i;
         for(i=0; i<32; i++){
@@ -880,7 +896,6 @@ int main(int argc, char *argv[]){
             else printf(" "); 
         }
         printf("\n\n\n");
-        if(pc_flag==0) pc+=4;
         getchar();
     }
     return 0;
