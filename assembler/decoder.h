@@ -1,0 +1,1 @@
+void assemble(FILE* inf, int outd, int pc, Node* labels);

@@ -48,7 +48,7 @@ void handle_instruction(char* buf){
             case 0b00101:
                 printf("AUIPC\n");
                 imm=extract(*buf_int, 31,12);
-                int_registers[rd]=pc+(imm<<12);
+                int_registers[rd]=pc+sext(imm<<12,32);
                 break;
             case 0b00100:
                 imm=extract(*buf_int, 31,20);
@@ -279,7 +279,7 @@ void handle_instruction(char* buf){
                         printf("JALR\n");
                         int t=pc+4;
                         pc_flag=1;
-                        pc=(int_registers[rs1]+offset)&~1;
+                        pc=(int_registers[rs1]+sext(offset, 12))&~1;
                         int_registers[rd]=t;
                         break;
                 }   
@@ -289,6 +289,7 @@ void handle_instruction(char* buf){
                 rs2=extract(*buf_int, 24,20);
                 offset=(extract(*buf_int, 31,31)<<12)+(extract(*buf_int, 7,7)<<11)+(extract(*buf_int, 30,25)<<5)+(extract(*buf_int, 11,8)<<1);
                 //printf("%lld, %lld, %lld, %lld, %lld, %lld\n", extract(*buf_int, 31,31),extract(*buf_int, 7,7),extract(*buf_int, 30,25),extract(*buf_int, 11,8),pc, offset);
+                offset=sext(offset,12);
                 switch(extract(*buf_int, 14,12)){
                     
                     case 0b000:
@@ -737,7 +738,7 @@ void handle_instruction(char* buf){
                 //maybe have to add 4, not 2
                 int offset = (extract(*buf_int, 12,12)<<11)+(extract(*buf_int,8,8)<<10)+(extract(*buf_int,10,9)<<8)+(extract(*buf_int,6,6)<<7)+(extract(*buf_int,7,7)<<6)+(extract(*buf_int,2,2)<<5)+(extract(*buf_int,11,11)<<4)+(extract(*buf_int,5,3)<<1);
                 int_registers[1]=pc+4;
-                pc+=offset;
+                pc+=sext(offset,11);
                 break;
             //how to implement c.addiw?
             //15-13:001 and 1-0: 01
@@ -747,7 +748,7 @@ void handle_instruction(char* buf){
                 //maybe have to add 4, not 2
                 int imm=(extract(*buf_int, 12,12)<<5)+extract(*buf_int, 6,2);
                 int_registers[1]=pc+4;
-                pc+=offset;
+                pc+=sext(offset,6);
                 int_registers[rd]=imm;
                 break;
             case 0b011:
@@ -827,7 +828,7 @@ void handle_instruction(char* buf){
                 int rs1=extract(*buf_int, 9,7);
                 offset=(extract(*buf_int, 12,12)<<8)+(extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 11,10)<<3)+(extract(*buf_int, 4,3)<<1);
                 if(int_registers[8+rs1]==0){
-                    pc+=offset;
+                    pc+=sext(offset,8);
                 }
                 break;
             case 0b111:
@@ -835,7 +836,7 @@ void handle_instruction(char* buf){
                 rs1=extract(*buf_int, 9,7);
                 offset=(extract(*buf_int, 12,12)<<8)+(extract(*buf_int, 6,5)<<6)+(extract(*buf_int, 2,2)<<5)+(extract(*buf_int, 11,10)<<3)+(extract(*buf_int, 4,3)<<1);
                 if(int_registers[8+rs1]!=0){
-                    pc+=offset;
+                    pc+=sext(offset,8);
                 }
                 break;
             //c.slli~ かぶりがあるため省略(これは折衝して決めるべきなのか？)

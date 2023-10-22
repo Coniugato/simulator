@@ -1,0 +1,15 @@
+INST li t3 20 END
+INST li t4 1 END
+INST blt t4 t3 L1 END
+INST mv t4 t3 END
+INST j L3 END
+INST li t4 1 END
+INST li t5 1 END
+INST li t0 2 END
+INST bge t0 t3 L3 END
+INST mv t6 t4 END
+INST add t4 t4 t5 END
+INST mv t5 t6 END
+INST addi t0 t0 1 END
+INST j L2 END
+INST mv a0 t4 END

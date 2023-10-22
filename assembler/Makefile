@@ -1,12 +1,15 @@
-all: lex.yy.c y.tab.c
-	gcc main.c -lm y.tab.c lex.yy.c
+all: AVLmodule main decoder
+	gcc main AVLmodule decoder
 
-y.tab.c:
-	yacc main.y
+main: main.c
+	gcc -c main.c -o main
 
-lex.yy.c:
-	lex main.l
+AVLmodule: AVL.c
+	gcc -c AVL.c -o AVLmodule
+
+decoder: decoder.c
+	gcc -c decoder.c -o decoder
 
 .PHONY: clean
 clean:
-	rm -f y.tab.c lex.yy.c
+	rm -f AVLmodule main
