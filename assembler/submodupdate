@@ -1,0 +1,6 @@
+gitupdate $1
+cd ~/processor-experiment-2023-5
+git submodule update
+git add *
+git commit -m "simulator submodule updated / $1"
+git push origin simulator
