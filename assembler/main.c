@@ -196,6 +196,7 @@ int main(int argc, char *argv[]){
     int addr=0;
     int outd;
 
+    
     if((outd=open(dst,O_WRONLY | O_CREAT | O_TRUNC))<0){
             perror("ERROR: cannot open source file"); exit(1);
     }
@@ -206,10 +207,43 @@ int main(int argc, char *argv[]){
         }
     }
 
-
+    
     fclose(f);
+
+    chmod(dst,S_IRUSR | S_IWUSR);
+
     if(close(outd)<0){
             perror("ERROR: cannot close source file"); exit(1);
+    }
+
+    if((fd=open(dst,O_RDONLY))<0){
+            perror("ERROR: cannot open source file");  exit(1);
+    }
+    char* dst0x=calloc(sizeof(char), strlen(dst)+20);
+    strcpy(dst0x, dst);
+    strcat(dst0x,".0x");
+    if((f = fopen(dst0x, "w")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+        exit(1);
+    }
+    unsigned int buf2[1];
+    while(1){
+        int read_count=0, read_offset=0;
+        while(read_offset+read_count<4){
+            read_count=read(fd,buf2, 4);
+            if(read_count<0){
+                perror("ERROR: read failed"); exit(1);
+            }
+            if(read_count==0){
+                if(read_offset!=0){
+                    fprintf(stdout, "ERROR: format error : the binary is not 4 byte aligned.\n"); exit(1);
+                }
+                else break;
+            }
+            read_offset+=read_count;
+        }
+        if(read_offset==0) break; 
+        fprintf(f,"%08x", buf2[0]);  
     }
     
     return 0;

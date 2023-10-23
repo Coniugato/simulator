@@ -1,9 +1,9 @@
 main:
-  li t3, 20              # int n=10;
+  li t3, 20              # int n=10; 'li' converted to 'addi'
   li t4,1
   blt t4,t3,L1          # if (1<n) goto 
-  mv t4,t3
-  j L3
+  mv t4,t3              # 'mov' converted to 'addi'
+  j L3                  # 'j' converted to 'jal'
 L1:li t4,1		# int fib=1;
   li t5,1 		# int fibPrev=1;
   li t0,2		# int i=2;

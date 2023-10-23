@@ -12,4 +12,4 @@ decoder: decoder.c
 
 .PHONY: clean
 clean:
-	rm -f AVLmodule main
+	rm -f AVLmodule main decoder
