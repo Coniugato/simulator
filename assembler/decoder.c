@@ -127,6 +127,737 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         
 
     }
+    else if(strcmp(opc,"lui")==0){
+        //LUI rd, imm
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        unsigned long imm=invsext(atoi(opr[1]),32);
+        *int_inst=(extract(imm,31,12)<<12)+(rd<<7)+0b0110111;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"auipc")==0){
+        //LUI rd, imm
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        unsigned long imm=invsext(atoi(opr[1]),32);
+        *int_inst=(extract(imm,31,12)<<12)+(rd<<7)+0b0010111;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"addi")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+        
+
+    }
+    else if(strcmp(opc,"slti")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(0b010<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+        
+
+    }
+    else if(strcmp(opc,"sltiu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(0b011<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"xori")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(0b100<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"ori")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(0b110<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"andi")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=invsext(atoi(opr[2]),12);
+        *int_inst=(imm<<20)+(rd<<7)+(0b111<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"slli")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=extract(atoi(opr[2]),4,0);
+        *int_inst=(imm<<20)+(rd<<7)+(0b001<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"srli")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=extract(atoi(opr[2]),4,0);
+        *int_inst=(imm<<20)+(rd<<7)+(0b101<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"srai")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long imm=extract(atoi(opr[2]),4,0);
+        *int_inst=(0b01000<<27)+(imm<<20)+(rd<<7)+(0b101<<12)+(rs1<<15)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"add")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+        
+
+    }
+    else if(strcmp(opc,"sub")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b01000<<27)+(rd<<7)+(rs1<<15)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sll")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(rs2<<20)+(0b001<<12)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"slt")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b010<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sltu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b011<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"xor")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b100<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sub")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b01000<<27)+(rd<<7)+(rs1<<15)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sll")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(rs2<<20)+(0b001<<12)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"slt")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b010<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sltu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b011<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"srl")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b101<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sub")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b01000<<27)+(rd<<7)+(rs1<<15)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sll")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(rs2<<20)+(0b001<<12)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"slt")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b010<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sltu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(rd<<7)+(rs1<<15)+(0b011<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"sra")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b01000<<27)+(rd<<7)+(rs1<<15)+(0b101<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"or")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00000<<27)+(rd<<7)+(rs1<<15)+(0b110<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"and")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00000<<27)+(rd<<7)+(rs1<<15)+(0b111<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);    
+    }
+    else if(strcmp(opc,"lb")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b000<<12)+0b0000011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"lh")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b001<<12)+0b0000011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"lw")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b010<<12)+0b0000011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"lbu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b100<<12)+0b0000011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"lhu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b101<<12)+0b0000011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sb")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        int rs2 = reg_convert(opr[2]);
+        
+        
+        unsigned int conv_offset=(extract(offset, 11,5)<<25)+(extract(offset, 4,0)<<7);
+        *int_inst=conv_offset+(rs2<<20)+(rs1<<15)+(0b000<<12)+0b0100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sh")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        int rs2 = reg_convert(opr[2]);
+        
+        
+        unsigned int conv_offset=(extract(offset, 11,5)<<25)+(extract(offset, 4,0)<<7);
+        *int_inst=conv_offset+(rs2<<20)+(rs1<<15)+(0b001<<12)+0b0100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"sw")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        int rs2 = reg_convert(opr[2]);
+        
+        
+        unsigned int conv_offset=(extract(offset, 11,5)<<25)+(extract(offset, 4,0)<<7);
+        *int_inst=conv_offset+(rs2<<20)+(rs1<<15)+(0b010<<12)+0b0100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"jal")==0){
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        unsigned long offset=invsext(search(labels, opr[1])-pc, 21);
+        //printf("@%llx\n", offset);
+        
+        unsigned int conv_offset=(extract(offset, 10,1)<<21)+(extract(offset, 11,11)<<20)+(extract(offset, 20,20)<<31)+(extract(offset, 19,12)<<12);
+        *int_inst=conv_offset+(rd<<7)+0b1101111;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"jalr")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        unsigned long offset=invsext(search(labels, opr[2])-pc, 12);
+        //printf("@%llx\n", offset);
+        
+        unsigned int conv_offset=(extract(offset, 11,0)<<20);
+        *int_inst=conv_offset+(rs1<<15)+(0b000<<12)+(rd<<7)+0b1100111;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"beq")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        int rs2 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
+        
+        unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
+        *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b000<<12)+0b1100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"bne")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        int rs2 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
+        
+        unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
+        *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b001<<12)+0b1100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
     else if(strcmp(opc,"blt")==0){
         n_oprand=3;
         int i;
@@ -139,15 +870,538 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
-        int offset=invsext(search(labels, opr[2])-pc, 13);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
         
         unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
         *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b100<<12)+0b1100011;
         //printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
-        
-
     }
+    else if(strcmp(opc,"bge")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        int rs2 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
+        
+        unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
+        *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b101<<12)+0b1100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"bltu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        int rs2 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
+        
+        unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
+        *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b110<<12)+0b1100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"bgeu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        int rs2 = reg_convert(opr[1]);
+        unsigned long long offset=invsext(search(labels, opr[2])-pc, 13);
+        
+        unsigned int conv_offset=(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7)+(extract(offset, 10,5)<<25)+(extract(offset, 12,12)<<31);
+        *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b111<<12)+0b1100011;
+        //printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"mul")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b000<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"mulh")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b001<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"mulhsu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b010<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"mulhu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b011<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"div")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b100<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"divu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b101<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"rem")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b110<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"remu")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b0000001<<25)+(rd<<7)+(rs1<<15)+(0b111<<12)+(rs2<<20)+0b0110011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fmadd.s")==0){
+        n_oprand=4;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        int rs3 = reg_convert(opr[3]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(rs3<<27)+0b1000011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fmsub.s")==0){
+        n_oprand=4;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        int rs3 = reg_convert(opr[3]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(rs3<<27)+0b1000111;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fnmsub.s")==0){
+        n_oprand=4;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        int rs3 = reg_convert(opr[3]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(rs3<<27)+0b1001011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fnmadd.s")==0){
+        n_oprand=4;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        int rs3 = reg_convert(opr[3]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(rs3<<27)+0b1001111;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fadd.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00000<<27)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fsub.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00001<<27)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fmul.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00010<<27)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fdiv.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00011<<27)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fsqrt.s")==0){
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(0b01011<<27)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fsgnj.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00100<<27)+(0b000<<12)+0b1010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if(strcmp(opc,"fsgnjn.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00100<<27)+(0b001<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"fsgnjx.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00100<<27)+(0b010<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"fmin.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00101<<27)+(0b000<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"fmax.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b00101<<27)+(0b001<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"fcvt.w.s")==0){
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(0b00000<<20)+(0b11000<<27)+0b1010011;
+    }
+    else if(strcmp(opc,"fcvt.wu.s")==0){
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(0b00001<<20)+(0b11000<<27)+0b1010011;
+    }
+    else if(strcmp(opc,"fmv.x.w")==0){
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(0b000<<12)+(0b00000<<20)+(0b11100<<27)+0b1010011;
+    }
+    else if(strcmp(opc,"feq.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b10100<<27)+(0b010<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"flt.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b10100<<27)+(0b001<<12)+0b1010011;
+    }
+    else if(strcmp(opc,"fle.s")==0){
+        n_oprand=3;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        int rs2 = reg_convert(opr[2]);
+        *int_inst=(0b00<<25)+(rd<<7)+(rs1<<15)+(rs2<<20)+(0b10100<<27)+(0b000<<12)+0b1010011;
+    }
+    
     else if(strcmp(opc,"mv")==0){
         //convert to addi
         n_oprand=2;
@@ -200,48 +1454,10 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
-        int offset=invsext(search(labels,opr[2])-pc, 13);
+        unsigned long long offset=invsext(search(labels,opr[2])-pc, 13);
         unsigned int conv_offset=(extract(offset, 12,12)<<31)+(extract(offset, 10,5)<<25)+(extract(offset, 4,1)<<8)+(extract(offset, 11,11)<<7);
         *int_inst=conv_offset+(rs1<<15)+(rs2<<20)+(0b101<<12)+0b1100011;
         writeall(outd, char_inst, 4);
-    }
-    else if(strcmp(opc,"addi")==0){
-        n_oprand=3;
-        int i;
-        for(i=0; i<n_oprand; i++){
-            fscanf(inf, "%s", opr[i]);
-            printf("%s\n", opr[i]);
-            if(strcmp(opr[i], "END")==0){
-                error_toofew(opc);
-            }
-            
-        }
-        int rd = reg_convert(opr[0]);
-        int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
-        *int_inst=(imm<<20)+(rd<<7)+(rs1<<15)+0b0010011;
-        writeall(outd, char_inst, 4);
-        
-
-    }
-    else if(strcmp(opc,"add")==0){
-        n_oprand=3;
-        int i;
-        for(i=0; i<n_oprand; i++){
-            fscanf(inf, "%s", opr[i]);
-            printf("%s\n", opr[i]);
-            if(strcmp(opr[i], "END")==0){
-                error_toofew(opc);
-            }
-            
-        }
-        int rd = reg_convert(opr[0]);
-        int rs1 = reg_convert(opr[1]);
-        int rs2 = reg_convert(opr[2]);
-        *int_inst=(rd<<7)+(rs1<<15)+(rs2<<20)+0b0110011;
-        writeall(outd, char_inst, 4);
-        
-
     }
     else{
         fprintf(stderr, "%s\n", "ERROR: invalid instruction.");

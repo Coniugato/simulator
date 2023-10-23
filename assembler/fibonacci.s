@@ -1,4 +1,4 @@
-main:
+main: 
   li t3, 20              # int n=10; 'li' converted to 'addi'
   li t4,1
   blt t4,t3,L1          # if (1<n) goto 
