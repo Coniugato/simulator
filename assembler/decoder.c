@@ -1804,7 +1804,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         int rs1 = reg_convert(opr[1]);
         *int_inst=(0b01<<25)+(rd<<7)+(rs1<<15)+(0b00001<<20)+(0b11010<<27)+0b1010011;
     }
-    else if(strcmp(opc,"lw")==0){
+    else if(strcmp(opc,"flw")==0){
         n_oprand=3;
         int i;
         for(i=0; i<n_oprand; i++){
@@ -1823,7 +1823,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
-    else if(strcmp(opc,"sw")==0){
+    else if(strcmp(opc,"fsw")==0){
         n_oprand=3;
         int i;
         for(i=0; i<n_oprand; i++){
@@ -1843,7 +1843,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
-    else if(strcmp(opc,"ld")==0){
+    else if(strcmp(opc,"fld")==0){
         n_oprand=3;
         int i;
         for(i=0; i<n_oprand; i++){
@@ -1862,7 +1862,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
-    else if(strcmp(opc,"sw")==0){
+    else if(strcmp(opc,"fsd")==0){
         n_oprand=3;
         int i;
         for(i=0; i<n_oprand; i++){
