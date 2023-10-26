@@ -204,6 +204,7 @@ int main(int argc, char *argv[]){
         if(strcmp(buf, "INST")==0){
             assemble(f, outd, addr, labels);
             addr+=4;
+            //printf("%d\n", addr);
         }
     }
 
