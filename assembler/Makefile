@@ -1,5 +1,5 @@
 all: AVLmodule main decoder
-	gcc main AVLmodule decoder
+	gcc main AVLmodule decoder -o asm
 
 main: main.c
 	gcc -c main.c -o main
