@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <termios.h>
+#include "input_handle.h"
 char memory[40000000];
 
 int pc=0;
@@ -29,14 +31,21 @@ unsigned long long sext(unsigned long long input, unsigned long long n_dights){
 
 
 void handle_instruction(char* buf){
-    printf("Instruction: ");
+    printf("Binary: \t");
     int* buf_int=(int*)buf;
     int i, j;
-    for(i=0; i<32; i+=1){
-        printf("%llx ", extract(*buf_int, i,i));
+    for(i=31; i>=0; i-=1){
+        printf("%llx", extract(*buf_int, i,i));
+        if(i%4==0) printf(" ");
+    }
+    printf("\n0x: \t\t");
+    for(i=0; i<32; i+=4){
+        printf("%0llx", extract(*buf_int, 31-i,28-i));
+        if(i%8==0) printf(" ");
     }
     printf("\n");
-    printf("%llx\n", extract(*buf_int, 1,0));
+    printf("Instruction: ");
+    //printf("%llx\n", extract(*buf_int, 1,0));
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
@@ -55,7 +64,7 @@ void handle_instruction(char* buf){
                 int rs1=extract(*buf_int, 19,15);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
-                        printf("ADDI\n");
+                        printf("ADDI x%d, %d\n", rd, imm);
                         int_registers[rd]=int_registers[rs1]+imm;
                         break;
                     case 0b010:
@@ -844,6 +853,116 @@ void handle_instruction(char* buf){
     }
 }
 
+char tmp[100000];
+char* getstring(char* str){
+    char* s = str;
+    int index=0;
+    while(*s!='\0'){
+        tmp[index]=getchar();
+        if(tmp[index]!= *s) return NULL;
+        s++;
+    }
+    char* ret = calloc(sizeof(char), index+2);
+    char* r = ret;
+    int i=0;
+    for(i=0; i<index; i++){
+        *r =  tmp[i];
+        r++;
+    }
+    *r = '\0';
+    return r;
+}
+
+long long getnum(char* mesq){
+    long long ret = 0;
+    mesq[0]=0;
+    while(1){
+        char c=getchar();
+        printf("%c",c);
+        if(c==13) break;
+        if(c==45){
+            mesq[0]=1;
+            break;
+        }
+        if(c<'0' || c>'9') return -1;
+        else ret=ret*10+(c-'0');
+    }
+    if(mesq[0]==0) printf("\n\r");
+    return ret;
+}
+
+int skip=0;
+
+void input_handle(void){
+    char mesq[100];
+    while(1){
+        printf("\rdebug>");
+        char c=getchar();
+        if(c=='c'){
+            printf("%c\n",c);
+            break;
+        } 
+        if(c=='e'){
+            printf("%c\n",c);
+            skip=-1;
+            break;
+        } 
+        else if(c=='s'){
+            printf("s");
+            if(getchar()==' '){
+                printf(" ");
+                long long num=getnum(mesq);
+                if(num==-1){
+                    printf("invalid skip value.\n");
+                    continue;
+                }
+                skip=num-1;
+                break;
+            }
+        }
+        else if(c=='m'){
+            printf("m");
+            if(getchar()==' '){
+                printf(" ");
+                long long stnum=getnum(mesq);
+                if(stnum==-1){
+                    printf("invalid address.\n");
+                    continue;
+                }
+                if(stnum%4!=0){
+                    printf("address is not aligned 4 byte.\n");
+                    continue;
+                }
+                long long ennum;
+                if(mesq[0]==1){
+                    ennum=getnum(mesq);
+                    if(mesq[0]==1){
+                        printf("invalid syntax.\n");
+                        continue;
+                    }
+                }
+                else ennum=stnum+4;
+                unsigned long long memnum;
+                for(memnum=stnum; memnum<ennum; memnum+=4){
+                    union f_ui{
+                        unsigned int ui;
+                        int i;
+                        float f;
+                    };
+                    union f_ui fui;
+                    fui.i=(int*) (memory+memnum);
+                    printf("[addr %08x](0x) %8x (int) %d (uint) %u (float) %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
+                }
+            }
+        }
+        else if(c=='m'){
+            
+        }
+    }
+    return;
+}
+
+
 int main(int argc, char *argv[]){
     if(argc<2){
         fprintf(stdout, "ERROR: file is not specified.\n"); exit(1);
@@ -884,20 +1003,37 @@ int main(int argc, char *argv[]){
         int_registers[0]=0;
 
         if(pc_flag==0) pc+=4;
+
+
+
+
+        //for display
         printf("PC: %d\n", pc);
         int i;
         for(i=0; i<32; i++){
-            printf("x%d: %lld", i, int_registers[i]);
+            printf("\t\x1b[35mx%d\x1b[0m: \t%lld", i, int_registers[i]);
             if((i+1)%4==0) printf("\n");
             else printf(" "); 
         }
         for(i=0; i<32; i++){
-            printf("f%d: %f", i, float_registers[i]);
+            printf("\t\x1b[36mf%d\x1b[0m: \t%f", i, float_registers[i]);
             if((i+1)%4==0) printf("\n");
             else printf(" "); 
         }
+        
+
+        if(skip!=0){
+            if(skip>0) skip--;
+            printf("\n\n\n");
+            continue;
+        }
+
+        termios_t st;
+        switch_to_bytemode(0, &st);
+        input_handle();
+        switch_to_mode(0, &st);
+
         printf("\n\n\n");
-        getchar();
     }
     return 0;
 }
