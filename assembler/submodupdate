@@ -1,5 +1,6 @@
 gitupdate $1
 cd ~/processor-experiment-2023-5
+echo "submodule fetch"
 git checkout simulator
 git pull origin simulator
 git submodule update --remote
