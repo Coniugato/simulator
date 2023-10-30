@@ -167,7 +167,7 @@ int main(int argc, char *argv[]){
                 if(state==0) state=1;
                 state++;
                 skipped=1;
-                *tmp='\0';
+                *to='\0';
                 to=oprand[state-1];
               }
               else{

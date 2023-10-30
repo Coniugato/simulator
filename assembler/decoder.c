@@ -26,6 +26,14 @@ unsigned long long extract(unsigned long long input, unsigned long long from, un
   return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
 } 
 
+long long atoi_w(char* c){
+    long long ret;
+    if(*c=='-'){
+        ret=-atoi(c+1);
+    }
+    ret=atoi(c);
+}
+
 unsigned long long invsext(long long input, unsigned long long n_dights){
   if(input<0){
     return (1<<n_dights)+input;
@@ -122,7 +130,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             
         }
         int rd = reg_convert(opr[0]);
-        unsigned long imm=invsext(atoi(opr[1]),32);
+        unsigned long imm=invsext(atoi_w(opr[1]),32);
         *int_inst=(extract(imm,31,12)<<12)+(rd<<7)+0b0110111;
         writeall(outd, char_inst, 4);
     }
@@ -139,7 +147,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             
         }
         int rd = reg_convert(opr[0]);
-        unsigned long imm=invsext(atoi(opr[1]),32);
+        unsigned long imm=invsext(atoi_w(opr[1]),32);
         *int_inst=(extract(imm,31,12)<<12)+(rd<<7)+0b0010111;
         writeall(outd, char_inst, 4);
     }
@@ -156,8 +164,10 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12); 
+        
         *int_inst=(imm<<20)+(rd<<7)+(rs1<<15)+0b0010011;
+        //printf("%d %d %d, %llx\n", atoi_w(opr[2]), rd, rs1, *int_inst);
         writeall(outd, char_inst, 4);
         
 
@@ -175,7 +185,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12);
         *int_inst=(imm<<20)+(rd<<7)+(0b010<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
         
@@ -194,7 +204,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12);
         *int_inst=(imm<<20)+(rd<<7)+(0b011<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -211,7 +221,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12);
         *int_inst=(imm<<20)+(rd<<7)+(0b100<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -228,7 +238,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12);
         *int_inst=(imm<<20)+(rd<<7)+(0b110<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -245,7 +255,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=invsext(atoi(opr[2]),12);
+        unsigned long imm=invsext(atoi_w(opr[2]),12);
         *int_inst=(imm<<20)+(rd<<7)+(0b111<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -262,7 +272,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=extract(atoi(opr[2]),4,0);
+        unsigned long imm=extract(atoi_w(opr[2]),4,0);
         *int_inst=(imm<<20)+(rd<<7)+(0b001<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -279,7 +289,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=extract(atoi(opr[2]),4,0);
+        unsigned long imm=extract(atoi_w(opr[2]),4,0);
         *int_inst=(imm<<20)+(rd<<7)+(0b101<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -296,7 +306,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long imm=extract(atoi(opr[2]),4,0);
+        unsigned long imm=extract(atoi_w(opr[2]),4,0);
         *int_inst=(0b01000<<27)+(imm<<20)+(rd<<7)+(0b101<<12)+(rs1<<15)+0b0010011;
         writeall(outd, char_inst, 4);
     }
@@ -620,7 +630,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b000<<12)+0b0000011;
@@ -639,7 +649,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b001<<12)+0b0000011;
@@ -658,10 +668,12 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
-        
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
+        //printf("%s %d %d\n", opr[2], atoi_w(opr[2]), offset);
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b010<<12)+0b0000011;
+        
+        //printf("%llx\n", *int_inst);
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
@@ -677,7 +689,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b100<<12)+0b0000011;
@@ -696,7 +708,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b101<<12)+0b0000011;
@@ -714,7 +726,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             }
         }
         int rs1 = reg_convert(opr[0]);
-        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[1]), 12);
         int rs2 = reg_convert(opr[2]);
         
         
@@ -734,7 +746,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             }
         }
         int rs1 = reg_convert(opr[0]);
-        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[1]), 12);
         int rs2 = reg_convert(opr[2]);
         
         
@@ -754,7 +766,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             }
         }
         int rs1 = reg_convert(opr[0]);
-        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[1]), 12);
         int rs2 = reg_convert(opr[2]);
         
         
@@ -1816,7 +1828,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b010<<12)+0b0000111;
@@ -1834,7 +1846,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             }
         }
         int rs1 = reg_convert(opr[0]);
-        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[1]), 12);
         int rs2 = reg_convert(opr[2]);
         
         
@@ -1855,7 +1867,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long long offset=invsext(atoi(opr[2]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[2]), 12);
         
         unsigned int conv_offset=(extract(offset, 11,0)<<20);
         *int_inst=conv_offset+(rs1<<15)+(rd<<7)+(0b011<<12)+0b0000111;
@@ -1873,7 +1885,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             }
         }
         int rs1 = reg_convert(opr[0]);
-        unsigned long long offset=invsext(atoi(opr[1]), 12);
+        unsigned long long offset=invsext(atoi_w(opr[1]), 12);
         int rs2 = reg_convert(opr[2]);
         
         
@@ -1896,7 +1908,7 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
             
         }
         int rd = reg_convert(opr[0]);
-        unsigned long imm=invsext(atoi(opr[1]),12);
+        unsigned long imm=invsext(atoi_w(opr[1]),12);
         *int_inst=(imm<<20)+(rd<<7)+0b0010011;
         writeall(outd, char_inst, 4);
         

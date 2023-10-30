@@ -41,7 +41,7 @@ void handle_instruction(char* buf){
     printf("\n0x: \t\t");
     for(i=0; i<32; i+=4){
         printf("%0llx", extract(*buf_int, 31-i,28-i));
-        if(i%8==0) printf(" ");
+        if(i%8!=0) printf(" ");
     }
     printf("\n");
     printf("Instruction: ");
@@ -50,8 +50,8 @@ void handle_instruction(char* buf){
         int rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
             case 0b01101:
-                printf("LUI\n");
                 int imm=extract(*buf_int, 31,12);
+                printf("LUI %d %lld\n", rd, imm);
                 int_registers[rd]=imm<<12;
                 break;
             case 0b00101:
@@ -230,18 +230,21 @@ void handle_instruction(char* buf){
             //FENCE ~ SFENCE.VMA 省略
             case 0b00000: 
                 int offset=extract(*buf_int, 31,20);
+                rd=extract(*buf_int, 11,7);
+                rs1=extract(*buf_int, 19,15);
+                //printf("%d %d\n", rd, rs1);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         printf("LB\n");
-                        int_registers[rd]=extract(memory[int_registers[rs1]+offset], 7,0);
+                        int_registers[rd]=sext(extract(*(unsigned long long *)(memory+int_registers[rs1]+sext(offset,12)), 7,0),8);
                         break;
                     case 0b001:
                         printf("LH\n");
-                        int_registers[rd]=extract(memory[int_registers[rs1]+offset], 15,0);
+                        int_registers[rd]=sext(extract(*(unsigned long long *)(memory+int_registers[rs1]+sext(offset,12)), 15,0),16);
                         break;
                     case 0b010:
-                        printf("LW\n");
-                        int_registers[rd]=extract(memory[int_registers[rs1]+offset], 31,0);
+                        printf("LW x%d x%d(%lld)\n", rd, rs1, sext(offset, 12));
+                        int_registers[rd]=sext(extract(*(unsigned long long *)(memory+int_registers[rs1]+sext(offset,12)), 31,0),32);
                         break;
                     case 0b100:
                         printf("LBU\n");
@@ -264,11 +267,11 @@ void handle_instruction(char* buf){
                         break;
                     case 0b001:
                         printf("SH\n");
-                        memory[int_registers[rs1]+offset]=extract(int_registers[rs2], 15,0);
+                        *(unsigned short*)(memory+int_registers[rs1]+offset)=extract(int_registers[rs2], 15,0);
                         break;
                     case 0b010:
-                        printf("SW\n");
-                        memory[int_registers[rs1]+offset]=extract(int_registers[rs2], 31,0);
+                        printf("SW x%d(%d) x%d\n", rs1, offset, rs2);
+                        *(unsigned int*)(memory+int_registers[rs1]+offset)=extract(int_registers[rs2], 31,0);
                         break;
                 }   
                 break;
@@ -768,7 +771,7 @@ void handle_instruction(char* buf){
                     break;
                 }
                 else{
-                   printf("C.LUI\n");
+                   printf("C.LUI %d %lld\n", rd, imm);
                     int imm=(extract(*buf_int, 12,12)<<17)+(extract(*buf_int, 6,2)<<12);
                     int_registers[rd]=imm; 
                     break;
@@ -942,7 +945,19 @@ void input_handle(void){
                     }
                 }
                 else ennum=stnum+4;
+                if(ennum==-1){
+                    printf("invalid address.\n");
+                    continue;
+                }
+                //printf("%d %d ", stnum, ennum);
                 unsigned long long memnum;
+                if(ennum-stnum>400){
+                    printf("the ouput will be larger than 100 entries. continue? y or n:");
+                    if(getchar()!='y'){
+                        printf("\n\r");
+                        continue;
+                    } 
+                }
                 for(memnum=stnum; memnum<ennum; memnum+=4){
                     union f_ui{
                         unsigned int ui;
@@ -950,8 +965,8 @@ void input_handle(void){
                         float f;
                     };
                     union f_ui fui;
-                    fui.i=(int*) (memory+memnum);
-                    printf("[addr %08x](0x) %8x (int) %d (uint) %u (float) %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
+                    fui.i=*(int*) (memory+memnum);
+                    printf("\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\x1b[0m\x1b[31m(0x)\x1b[0m %8x \t\x1b[36m(int)\x1b[0m %d \t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
                 }
             }
         }
