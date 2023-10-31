@@ -62,7 +62,7 @@ unsigned long long sext(unsigned long long input, unsigned long long n_dights){
 } 
 
 
-char* memory_access(unsigned long long addr){
+char* memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-LEN_TAG+1);
     unsigned long long index = extract(addr,31-LEN_TAG,LEN_OFFSET);
@@ -122,7 +122,8 @@ char* memory_access(unsigned long long addr){
         //if(way_found==1 && index==6) printf("######################################\n");  
         //printf("@@%d %d %d\n", way_found, index, ctag[way_found][index]); 
         //write back
-        if(oldvalid==1){
+        unsigned int dirty=extract(flag[way_found][index],5,5);
+        if(oldvalid==1 && dirty==1){
            
             for(i=0; i<LEN_LINE; i++){
                 memory[base_addr+i]=cache[way_found][index][i];
@@ -141,10 +142,11 @@ char* memory_access(unsigned long long addr){
     }
     else Dcache_hit++;
     //printf("@@@%d\n", ctag[1][6]);
+    if(wflag==1) flag[way_found][index]=(flag[way_found][index]-(extract(flag[way_found][index],5,5)<<5))+32;
     return cache[way_found][index]+offset;
 }
 
-char* i_memory_access(unsigned long long addr){
+char* i_memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
     unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
@@ -202,7 +204,8 @@ char* i_memory_access(unsigned long long addr){
         //write back
         unsigned int i=0;
         unsigned int base_addr=(i_ctag[way_found][index]<<(I_LEN_OFFSET+I_LEN_INDEX))+(index<<I_LEN_OFFSET);
-        if(oldvalid==1){
+        unsigned int dirty=extract(i_flag[way_found][index],5,5);
+        if(oldvalid==1 && dirty==1){
             for(i=0; i<I_LEN_LINE; i++){
                 memory[base_addr+i]=i_cache[way_found][index][i];
             }     
@@ -224,6 +227,7 @@ char* i_memory_access(unsigned long long addr){
     }
     else Icache_hit++;
      //printf("@@@%d\n", ctag[1][6]);
+    if(wflag==1) i_flag[way_found][index]=(i_flag[way_found][index]-(extract(i_flag[way_found][index],5,5)<<5))+32;
     return i_cache[way_found][index]+offset;
 }
 
@@ -457,23 +461,23 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         printf("LB\n");
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12)), 7,0),8);
+                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 7,0),8);
                         break;
                     case 0b001:
                         printf("LH\n");
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12)), 15,0),16);
+                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 15,0),16);
                         break;
                     case 0b010:
                         printf("LW x%d x%d(%lld)\n", rd, rs1, sext(offset, 12));
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12)), 31,0),32);
+                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);
                         break;
                     case 0b100:
                         printf("LBU\n");
-                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12)), 7,0);
+                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 7,0);
                         break;
                     case 0b101:
                         printf("LHU\n");
-                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12)), 15,0);
+                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 15,0);
                         break;
                 }  
                 break;
@@ -484,15 +488,15 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         printf("SB\n");
-                        *(unsigned char*) memory_access(int_registers[rs1]+sext(offset,12))=extract(int_registers[rs2], 7,0);
+                        *(unsigned char*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 7,0);
                         break;
                     case 0b001:
                         printf("SH\n");
-                        *(unsigned short*) memory_access(int_registers[rs1]+sext(offset,12))=extract(int_registers[rs2], 15,0);
+                        *(unsigned short*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 15,0);
                         break;
                     case 0b010:
                         printf("SW x%d(%d) x%d\n", rs1, offset, rs2);
-                        *(unsigned int*) memory_access(int_registers[rs1]+sext(offset,12))=extract(int_registers[rs2], 31,0);
+                        *(unsigned int*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 31,0);
                         break;
                 }   
                 break;
@@ -887,11 +891,11 @@ void handle_instruction(char* buf, int stage){
                     case 0b010:
                         printf("FLW\n");
                         //imm=extract(*buf_int, 11,0); <-???
-                        float_registers[rd]=*(float*) memory_access(int_registers[rs1]+sext(offset,12));
+                        float_registers[rd]=*(float*) memory_access(int_registers[rs1]+sext(offset,12),0);
                         break;
                     case 0b011:
                         printf("FLD\n");
-                        float_registers[rd]=*(double*) memory_access(int_registers[rs1]+sext(offset,12));
+                        float_registers[rd]=*(double*) memory_access(int_registers[rs1]+sext(offset,12),0);
                         break;
                 }
             case 0b01001:
@@ -899,11 +903,11 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
                         printf("FSW\n");
-                        *(float*)memory_access(int_registers[rs1]+sext(offset,12))=float_registers[rd];
+                        *(float*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
                         break;
                     case 0b011:
                         printf("FSD\n");
-                        *(double*)memory_access(int_registers[rs1]+sext(offset,12))=float_registers[rd];
+                        *(double*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
                         break;
                 }
         }
@@ -1196,7 +1200,7 @@ void input_handle(void){
                     for(way=0; way<N_WAYS; way++){
                         int rank=extract(flag[way][idx],3,1);
                         if(rank==0) rank=5;
-                        printf("\r(way %d: tag %llx \t: %s : rank %d) ", way, ctag[way][idx], (extract(flag[way][idx],0,0)==1 ? "v" : "i"), rank);
+                        printf("\r(way %d: tag %llx \t: %s %s : rank %d) ", way, ctag[way][idx], (extract(flag[way][idx],0,0)==1 ? "v" : "i"), (extract(flag[way][idx],5,5)==1 ? "d" : "p"), rank);
                         for(i=0; i<LEN_LINE; i++){
                             printf("%02x ", cache[way][idx][i] & 0x000000FF);
                         }
@@ -1268,15 +1272,15 @@ void input_handle(void){
                     int iway=on_i_cache(memnum);
                     if(way>=0 || iway>=0){
                         if(way>=0){
-                            fui.i=*(int*) memory_access(memnum);
+                            fui.i=*(int*) memory_access(memnum,0);
                             printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
                             if(iway>=0){
-                                fui.i=*(int*) i_memory_access(memnum);
+                                fui.i=*(int*) i_memory_access(memnum,0);
                                 printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                             }
                         }
                         else if(iway>=0){
-                            fui.i=*(int*) i_memory_access(memnum);
+                            fui.i=*(int*) i_memory_access(memnum,0);
                             printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                         }
                         
@@ -1293,7 +1297,7 @@ void input_handle(void){
             }
         }
         else if(c=='q'){
-            printf("%c",c);
+            printf("%c\n",c);
             quit=1;
             break;
         }
@@ -1343,6 +1347,10 @@ int main(int argc, char *argv[]){
     switch_to_bytemode(0, &st);
     input_handle();
     switch_to_mode(0, &st);
+    if(quit==1){
+            printf("\rquitting simulator ...\n");
+            return 0;
+    }
     while(pc<max_pc){
         
         
@@ -1350,7 +1358,7 @@ int main(int argc, char *argv[]){
         
         pc_flag=0;
         int_registers[0]=0;
-        handle_instruction(i_memory_access(pc), 0);
+        handle_instruction(i_memory_access(pc,0), 0);
         clk++;
         int_registers[0]=0;
         if(pc_flag==0) pc+=4;
@@ -1385,7 +1393,7 @@ int main(int argc, char *argv[]){
         input_handle();
         switch_to_mode(0, &st);
         if(quit==1){
-            printf("\n\rquitting simulator ...\n");
+            printf("\rquitting simulator ...\n");
             break;
         }
         printf("\n\n\n");

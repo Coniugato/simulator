@@ -1914,6 +1914,27 @@ void assemble(FILE* inf, int outd, int pc, Node* labels){
         
 
     }
+    else if(strcmp(opc,"lim")==0){
+        //LUI rd, imm
+        n_oprand=2;
+        int i;
+        for(i=0; i<n_oprand; i++){
+            fscanf(inf, "%s", opr[i]);
+            ////printf("%s\n", opr[i]);
+            if(strcmp(opr[i], "END")==0){
+                error_toofew(opc);
+            }
+            
+        }
+        int rd = reg_convert(opr[0]);
+        unsigned long imm=invsext(atoi_w(opr[1]),32);
+        *int_inst=(extract(imm,31,12)<<12)+(rd<<7)+0b0110111;
+        writeall(outd, char_inst, 4);
+        //convert to addi
+        imm=invsext(atoi_w(opr[1]),12);
+        *int_inst=(imm<<20)+(rd<<15)+(rd<<7)+0b0010011;
+        writeall(outd, char_inst, 4);
+    }
     else if(strcmp(opc,"mv")==0){
         //convert to addi
         n_oprand=2;
