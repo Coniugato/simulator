@@ -542,11 +542,78 @@ UI fcvt_wu_c(float f, int status){
     return y;
 }
 
+//fcvt_s_wuでは？
+float fcvt_s_wu_c(UI x, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui r;
+    UI xs = EX(x,31,31) ? (EX(x,7,7) ? (x + (1<<8)) : x) :
+        EX(x,30,30) ? (EX(x,6,6) ? (x + (1<<7)) : x) :
+        EX(x,29,29) ? (EX(x,5,5) ? (x + (1<<6)) : x) :
+        EX(x,28,28) ? (EX(x,4,4) ? (x + (1<<5)) : x) :
+        EX(x,27,27) ? (EX(x,3,3) ? (x + (1<<4)) : x) :
+        EX(x,26,26) ? (EX(x,2,2) ? (x + (1<<3)) : x) :
+        EX(x,25,25) ? (EX(x,1,1) ? (x + (1<<2)) : x) :
+        EX(x,24,24) ? (EX(x,0,0) ? (x + (1<<1)) : x) :
+        x;
+
+    UI y = 0;
+    for(int i=31; i>=0; i--){
+      if(EX(xs, i, i)==1){
+        if(i>=23)
+          y = ((127+i)<<23)+EX(xs, i-1,i-23);
+        else
+          y = ((127+i)<<23)+(EX(xs, i-1,0)<<(23-i));
+        break;
+      }
+    }
+    r.ui=y;
+    return r.f;
+}
+
+float fcvt_s_w_c(int xi, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    UI x = invsext(xi, 32);
+    printf("%ld\n", (1<<32)+xi);
+    union f_ui r;
+
+    UI xss = (EX(x, 31, 31)==1) ? (~x + 1) : x;
+
+    UI xs = EX(xss,31,31) ? (EX(xss,7,7) ? (xss + (1<<8)) : xss) :
+        EX(xss,30,30) ? (EX(xss,6,6) ? (xss + (1<<7)) : xss) :
+        EX(xss,29,29) ? (EX(xss,5,5) ? (xss + (1<<6)) : xss) :
+        EX(xss,28,28) ? (EX(xss,4,4) ? (xss + (1<<5)) : xss) :
+        EX(xss,27,27) ? (EX(xss,3,3) ? (xss + (1<<4)) : xss) :
+        EX(xss,26,26) ? (EX(xss,2,2) ? (xss + (1<<3)) : xss) :
+        EX(xss,25,25) ? (EX(xss,1,1) ? (xss + (1<<2)) : xss) :
+        EX(xss,24,24) ? (EX(xss,0,0) ? (xss + (1<<1)) : xss) :
+        xss;
+
+    UI y = 0;
+    for(int i=31; i>=0; i--){
+      if(EX(xs, i, i)==1){
+        if(i>=23)
+          y = ((127+i)<<23)+EX(xs, i-1,i-23);
+        else
+          y = ((127+i)<<23)+(EX(xs, i-1,0)<<(23-i));
+        y+=EX(x,31,31)<<31;
+        break;
+      }
+    }
+    r.ui=y;
+    return r.f;
+}
+
 
 //#define NONDEBUG
 #ifndef NONDEBUG
 int main(void){
-    printf("%d\n", fcvt_wu_c(-2.9, 0));
+    printf("%f\n", fcvt_s_w_c(-1, 0));
     return 0;
 }
 #endif
