@@ -278,7 +278,7 @@ int feq_c(float f1, float f2, int status){
     return (is_zero1==1 && is_zero2==1) ? 1 : ((x1==x2) ? 1 : 0);
 }
 
-int fleq_c(float f1, float f2, int status){
+int fle_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
         float f;
