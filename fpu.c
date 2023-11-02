@@ -19,7 +19,14 @@ unsigned long long sext(unsigned long long input, unsigned long long n_dights){
   }
 } 
 
-float fadd(float f1, float f2, int status){
+unsigned long long invsext(long long input, unsigned long long n_dights){
+  if(input<0){
+    return (1<<n_dights)+input;
+  }
+  else return input;
+} 
+
+float fadd_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
         float f;
@@ -72,7 +79,7 @@ float fadd(float f1, float f2, int status){
     return r.f;
 } 
 
-float fsub(float f1, float f2, int status){
+float fsub_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
         float f;
@@ -87,7 +94,7 @@ float fsub(float f1, float f2, int status){
     UI x2m=x2 ^ (1<<31);
 
     r.ui=x2m;
-    return fadd(f1, r.f, status);
+    return fadd_c(f1, r.f, status);
 
 }
 
@@ -104,7 +111,7 @@ UI mul23(UI m1, UI m2, int status){
   return hh + extract(hl,23,11) + extract(lh,23,11) + 2;
 }
 
-float fmul(float f1, float f2, int status){
+float fmul_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
         float f;
@@ -157,7 +164,7 @@ UI finv(UI in){
   return b - ad2; 
 }
 
-float fdiv(float f1, float f2, int status){
+float fdiv_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
         float f;
@@ -196,10 +203,350 @@ float fdiv(float f1, float f2, int status){
     return r.f;
 }
 
+float fsqrt_c(float f, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
+
+    UI in_2_4 = (EX(e,0,0)==0) ? 1 : 0;
+
+    UI index = EX((in_2_4<<23)+m, 23,14);
+    UI d = EX((in_2_4<<23)+m, 13,0);
+
+    UI a = EX(((UL)1<<36)+fsqrt_ar[index], 36,23);
+    UI b = EX(((UL)1<<36)+fsqrt_ar[index], 22,0);
+
+    UI ad1 = a* d;
+    UI ad2 = (in_2_4==1) ? EX(ad1, 27, 14) : EX(ad1, 27, 15);
+
+    UI my1 = b + ad2;
+
+    UI ey1 = EX(e, 7, 1) +63;
+    UI ey2 = ey1 + 1;
+    UI ey3 = (in_2_4==1) ? ey1 : ey2;
+
+    UI is_zero = (e==0) ? 1 : 0;
+    UI is_inf = (e==255) ? 1 : 0;
+
+    UI sy = s;
+    UI ey = (is_zero==1) ? 0 : ((is_inf==1) ? 255 : ey3);
+    UI my = (is_zero==1) ? 0 : ((is_inf==1) ? 0 : my1);
+
+    r.ui = (s==1) ? ((1<<31)+(255<<23)+(1<<22)) : ((sy<<31)+(ey<<23)+my);
+
+    return r.f;
+}
+
+float fabs_c(float f, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    r.ui = (((UL)1<<31)-1) & x;
+    return r.f;
+}
+
+int feq_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI is_zero1 = (extract(x1, 30, 0)==0) ? 1 : 0;
+    UI is_zero2 = (extract(x1, 30, 0)==0) ? 1 : 0;
+
+    return (is_zero1==1 && is_zero2==1) ? 1 : ((x1==x2) ? 1 : 0);
+}
+
+int fleq_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
+
+    UI res = (s1==1) ?  ((s2==1) ? ((em1>=em2) ? 1: 0) : 1) : ((s2==1) ? 0: ((em1<=em2) ? 1: 0));
+
+    UI is_zero=(em1==0 && em2==0) ? 1 : 0;
+
+    return (is_zero==1) ? 1 : res; 
+}
+
+int flt_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
+
+    UI res = (s1==1) ?  ((s2==1) ? ((em1>em2) ? 1: 0) : 1) : ((s2==1) ? 0 : ((em1 < em2) ? 1 : 0));
+
+    UI is_zero=(em1==0 && em2==0) ? 1 : 0;
+
+    return (is_zero==1) ? 0 : res; 
+}
+
+//ひとまず暫定的に正しい実装をします。回路が直ったら合わせて修正
+float fmax_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
+
+    float bigger = (em1 > em2) ? f1 : f2;
+    float smaller = (em1 > em2) ? f2 : f1;
+
+
+    return (s1==s2) ? ((s1==0) ? bigger : smaller) : ((s1==0) ? f1 : f2);
+}
+
+/*float fmax_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
+
+    UI res = (s1) ? ((s2) ? ((em1 >= em2) ? x1 : x2)) : ((s2) ? x2 : ((em1 <= em2) ? x1 : x2));
+
+    UI is_zero = (em1==0 && em2 ==0) ? 1 : 0;
+
+
+    return (is_zero==1) ? 0 : res;
+}*/
+
+float fmin_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
+
+    float bigger = (em1 > em2) ? f1 : f2;
+    float smaller = (em1 > em2) ? f2 : f1;
+
+
+    return (s1==s2) ? ((s1==0) ? smaller : bigger) : ((s1==0) ? f2 : f1);
+}
+
+float fsgnj_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    r.ui = (extract(x2, 31, 31)<<31)+(EX(x1,30,0));
+    
+    return r.f;
+}
+
+float fsgnjn_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    r.ui = ((1-extract(x2, 31, 31))<<31)+(EX(x1,30,0));
+    
+    return r.f;
+}
+
+float fsgnjx_c(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    r.ui = ((extract(x1,31,31)^extract(x2, 31, 31))<<31)+(EX(x1,30,0));
+    
+    return r.f;
+}
+
+//ひとまず暫定的に正しい実装をします。回路が直ったら合わせて修正
+float fnmadd_c(float f1, float f2, float f3, int status){
+   union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=fmul_c(f1, f2, status);
+    UI x1 = u.ui;
+    u.ui = ((1-EX(x1, 31,31))<<31)+EX(x1, 30, 0);
+  return fsub_c(u.f,f3, status);
+}
+
+float fnmsub_c(float f1, float f2, float f3, int status){
+  return fsub_c(f3, fmul_c(f1, f2, status), status);
+}
+
+float fmadd_c(float f1, float f2, float f3, int status){
+  return fadd_c(fmul_c(f1, f2, status),f3, status);
+}
+
+float fmsub_c(float f1, float f2, float f3, int status){
+  return fsub_c(fmul_c(f1, f2, status),f3, status);
+}
+
+UI fcvt_w_c(float f, int status){
+      union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
+
+    UI ep = invsext(e - 127,8);
+    UI mp = (1<<23)+m;
+
+    UI y = (s==0) ? (
+      (ep==0) ? 1:
+      ((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+        : ( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )
+      )
+    ) :
+    (
+      (ep==0) ? 0xffffffff:
+      ~((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+        : ( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )
+      )+1
+    );
+    return y;
+}
+
+UI fcvt_wu_c(float f, int status){
+      union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
+
+    UI ep = invsext(e - 127,8);
+    UI mp = (1<<23)+m;
+
+    UI y =
+      (ep==0) ? 1:
+      ((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+        : ( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )
+      );
+    return y;
+}
+
+
 //#define NONDEBUG
 #ifndef NONDEBUG
 int main(void){
-    printf("%f\n", fdiv(0.243, 0.004, 0));
+    printf("%d\n", fcvt_wu_c(-2.9, 0));
     return 0;
 }
 #endif
