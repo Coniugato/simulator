@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include "fpu_finv.c"
 #define UI unsigned int
 #define UL unsigned long long
+#define EX extract
 
 
 unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to){
@@ -69,10 +71,134 @@ float fadd(float f1, float f2, int status){
     return r.f;
 } 
 
+float fsub(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI x2m=x2 ^ (1<<31);
+
+    r.ui=x2m;
+    return fadd(f1, r.f, status);
+
+}
+
+UI mul23(UI m1, UI m2, int status){
+  UI m1h = extract(m1, 22, 11);
+  UI m1l = extract(m1, 10, 0);
+  UI m2h = extract(m2, 22, 11);
+  UI m2l = extract(m2, 10, 0);
+
+  UI hh = extract(((1<<12)+m1h) * ((1<<12)+m2h),25,0);
+  UI hl = extract(((1<<12)+m1h) * m2l,23, 0);
+  UI lh = extract(m1l * ((1<<12)+m2h),23, 0);
+
+  return hh + extract(hl,23,11) + extract(lh,23,11) + 2;
+}
+
+float fmul(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI e1 = extract(x1, 30, 23);
+    UI m1 = extract(x1, 22, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI e2 = extract(x2, 30, 23);
+    UI m2 = extract(x2, 22, 0);
+
+    UI my1 = mul23(m1, m2, status);
+
+    UI carry = extract(my1, 25, 25);
+
+    UI my2 = (carry==1) ? extract(my1, 24,2) : extract(my1, 23, 1);
+
+    UI ey1 = e1 + e2 - 127;
+    UI ey2 = ey1 + 1;
+    UI ey3 = (carry==1) ? ey2 : ey1;
+
+    UI underflow = (e1 == 0 || e2 == 0 || extract(ey3,9,9)==1 || ey3==0) ? 1 : 0;
+    UI overflow = (e1 == 255 || e2 == 255 || extract(ey3,8,8)==1 || ey3==255) ? 1 : 0;
+
+    UI sy = s1 ^ s2;
+    UI ey = (underflow == 1) ? 0 : ((overflow==1) ? 255 : extract(ey3, 7, 0));
+    UI my = (underflow == 1) ? 0 : ((overflow==1) ? 0 : my2);
+    
+    r.ui=(sy<<31)+(ey<<23)+my;
+    return r.f;
+}
+
+UI finv(UI in){
+  UI index = EX(in, 22, 13);
+  UI d = EX(in, 12, 0);
+
+  UL ab=finv_ar[index];
+  UI a = EX(ab, 35, 23);
+  UI b = EX(ab, 22, 0);
+
+  UI ad1 = a * d;
+  UI ad2 = EX(ad1, 25, 12);
+  return b - ad2; 
+}
+
+float fdiv(float f1, float f2, int status){
+    union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u_1, u_2, r;
+    u_1.f=f1;
+    u_2.f=f2;
+
+    UI x1=u_1.ui;
+    UI x2=u_2.ui;
+
+    UI s1 = extract(x1, 31, 31);
+    UI e1 = extract(x1, 30, 23);
+    UI m1 = extract(x1, 22, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI e2 = extract(x2, 30, 23);
+    UI m2 = extract(x2, 22, 0);
+
+    UI m3 = finv(m2);
+    UI my1 = mul23(m1, m3,status);
+    UI carry = EX(my1, 25, 25);
+    UI my2 = (carry==1) ? EX(my1, 24, 2) : EX(my1, 23, 1);
+
+    UI ey1 = e1 - e2 + 126;
+    UI ey2 = ey1 + 1;
+    UI ey3 = (carry==1) ? ey2 : ey1;
+
+    UI underflow = (e1 == 0 || e2 ==255 || EX(ey3,9,9)==1 || ey3==0) ? 1: 0;
+    UI overflow = (e1 == 255 || e2 ==0 || EX(ey3,8,8)==1 || ey3==255) ? 1: 0;
+
+    UI sy = s1 ^ s2;
+    UI ey = (underflow==1) ? 0 : ((overflow==1) ? 255 : EX(ey3, 7, 0));
+    UI my = (underflow==1) ? 0 : ((overflow==1) ? 0 : my2);
+
+    r.ui = (sy<<31) + (ey<<23)+my;
+    return r.f;
+}
+
 //#define NONDEBUG
 #ifndef NONDEBUG
 int main(void){
-    printf("%f\n", fadd(1.2, 0.0001, 0));
+    printf("%f\n", fdiv(0.243, 0.004, 0));
     return 0;
 }
 #endif
