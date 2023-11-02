@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "fpu_finv.c"
+#include "fpu_fsqrt.c"
 #define UI unsigned int
 #define UL unsigned long long
 #define EX extract
