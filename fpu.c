@@ -38,8 +38,11 @@ float fadd(float f1, float f2, int status){
     UI x1_is_bigger = (extract(x1, 30, 0) > extract(x2, 30, 0)) ? 1: 0;
     UI e_big = (x1_is_bigger==1) ?  e1 : e2;
     UI e_small = (x1_is_bigger==1) ?  e2 : e1;
-    UI m_big = (x1_is_bigger==1) ?  m1 : m2;
-    UI m_small = (x1_is_bigger==1) ?  m2 : m1;    
+    UI m_big = (1<<24)+(((x1_is_bigger==1) ?  m1 : m2)<<1);
+    UI m_small_prev = (1<<24)+(((x1_is_bigger==1) ?  m2 : m1)<<1);  
+
+    UI m_small_shift = e_big - e_small;
+    UI m_small = m_small_prev >> m_small_shift;  
     
     UI my1 = extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
 
@@ -69,7 +72,7 @@ float fadd(float f1, float f2, int status){
 //#define NONDEBUG
 #ifndef NONDEBUG
 int main(void){
-    printf("%f\n", fadd(1.2, 10, 0));
+    printf("%f\n", fadd(1.2, 2.4, 0));
     return 0;
 }
 #endif
