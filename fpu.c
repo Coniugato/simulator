@@ -52,7 +52,7 @@ float fadd(float f1, float f2, int status){
     }
 
     UI my2_tmp=my1<<my1_shift;
-    UI my2=extract(my2_tmp>>2, 24, 2);
+    UI my2=extract(my2_tmp, 24, 2);
 
     UI ey1 = e_big+1;
     UI ey2 = ey1 - my1_shift;
@@ -72,7 +72,7 @@ float fadd(float f1, float f2, int status){
 //#define NONDEBUG
 #ifndef NONDEBUG
 int main(void){
-    printf("%f\n", fadd(1.2, 2.4, 0));
+    printf("%f\n", fadd(1.2, 0.0001, 0));
     return 0;
 }
 #endif
