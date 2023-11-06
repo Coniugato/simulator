@@ -1,5 +1,5 @@
-all: main input_handle
-	gcc main input_handle -o sim -lm
+all: main input_handle fpu
+	gcc main input_handle fpu -o sim -lm
 
 main: main.c
 	gcc -c main.c -o main

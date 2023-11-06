@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <termios.h>
+#include "fpu.h"
 #include "input_handle.h"
 
 #define N_WAYS 4
@@ -558,28 +559,28 @@ void handle_instruction(char* buf, int stage){
             case 0b10000:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        printf("FMADD.S\n");
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]=float_registers[rs1]*float_registers[rs2]+float_registers[rs3];
+                        printf("FMADD.S f%d f%d f%d f%d\n", rd, rs1, rs2, rs3);
+                        float_registers[rd]=fmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
                     case 0b01:
                         printf("FMADD.D\n");
-                        
+                        //Not Implemented.
                         break;
                 }   
                 break;
             case 0b10001:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        printf("FMSUB.S\n");
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]=float_registers[rs1]*float_registers[rs2]-float_registers[rs3];
+                        printf("FMSUB.S f%d f%d f%d f%d\n", rd, rs1, rs2, rs3);
+                        float_registers[rd]=fmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
                     case 0b01:
                         printf("FMSUB.D\n");
@@ -594,15 +595,15 @@ void handle_instruction(char* buf, int stage){
                         rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]+float_registers[rs3];
+                        float_registers[rd]= fnmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3], stage);
                         break;
                     case 0b01:
                         printf("FNMSUB.D\n");
-                        rd=extract(*buf_int, 11,7);
+                        /*rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         rs2=extract(*buf_int, 24,20);
                         rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]+float_registers[rs3];
+                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]+float_registers[rs3];*/
                         break;
                 }   
                 break;
@@ -614,15 +615,15 @@ void handle_instruction(char* buf, int stage){
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]-float_registers[rs3];
+                        float_registers[rd]= fnmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
                     case 0b01:
-                        printf("FNMADD.D\n");
+                        /*printf("FNMADD.D\n");
                         rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         rs2=extract(*buf_int, 24,20);
                         rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]-float_registers[rs3];
+                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]-float_registers[rs3];*/
                         break;
                 }   
                 break;
@@ -633,85 +634,82 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 31,25)){
                     case 0b0000000:
                         printf("FADD.S\n");
-                        float_registers[rd]=float_registers[rs1]+float_registers[rs2];
+                        float_registers[rd]=fadd_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
                     case 0b0000001:
-                        printf("FADD.D\n");
-                        float_registers[rd]=float_registers[rs1]+float_registers[rs2];
+                        /*printf("FADD.D\n");
+                        float_registers[rd]=float_registers[rs1]+float_registers[rs2];*/
                         break;
                     case 0b0000100:
                         printf("FSUB.S\n");
-                        float_registers[rd]=float_registers[rs1]-float_registers[rs2];
+                        float_registers[rd]=fsub_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
                     case 0b0000101:
-                        printf("FSUB.D\n");
-                        float_registers[rd]=float_registers[rs1]-float_registers[rs2];
+                        /*printf("FSUB.D\n");
+                        float_registers[rd]=float_registers[rs1]-float_registers[rs2];*/
                         break;
                     case 0b0001000:
                         printf("FMUL.S\n");
-                        float_registers[rd]=float_registers[rs1]*float_registers[rs2];
+                        float_registers[rd]=fmul_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
                     case 0b0001001:
-                        printf("FMUL.D\n");
+                        /*printf("FMUL.D\n");
                         float_registers[rd]=float_registers[rs1]*float_registers[rs2];
-                        break;
+                        break;*/
                     case 0b0001100:
                         printf("FDIV.S\n");
-                        float_registers[rd]=float_registers[rs1]*float_registers[rs2];
+                        float_registers[rd]=fdiv_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
                     case 0b0001101:
-                        printf("FDIV.D\n");
+                        /*printf("FDIV.D\n");
                         float_registers[rd]=float_registers[rs1]*float_registers[rs2];
-                        break;
+                        break;*/
                     case 0b0101100:
                         if(extract(*buf_int, 31,25)==0b00000){
                             printf("FSQRT.S\n");
-                            float_registers[rd]=sqrt(float_registers[rs1]);
+                            float_registers[rd]=fsqrt_c(float_registers[rs1],stage);
                             break;
                         }
                         break;
                     case 0b0101101:
                         if(extract(*buf_int, 31,25)==0b00000){
-                            printf("FSQRT.D\n");
+                            /*printf("FSQRT.D\n");
                             float_registers[rd]=sqrt(float_registers[rs1]);
-                            break;
+                            break;*/
                         }
                         break;
                     case 0b0010000:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
                                 printf("FSGNJ.S\n");
-                                if(float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                float_registers[rd]= fsgnj_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                             case 0b001:
                                 printf("FSGNJN.S\n");
-                                if(float_registers[rs2]<0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                float_registers[rd]= fsgnjn_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                             case 0b010:
                                 printf("FSGNJX.S\n");
-                                if(float_registers[rs2]>0 &&  float_registers[rs2]<0 || float_registers[rs2]<0 &&  float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                float_registers[rd]= fsgnjx_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                         }
                         break;
                     case 0b0010001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                printf("FSGNJ.D\n");
+                                /*printf("FSGNJ.D\n");
                                 if(float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                else float_registers[rd]= -abs(float_registers[rs1]);*/
                                 break;
                             case 0b001:
-                                printf("FSGNJN.D\n");
+                                /*printf("FSGNJN.D\n");
                                 if(float_registers[rs2]<0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                else float_registers[rd]= -abs(float_registers[rs1]);*/
                                 break;
                             case 0b010:
-                                printf("FSGNJX.D\n");
+                                /*printf("FSGNJX.D\n");
                                 if(float_registers[rs2]>0 &&  float_registers[rs2]<0 || float_registers[rs2]<0 &&  float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);
+                                else float_registers[rd]= -abs(float_registers[rs1]);*/
                                 break;
                         }
                         break;
@@ -719,28 +717,26 @@ void handle_instruction(char* buf, int stage){
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
                                 printf("FMIN.S\n");
-                                if(float_registers[rs1]<float_registers[rs2]) float_registers[rd]=float_registers[rs1];
-                                else float_registers[rd]=float_registers[rs2];
+                                float_registers[rd]=fmin_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b001:
                                 printf("FMAX.S\n");
-                                if(float_registers[rs1]>float_registers[rs2]) float_registers[rd]=float_registers[rs1];
-                                else float_registers[rd]=float_registers[rs2];
+                                float_registers[rd]=fmax_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                         } 
                         break;
                     case 0b0010101:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                printf("FMIN.D\n");
+                                /*printf("FMIN.D\n");
                                 if(float_registers[rs1]<float_registers[rs2]) float_registers[rd]=float_registers[rs1];
                                 else float_registers[rd]=float_registers[rs2];
-                                break;
+                                break;*/
                             case 0b001:
-                                printf("FMAX.D\n");
+                                /*printf("FMAX.D\n");
                                 if(float_registers[rs1]>float_registers[rs2]) float_registers[rd]=float_registers[rs1];
                                 else float_registers[rd]=float_registers[rs2];
-                                break;
+                                break;*/
                         } 
                         break;
                     case 0b1100000:
@@ -748,11 +744,11 @@ void handle_instruction(char* buf, int stage){
                             case 0b00000:
                                 printf("FCVT.W.S\n");
                                 int rm=extract(*buf_int, 14,12);
-                                int_registers[rd]=(int)float_registers[rs1];
+                                int_registers[rd]=fcvt_w_c(float_registers[rs1],stage);
                                 break;
                             case 0b00001:
                                 printf("FCVT.WU.S\n");
-                                int_registers[rd]=(unsigned int)float_registers[rs1];
+                                int_registers[rd]=fcvt_wu_c(float_registers[rs1],stage);
                                 break;
                         } 
                         break;
@@ -760,7 +756,7 @@ void handle_instruction(char* buf, int stage){
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
                                 if(extract(*buf_int, 24,20)==0b00000){
-                                    printf("FMV.X.W\n");
+                                    printf("FMV.X.W\n"); //Still soft implemented
                                     union f_ui
                                     {
                                         unsigned int ui;
@@ -782,15 +778,15 @@ void handle_instruction(char* buf, int stage){
                         switch(extract(*buf_int, 14,12)){
                             case 0b010:
                                 printf("FEQ.S\n");
-                                int_registers[rd]= (float_registers[rs1]==float_registers[rs2]);
+                                int_registers[rd]= feq_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b001:
                                 printf("FLT.S\n");
-                                int_registers[rd]= (float_registers[rs1]<float_registers[rs2]);
+                                int_registers[rd]= flt_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b000:
                                 printf("FLE.S\n");
-                                int_registers[rd]= (float_registers[rs1]<=float_registers[rs2]);
+                                int_registers[rd]= fle_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                         } 
                         break;
@@ -798,18 +794,18 @@ void handle_instruction(char* buf, int stage){
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
                                 printf("FCVT.S.W\n");
-                                float_registers[rd]=(int)int_registers[rs1];
+                                float_registers[rd]=fcvt_s_w_c(int_registers[rs1],stage);
                                 break;
                             case 0b00001:
                                 printf("FCVT.S.WU\n");
-                                float_registers[rd]=(unsigned int)int_registers[rs1];
+                                float_registers[rd]=fcvt_s_wu_c(int_registers[rs1],stage);
                                 break;
                         } 
                         break;
                     case 0b1111000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                printf("FMV.W.X\n");
+                                printf("FMV.W.X\n");//Still Soft Implemented
                                 union f_ui
                                     {
                                         unsigned int ui;
@@ -840,17 +836,17 @@ void handle_instruction(char* buf, int stage){
                     case 0b1010001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b010:
-                                printf("FEQ.D\n");
+                               /* printf("FEQ.D\n");
                                 int_registers[rd]= (float_registers[rs1]==float_registers[rs2]);
-                                break;
+                                break;*/
                             case 0b001:
-                                printf("FLT.D\n");
+                                /*printf("FLT.D\n");
                                 int_registers[rd]= (float_registers[rs1]<float_registers[rs2]);
-                                break;
+                                break;*/
                             case 0b000:
-                                printf("FLE.D\n");
+                                /*printf("FLE.D\n");
                                 int_registers[rd]= (float_registers[rs1]<=float_registers[rs2]);
-                                break;
+                                break;*/
                         } 
                         break;
                     case 0b1110001:
