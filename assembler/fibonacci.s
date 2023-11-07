@@ -1,3 +1,6 @@
+.data int, 2
+.data uint, 5
+.data char, 7
 main: 
   li t3, 20              # int n=10; 'li' converted to 'addi'
   li t4,1

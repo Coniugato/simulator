@@ -19,6 +19,10 @@ char label[100000];
 char opcode[100000];
 char oprand[10][100000];
 
+char globals[100000000];
+unsigned long long s_globals=0;
+
+
 void clear(){
   label[0]='\0';
   opcode[0]='\0';
@@ -42,10 +46,17 @@ void print_debug(){
 }
 
 void mid_print(FILE* f){
+  
   if(label[0]!='\0'){
+
+    printf("%s %d\n", label, n_inst);
     labels=insert(labels, label, n_inst, 1);
   }
+
   
+  if(strcmp(opcode, "lim")==0) n_inst+=4;
+  if(opcode[0]=='.') n_inst-=4;
+
   if(opcode[0]!='\0'){
     fprintf(f, "INST %s ", opcode);
   }
@@ -197,17 +208,84 @@ int main(int argc, char *argv[]){
     int outd;
 
     
-    if((outd=open(dst,O_WRONLY | O_CREAT | O_TRUNC))<0){
+    if((outd=open(".mid_binary",O_WRONLY | O_CREAT | O_TRUNC))<0){
             perror("ERROR: cannot open source file"); exit(1);
     }
     while (fscanf(f, "%s", buf) != EOF){
         if(strcmp(buf, "INST")==0){
-            assemble(f, outd, addr, labels);
-            addr+=4;
+            int offset = assemble(f, outd, addr, labels);
+            addr+=offset;
             //printf("%d\n", addr);
         }
     }
 
+    
+    fclose(f);
+
+    if((f = fopen(".mid_expression", "r")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+        exit(1);
+    }
+
+
+    if((outd=open(dst,O_WRONLY | O_CREAT | O_TRUNC))<0){
+            perror("ERROR: cannot open source file"); exit(1);
+    }
+
+    #define N_ADD_INST 7
+    //gp initialization
+    char char_inst[4];
+    int* int_inst=char_inst;
+    int rd = 3;
+    unsigned long imm = addr+4*N_ADD_INST;
+    *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+    writeall(outd, char_inst, 4);
+    imm = invsext(addr+4*N_ADD_INST, 12);
+    *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
+    writeall(outd, char_inst, 4);
+    //hp initialization
+    rd = 4;
+    imm = addr+4*N_ADD_INST+((s_globals%4==0) ? s_globals : (s_globals/4*4+4));
+    //printf("%d %d\n", s_globals, ((s_globals%4==0) ? s_globals : (s_globals/4+4)));
+    *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+    writeall(outd, char_inst, 4);
+    imm = invsext(imm, 12);
+    *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
+    writeall(outd, char_inst, 4);
+    //sp initialization
+    rd = 2;
+    imm = ((1<<27)-1);
+    *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+    writeall(outd, char_inst, 4);
+    imm = invsext(imm, 12);
+    *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
+    writeall(outd, char_inst, 4);
+
+    addr=0;
+    s_globals=0;
+
+    while (fscanf(f, "%s", buf) != EOF){
+        if(strcmp(buf, "INST")==0){
+            int offset = assemble(f, outd, addr, labels);
+            addr += offset;
+        }
+    }
+
+    unsigned long offset = 0;
+    unsigned int conv_offset = (extract(offset, 10, 1) << 21) + (extract(offset, 11, 11) << 20) + (extract(offset, 20, 20) << 31) + (extract(offset, 19, 12) << 12);
+    *int_inst = conv_offset + 0b1101111;
+    writeall(outd, char_inst, 4);
+
+    int ib=0;
+    for(ib=0; ib<s_globals; ib++){
+      //printf("%x ", globals[ib]);
+      writeall(outd, globals+ib, 1);
+    }
+    int tmpbuf=0;
+    //printf("%d\n", s_globals);
+    for(ib=0; ib<(4-s_globals%4); ib++){
+      writeall(outd, &tmpbuf, 1);
+    }
     
     fclose(f);
 
