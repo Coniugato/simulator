@@ -24,7 +24,7 @@
 #define I_LEN_LINE (1<<I_LEN_OFFSET)
 
 
-char memory[40000000];
+char memory[134217727];
 char cache[N_WAYS][N_LINE][LEN_LINE];
 unsigned int ctag[N_WAYS][N_LINE];
 char flag[N_WAYS][N_LINE];
@@ -39,6 +39,7 @@ int int_registers[32];
 float float_registers[32];
 
 int quit=0;
+int end=0;
 
 unsigned long long Dcache_hit=0, Dcache_miss=0, Icache_miss=0, Icache_hit=0;
 
@@ -506,7 +507,8 @@ void handle_instruction(char* buf, int stage){
                 rd=extract(*buf_int, 11,7);
                 offset=(extract(*buf_int, 31,31)<<20)+(extract(*buf_int, 19,12)<<12)+(extract(*buf_int, 20,20)<<11)+(extract(*buf_int, 30,21)<<1);
                 //printf("%lld, %lld %lld %lld\n", extract(*buf_int, 31,31)<<20, extract(*buf_int, 19,12)<<12, extract(*buf_int, 20,20)<<11,extract(*buf_int, 30,21)<<1);
-                printf("%lld, %lld, %lld\n", offset, sext(offset, 21));
+                printf("%lld, %lld, %lld\n", rd, offset, sext(offset, 21));
+                if(rd==0 && offset==0) end=1;
                 int_registers[rd]=pc+4;
                 pc+=sext(offset, 21);
                 pc_flag=1;
@@ -539,7 +541,7 @@ void handle_instruction(char* buf, int stage){
                         if(int_registers[rs1]!=int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b100:
-                        printf("BLT\n");
+                        printf("BLT x%d x%d %d\n", rs1, rs2, offset);
                         if(int_registers[rs1]<int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b101:
@@ -1359,7 +1361,10 @@ int main(int argc, char *argv[]){
         int_registers[0]=0;
         if(pc_flag==0) pc+=4;
 
-
+        if(end==1){
+            printf("\rexit detected.\n");
+            break;
+        }
 
 
         //for display
@@ -1376,7 +1381,10 @@ int main(int argc, char *argv[]){
             if((i+1)%4==0) printf("\n");
             else printf(" "); 
         }
-        
+
+
+        //printf("%d\n",end);
+
 
         if(skip!=0){
             if(skip>0) skip--;
@@ -1393,6 +1401,7 @@ int main(int argc, char *argv[]){
             break;
         }
         printf("\n\n\n");
+
     }
     if(quit!=1){
         printf("simulation normally terminated.\n");

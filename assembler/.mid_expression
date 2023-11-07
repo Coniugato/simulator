@@ -1,9 +1,18 @@
-INST li a0 100 END
-INST li a1 0 END
-INST li a2 10 END
-INST sw a0 0 a1 END
-INST addi a1 a1 1 END
-INST lui a3 65536 END
-INST addi a3 a3 65536 END
-INST add a0 a0 a3 END
-INST blt a1 a2 LOOP END
+INST .data int 2 END
+INST .data uint 5 END
+INST .data char 7 END
+INST li t3 20 END
+INST li t4 1 END
+INST blt t4 t3 L1 END
+INST mv t4 t3 END
+INST j L3 END
+INST li t4 1 END
+INST li t5 1 END
+INST li t0 2 END
+INST bge t0 t3 L3 END
+INST mv t6 t4 END
+INST add t4 t4 t5 END
+INST mv t5 t6 END
+INST addi t0 t0 1 END
+INST j L2 END
+INST mv a0 t4 END
