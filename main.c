@@ -1372,7 +1372,39 @@ void handle_instruction(char* buf, int stage){
             case 0b11011: 
                 rd=extract(*buf_int, 11,7);
                 offset=(extract(*buf_int, 31,31)<<20)+(extract(*buf_int, 19,12)<<12)+(extract(*buf_int, 20,20)<<11)+(extract(*buf_int, 30,21)<<1);
-                printf("JAL (MEM[x%d+%d])[31:0] <- x%d\n", rs1, offset, rs2);
+                printf("JAL x%d <- PC+4; PC <- PC + %d\n", rd, offset);
+                switch(stage){
+                            case IFS:
+                                new_ireg_rf=*buf_int;
+                                break;
+                            case RFS:
+                                new_ireg_ex=*buf_int;
+                                break;
+                            case EXS:
+                                new_ireg_ma=*buf_int;
+                                nextpc=pc_ex+sext(offset, 21);
+                                pc_flag=1;
+                                break;
+                            case MAS:
+                                new_ireg_wb=*buf_int;
+                                break;
+                            case WBS:
+                                //for simulator
+                                int_registers[rd]=pc_wb+4;
+                                if(rd==0 && offset==0) end=1;
+                                break;
+                }
+                //printf("%lld, %lld %lld %lld\n", extract(*buf_int, 31,31)<<20, extract(*buf_int, 19,12)<<12, extract(*buf_int, 20,20)<<11,extract(*buf_int, 30,21)<<1);
+                //printf("%lld, %lld, %lld\n", rd, offset, sext(offset, 21));
+                
+                //int_registers[rd]=pc+4;
+                //nextpc=pc_ex+sext(offset, 21);
+                //pc_flag=1;
+                break;
+            case 0b11001: 
+                switch(extract(*buf_int, 14,12)){
+                    case 0b000:
+                        printf("JALR x%d <- PC+4; PC <- x%d + %d\n", rd, rs1, offset);
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1380,36 +1412,23 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
-                                        new_rrs2=invsext(int_registers[rs2],32);
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
-                                        new_rcalc=rrs1+sext(offset,12);
-                                        new_m_data=rrs2;
+                                        nextpc=(rrs1+sext(offset, 21))&(~1);
+                                        pc_flag=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
-                                        *(unsigned int*) memory_access(rcalc,1)=extract(m_data, 31,0);
                                         break;
                                     case WBS:
+                                        int_registers[rd]=pc_wb+4;
                                         break;
-                                }
-
-                //printf("%lld, %lld %lld %lld\n", extract(*buf_int, 31,31)<<20, extract(*buf_int, 19,12)<<12, extract(*buf_int, 20,20)<<11,extract(*buf_int, 30,21)<<1);
-                printf("%lld, %lld, %lld\n", rd, offset, sext(offset, 21));
-                if(rd==0 && offset==0) end=1;
-                int_registers[rd]=pc+4;
-                pc+=sext(offset, 21);
-                pc_flag=1;
-                break;
-            case 0b11001: 
-                switch(extract(*buf_int, 14,12)){
-                    case 0b000:
-                        printf("JALR\n");
-                        int t=pc+4;
-                        pc_flag=1;
-                        pc=(int_registers[rs1]+sext(offset, 12))&~1;
-                        int_registers[rd]=t;
+                        }
+                        //int t=pc+4;
+                        //pc_flag=1;
+                        //pc=(int_registers[rs1]+sext(offset, 12))&~1;
+                        //int_registers[rd]=t;
                         break;
                 }   
                 break;
@@ -1422,28 +1441,148 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 14,12)){
                     
                     case 0b000:
-                        printf("BEQ\n");
-                        if(int_registers[rs1]==int_registers[rs2]){ pc+=offset; pc_flag=1;}
+                        printf("BEQ PC <- (x%d==x%d) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(rrs1==rrs2) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if(int_registers[rs1]==int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b001:
-                        printf("BNE\n");
-                        if(int_registers[rs1]!=int_registers[rs2]){ pc+=offset; pc_flag=1;}
+                        printf("BNE PC <- (x%d!=x%d) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(rrs1!=rrs2) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if(int_registers[rs1]!=int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b100:
-                        printf("BLT x%d x%d %d\n", rs1, rs2, offset);
-                        if(int_registers[rs1]<int_registers[rs2]){ pc+=offset; pc_flag=1;}
+                        printf("BLT PC <- (x%d<x%d) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(sext(rrs1,32)<sext(rrs2,32)) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if(int_registers[rs1]<int_registers[rs2]){ pc+=offset; pc_flag=1;}
                         break;
                     case 0b101:
-                        printf("BGE\n");
-                        if(int_registers[rs1]>=int_registers[rs2]) { pc+=offset; pc_flag=1;}
+                        printf("BGE PC <- (x%d>=x%d) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(sext(rrs1,32)>=sext(rrs2,32)) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if(int_registers[rs1]>=int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                     case 0b110:
-                        printf("BLTU\n");
-                        if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
+                        printf("BLTU PC <- (u(x%d)<u(x%d)) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(rrs1<rrs2) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                     case 0b111:
-                        printf("BGEU\n");
-                        if((unsigned int)int_registers[rs1]>=(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
+                        printf("BGEU PC <- (u(x%d)>=u(x%d)) ? PC+%d : PC+4\n", rs1, rs2, offset);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(sext(rrs1,32)>=sext(rrs2,32)) nextpc=pc_ex+offset;
+                                        pc_flag=1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        break;
+                                    case WBS:
+                                        break;
+                        }
+                        //if((unsigned int)int_registers[rs1]>=(unsigned int)int_registers[rs2]) { pc+=offset; pc_flag=1;}
                         break;
                 }   
                 break;
