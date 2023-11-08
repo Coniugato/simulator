@@ -56,6 +56,15 @@ unsigned int new_ireg_ex=0;
 unsigned int new_ireg_ma=0;
 unsigned int new_ireg_wb=0;
 
+unsigned int pc_rf=0;
+unsigned int pc_ex=0;
+unsigned int pc_ma=0;
+unsigned int pc_wb=0;
+unsigned int new_pc_rf=0;
+unsigned int new_pc_ex=0;
+unsigned int new_pc_ma=0;
+unsigned int new_pc_wb=0;
+
 unsigned int rrs1=0;
 unsigned int rrs2=0;
 unsigned int new_rrs1=0;
@@ -313,15 +322,19 @@ void handle_instruction(char* buf, int stage){
     switch(stage){
         case IFS:
             printf("(IF stage)\n");
+            new_pc_rf=pc;
             break;
         case RFS:
             printf("(RF stage)\n");
+            new_pc_ex=pc_rf;
             break;
         case EXS:
             printf("(EX stage)\n");
+            new_pc_ma=pc_ex;
             break;
         case MAS:
             printf("(MA stage)\n");
+            new_pc_wb=pc_ma;
             break;
         case WBS:
             printf("(WB stage)\n");
@@ -382,7 +395,7 @@ void handle_instruction(char* buf, int stage){
                         break;
                     case EXS:
                         new_ireg_ma=*buf_int;
-                        new_rcalc=invsext(pc,32)+imm<<12;
+                        new_rcalc=invsext(pc_ex,32)+imm<<12;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -782,78 +795,361 @@ void handle_instruction(char* buf, int stage){
                     case 0b010:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("SLT\n");
-                                if(int_registers[rs1]<int_registers[rs2]) int_registers[rd]=int_registers[rs1];
-                                else int_registers[rd]=0;
+                                printf("SLT x%d <- (x%d < x%d) ? x%d : 0\n", rd, rs1, rs2, rs1);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(sext(rrs1,32)<sext(rrs2,32)) new_cond=1;
+                                        else new_cond=0;
+                                        new_rcalc=rrs1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_cond_wb=cond;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //if(int_registers[rs1]<int_registers[rs2]) int_registers[rd]=int_registers[rs1];
+                                //else int_registers[rd]=0;
                                 break;
                             case 0b0000001:
-                                printf("MULHSU\n");
-                                int_registers[rd]=((long long)int_registers[rs1]*(unsigned long long)int_registers[rs2])>>32;
+                                printf("MULHSU x%d <- x%d * u(x%d) >> 32 \n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=(sext(rrs1,32)*rrs2)>>32;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=((long long)int_registers[rs1]*(unsigned long long)int_registers[rs2])>>32;
                                 break;
                         }
                         break;
                     case 0b011:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("SLTU\n");
-                                if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) int_registers[rd]=int_registers[rs1];
-                                else int_registers[rd]=0;
+                                printf("SLTU x%d <- (u(x%d) < u(x%d)) ? x%d : 0\n", rd, rs1, rs2, rs1);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        if(rrs1<rrs2) new_cond=1;
+                                        else new_cond=0;
+                                        new_rcalc=rrs1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_cond_wb=cond;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) int_registers[rd]=int_registers[rs1];
+                                //else int_registers[rd]=0;
                                 break;
                             case 0b0000001:
                                 printf("MULHU\n");
-                                int_registers[rd]=((unsigned long long)int_registers[rs1]*(unsigned long long)int_registers[rs2])>>32;
+                                printf("MULHSU x%d <- u(x%d) * u(x%d) >> 32 \n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=(rrs1*rrs2)>>32;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=((unsigned long long)int_registers[rs1]*(unsigned long long)
+                                //int_registers[rs2])>>32;
                                 break;
                         }
                         break;
                     case 0b100:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("XOR\n");
-                                int_registers[rd]=int_registers[rs1]^int_registers[rs2];
+                                printf("XOR x%d <- x%d ^ x%d\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)^sext(rrs2,32),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //printf("XOR\n");
+                                //int_registers[rd]=int_registers[rs1]^int_registers[rs2];
                                 break;
                             case 0b0000001:
-                                printf("XOR\n");
-                                int_registers[rd]=int_registers[rs1]/int_registers[rs2];
+                                printf("DIV x%d <- x%d / x%d\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)/sext(rrs2,32),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]/int_registers[rs2];
                                 break;
                         }
                         break;
                     case 0b101:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("SRL\n");
-                                int_registers[rd]=int_registers[rs1]>>extract(int_registers[rs2],4,0);
+                                printf("SRL x%d <- u(x%d) >> x%d[4:0]\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1>>extract(rrs2,4,0);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]>>extract(int_registers[rs2],4,0);
                                 break;
                             case 0b0100000:
-                                printf("SRA\n");
-                                int_registers[rd]=(int) ((unsigned int) int_registers[rs1]>>extract(int_registers[rs2],4,0));
+                                printf("SRA x%d <- x%d >> x%d[4:0]\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)>>extract(rrs2,4,0),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=(int) ((unsigned int) int_registers[rs1]>>extract(int_registers[rs2],4,0));
                                 break;
                             case 0b0000001:
-                                printf("DIVU\n");
-                                int_registers[rd]=int_registers[rs1]*(unsigned int)int_registers[rs2];
+                                printf("DIVU x%d <- u(x%d) / u(x%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1/rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]*(unsigned int)int_registers[rs2];
                                 break;
                         }
                         break;
                     case 0b110:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("OR\n");
-                                int_registers[rd]=int_registers[rs1]|int_registers[rs2];
+                                printf("OR x%d <- x%d | x%d\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)|sext(rrs2,32),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]|int_registers[rs2];
                                 break;
                             case 0b0000001:
-                                printf("REM\n");
-                                int_registers[rd]=int_registers[rs1]%int_registers[rs2];
+                                printf("REM x%d <- %d %% %d\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)%sext(rrs2,32),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]%int_registers[rs2];
                                 break;
                         }
                         break;
                     case 0b111:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                printf("AND\n");
-                                int_registers[rd]=int_registers[rs1]&int_registers[rs2];
+                                printf("AND x%d <- x%d & x%d\n");
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=invsext(sext(rrs1,32)&sext(rrs2,32),32);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]&int_registers[rs2];
                                 break;
                             case 0b0000001:
                                 printf("REMU\n");
-                                int_registers[rd]=int_registers[rs1]%(unsigned int)int_registers[rs2];
+                                printf("REMU x%d <- u(%d) %% u(%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1%rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                                //int_registers[rd]=int_registers[rs1]%(unsigned int)int_registers[rs2];
                                 break;
                         }
                         break;
@@ -867,24 +1163,126 @@ void handle_instruction(char* buf, int stage){
                 //printf("%d %d\n", rd, rs1);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
-                        printf("LB\n");
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 7,0),8);
+                        printf("LB x%d <- (MEM[x%d+%d])[7:0]\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,8);
+                                        break;
+                                }
+                        //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 7,0),8);
                         break;
                     case 0b001:
-                        printf("LH\n");
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 15,0),16);
+                        printf("LH x%d <- (MEM[x%d+%d])[15:0]\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,16);
+                                        break;
+                                }
+                        //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 15,0),16);
                         break;
                     case 0b010:
-                        printf("LW x%d x%d(%lld)\n", rd, rs1, sext(offset, 12));
-                        int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);
+                        intf("LW x%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 31,0),8);
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=sext(wb,32);
+                                        break;
+                                }
+                        //printf("LW x%d x%d(%lld)\n", rd, rs1, sext(offset, 12));
+                        //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);
                         break;
                     case 0b100:
-                        printf("LBU\n");
-                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 7,0);
+                        printf("LBU x%d <- u((MEM[x%d+%d])[7:0])\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=wb;
+                                        break;
+                                }
+                        //int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 7,0);
                         break;
                     case 0b101:
-                        printf("LHU\n");
-                        int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 15,0);
+                        //printf("LHU\n");
+                        printf("LHU x%d <- u((MEM[x%d+%d])[15:0])\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=wb;
+                                        break;
+                                }
+                        //int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 15,0);
                         break;
                 }  
                 break;
@@ -894,23 +1292,109 @@ void handle_instruction(char* buf, int stage){
                 offset=(extract(*buf_int, 31,25)<<5)+extract(*buf_int, 11,7);;
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
-                        printf("SB\n");
-                        *(unsigned char*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 7,0);
+                        printf("SB (MEM[x%d+%d])[7:0] <- x%d\n", rs1, offset, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        new_m_data=rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        *(unsigned char*) memory_access(rcalc,1)=extract(m_data, 7,0);
+                                        break;
+                                    case WBS:
+                                        break;
+                                }
+                        //*(unsigned char*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 7,0);
                         break;
                     case 0b001:
                         printf("SH\n");
-                        *(unsigned short*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 15,0);
+                        printf("SB (MEM[x%d+%d])[15:0] <- x%d\n", rs1, offset, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        new_m_data=rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        *(unsigned short*) memory_access(rcalc,1)=extract(m_data, 15,0);
+                                        break;
+                                    case WBS:
+                                        break;
+                                }
+                                //*(unsigned short*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 15,0);
                         break;
                     case 0b010:
-                        printf("SW x%d(%d) x%d\n", rs1, offset, rs2);
-                        *(unsigned int*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 31,0);
+                        printf("SW (MEM[x%d+%d])[31:0] <- x%d\n", rs1, offset, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        new_m_data=rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        *(unsigned int*) memory_access(rcalc,1)=extract(m_data, 31,0);
+                                        break;
+                                    case WBS:
+                                        break;
+                                }
+                                //*(unsigned int*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 31,0);
                         break;
                 }   
                 break;
             case 0b11011: 
-                printf("JAL\n");
                 rd=extract(*buf_int, 11,7);
                 offset=(extract(*buf_int, 31,31)<<20)+(extract(*buf_int, 19,12)<<12)+(extract(*buf_int, 20,20)<<11)+(extract(*buf_int, 30,21)<<1);
+                printf("JAL (MEM[x%d+%d])[31:0] <- x%d\n", rs1, offset, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        new_rrs2=invsext(int_registers[rs2],32);
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        new_m_data=rrs2;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        *(unsigned int*) memory_access(rcalc,1)=extract(m_data, 31,0);
+                                        break;
+                                    case WBS:
+                                        break;
+                                }
+
                 //printf("%lld, %lld %lld %lld\n", extract(*buf_int, 31,31)<<20, extract(*buf_int, 19,12)<<12, extract(*buf_int, 20,20)<<11,extract(*buf_int, 30,21)<<1);
                 printf("%lld, %lld, %lld\n", rd, offset, sext(offset, 21));
                 if(rd==0 && offset==0) end=1;
@@ -1780,6 +2264,11 @@ int main(int argc, char *argv[]){
         ireg_ma=new_ireg_ma;
         ireg_ex=new_ireg_ex;
         ireg_wb=new_ireg_wb;
+        pc_rf=new_pc_rf;
+        pc_ma=new_pc_ma;
+        pc_ex=new_pc_ex;
+        pc_wb=new_pc_wb;
+        
         rrs1=new_rrs1;
         rrs2=new_rrs2;
         m_addr=new_m_addr;
@@ -1801,7 +2290,7 @@ int main(int argc, char *argv[]){
 
         //for display
         if(runmode==1) continue;
-        printf("PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
+        printf("Main PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
         int i;
         for(i=0; i<32; i++){
             printf("\t\x1b[35mx%d\x1b[0m: \t%lld", i, int_registers[i]);
