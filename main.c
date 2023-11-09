@@ -67,8 +67,21 @@ unsigned int new_pc_wb=0;
 
 unsigned int rrs1=0;
 unsigned int rrs2=0;
+unsigned int rrs3=0;
+
+unsigned int irs1=-1;
+unsigned int irs2=-1;
+unsigned int irs3=-1;
+unsigned int frs1=-1;
+unsigned int frs2=-1;
+unsigned int frs3=-1;
+
+unsigned int ird=-2;
+unsigned int frd=-2;
+
 unsigned int new_rrs1=0;
 unsigned int new_rrs2=0;
+unsigned int new_rrs3=0;
 
 unsigned int rcalc=0;
 unsigned int new_rcalc=0;
@@ -99,6 +112,12 @@ unsigned long long IcacheAccessClk=1;
 unsigned long long Dcache_DRAMAccessClk=100;
 unsigned long long Icache_DRAMAccessClk=100;
 
+unsigned long long delay_IF=0;
+unsigned long long delay_RF=0;
+unsigned long long delay_EX=0;
+unsigned long long delay_MA=0;
+unsigned long long delay_WB=0;
+
 //NOTE: from >= to
 unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to){
   return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
@@ -119,6 +138,28 @@ unsigned long long invsext(long long input, unsigned long long n_dights){
   }
   else return input;
 } 
+
+unsigned int F2I(float input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.f=input;
+    return fui.ui;
+}
+
+float I2F(unsigned int input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.ui=input;
+    return fui.f;
+}
 
 char* memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
@@ -149,10 +190,10 @@ char* memory_access(unsigned long long addr, int wflag){
             break;
         }
     }
-    clk+=DcacheAccessClk;
+    //clk+=DcacheAccessClk;
     if(way_found==-1){
         Dcache_miss++;
-        clk+=Dcache_DRAMAccessClk;
+        //clk+=Dcache_DRAMAccessClk;
         int tmp=0;
         for(way=0; way<N_WAYS; way++){
             int rank=extract(flag[way][index],4,1);
@@ -233,9 +274,9 @@ char* i_memory_access(unsigned long long addr, int wflag){
             break;
         }
     } //printf("@@@%d\n", ctag[1][6]);
-    clk+=IcacheAccessClk;
+    //clk+=IcacheAccessClk;
     if(way_found==-1){
-        clk+=Icache_DRAMAccessClk;
+        //clk+=Icache_DRAMAccessClk;
         Icache_miss++;
         int tmp=0;
         for(way=0; way<I_N_WAYS; way++){
@@ -317,7 +358,7 @@ long long int convsext(unsigned long long input, int from, int to){
     return invsext(sext(input,from),to);
 }
 
-void handle_instruction(char* buf, int stage){
+void handle_instruction(char* buf, int stage, int stall){
     printf("\n");
     switch(stage){
         case IFS:
@@ -353,10 +394,11 @@ void handle_instruction(char* buf, int stage){
     for(i=0; i<32; i+=4){
         printf("%0llx", extract(*buf_int, 31-i,28-i));
         if(i%8!=0) printf(" ");
-    }
+    }/
     printf("\n");
     printf("Instruction: ");
     //printf("%llx\n", extract(*buf_int, 1,0));
+    if(stall==1) stage=-1;
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
@@ -373,6 +415,8 @@ void handle_instruction(char* buf, int stage){
                     case EXS:
                         new_ireg_ma=*buf_int;
                         new_rcalc=imm<<12;
+                        ird=rd;
+                        rrd=new_rcalc;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -396,6 +440,8 @@ void handle_instruction(char* buf, int stage){
                     case EXS:
                         new_ireg_ma=*buf_int;
                         new_rcalc=invsext(pc_ex,32)+imm<<12;
+                        ird=rd;
+                        rrd=new_rcalc;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -420,10 +466,13 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 new_rcalc=invsext(sext(rrs1,32)+sext(imm,12),32);
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -444,12 +493,15 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 if(sext(rrs1,32)<sext(imm,12)) new_cond=1;
                                 else new_cond=0;
                                 new_rcalc=rrs1;
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -475,12 +527,15 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 if(rrs1<imm) new_cond=1;
                                 else new_cond=0;
                                 new_rcalc=rrs1;
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -506,10 +561,13 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 new_rcalc=invsext(sext(rrs1,32)^sext(imm,12),32);
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -530,10 +588,13 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 new_rcalc=invsext(sext(rrs1,32)|sext(imm,12),32);
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -554,10 +615,13 @@ void handle_instruction(char* buf, int stage){
                             case RFS:
                                 new_ireg_ex=*buf_int;
                                 new_rrs1=invsext(int_registers[rs1],32);
+                                irs1=rs1;
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
                                 new_rcalc=invsext(sext(rrs1,32)&sext(imm,12),32);
+                                ird=rd;
+                                rrd=new_rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -581,10 +645,13 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1<<shamt;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -610,10 +677,13 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1>>shamt;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -639,6 +709,8 @@ void handle_instruction(char* buf, int stage){
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)>>shamt,32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -671,10 +743,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+rrs2;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -696,10 +772,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)-sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -721,10 +801,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -750,10 +834,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1<<rrs2;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -775,10 +863,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32)>>32,32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -804,12 +896,16 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs2;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         if(sext(rrs1,32)<sext(rrs2,32)) new_cond=1;
                                         else new_cond=0;
                                         new_rcalc=rrs1;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -833,10 +929,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=(sext(rrs1,32)*rrs2)>>32;
+                                        ird=rd;
+                                        rrd=new_rcalc;  
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -862,12 +962,16 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         if(rrs1<rrs2) new_cond=1;
                                         else new_cond=0;
                                         new_rcalc=rrs1;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -892,10 +996,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=(rrs1*rrs2)>>32;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -922,10 +1030,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)^sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -948,10 +1060,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)/sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -977,10 +1093,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1>>extract(rrs2,4,0);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1002,10 +1122,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)>>extract(rrs2,4,0),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1027,10 +1151,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1/rrs2;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1056,10 +1184,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)|sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1081,10 +1213,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)%sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1110,10 +1246,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=invsext(sext(rrs1,32)&sext(rrs2,32),32);
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1136,10 +1276,14 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1%rrs2;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1171,17 +1315,22 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
+                                        ird=rd;
+                                        ldhzd=-1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
+                                        if(ldhzd==1) ldhzd=2;
                                         break;
                                     case WBS:
                                         int_registers[rd]=sext(wb,8);
+                                        if(ldhzd==2) ldhzd=0;
                                         break;
                                 }
                         //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 7,0),8);
@@ -1195,23 +1344,29 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
+                                        ird=rd;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
+                                        ird=rd;
+                                        ldhzd=-1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
+                                        if(ldhzd==1) ldhzd=2;
                                         break;
                                     case WBS:
                                         int_registers[rd]=sext(wb,16);
+                                        if(ldhzd==2) ldhzd=0;
                                         break;
                                 }
                         //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 15,0),16);
                         break;
                     case 0b010:
-                        intf("LW x%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
+                        printf("LW x%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1219,21 +1374,25 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
+                                        ldhzd=-1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 31,0),8);
+                                        if(ldhzd==1) ldhzd=2;
                                         break;
                                     case WBS:
                                         int_registers[rd]=sext(wb,32);
+                                        if(ldhzd==2) ldhzd=0;
                                         break;
                                 }
                         //printf("LW x%d x%d(%lld)\n", rd, rs1, sext(offset, 12));
-                        //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);
+                        //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);//cocotb
                         break;
                     case 0b100:
                         printf("LBU x%d <- u((MEM[x%d+%d])[7:0])\n", rd, rs1, sext(offset,12));
@@ -1244,17 +1403,22 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
+                                        ird=rd;
+                                        ldhzd=-1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
+                                        if(ldhzd==1) ldhzd=2;
                                         break;
                                     case WBS:
                                         int_registers[rd]=wb;
+                                        if(ldhzd==2) ldhzd=0;
                                         break;
                                 }
                         //int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 7,0);
@@ -1273,13 +1437,17 @@ void handle_instruction(char* buf, int stage){
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
+                                        ird=rd;
+                                        ldhzd=-1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
+                                        if(ldhzd==1) ldhzd=2;
                                         break;
                                     case WBS:
                                         int_registers[rd]=wb;
+                                        if(ldhzd==2) ldhzd=0;
                                         break;
                                 }
                         //int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 15,0);
@@ -1301,6 +1469,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1327,6 +1497,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1352,6 +1524,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1384,13 +1558,16 @@ void handle_instruction(char* buf, int stage){
                                 new_ireg_ma=*buf_int;
                                 nextpc=pc_ex+sext(offset, 21);
                                 pc_flag=1;
+                                new_rcalc=pc_ex+4;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
+                                new_wb=rcalc;
                                 break;
                             case WBS:
-                                //for simulator
-                                int_registers[rd]=pc_wb+4;
+                                int_registers[rd]=wb;
                                 if(rd==0 && offset==0) end=1;
                                 break;
                 }
@@ -1412,17 +1589,22 @@ void handle_instruction(char* buf, int stage){
                                     case RFS:
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         nextpc=(rrs1+sext(offset, 21))&(~1);
                                         pc_flag=1;
+                                        new_rcalc=pc_ex+4;
+                                        ird=rd;
+                                        rrd=new_rcalc;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=pc_wb+4;
+                                        int_registers[rd]=wb;
                                         break;
                         }
                         //int t=pc+4;
@@ -1450,6 +1632,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1474,6 +1658,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1498,6 +1684,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1522,6 +1710,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1546,6 +1736,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1570,6 +1762,8 @@ void handle_instruction(char* buf, int stage){
                                         new_ireg_ex=*buf_int;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
+                                        irs1=rs1;
+                                        irs2=rs2;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1593,13 +1787,40 @@ void handle_instruction(char* buf, int stage){
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        printf("FMADD.S f%d f%d f%d f%d\n", rd, rs1, rs2, rs3);
-                        float_registers[rd]=fmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
+                        printf("FMADD.S f%d <- f%d * f%d + f%d\n", rd, rs1, rs2, rs3);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        new_rrs3=F2I(invsext(float_registers[rs3],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        frs3=rs3;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fmadd_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
-                    case 0b01:
+                    /*case 0b01:
                         printf("FMADD.D\n");
                         //Not Implemented.
-                        break;
+                        break;*/
                 }   
                 break;
             case 0b10001:
@@ -1609,52 +1830,133 @@ void handle_instruction(char* buf, int stage){
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        printf("FMSUB.S f%d f%d f%d f%d\n", rd, rs1, rs2, rs3);
-                        float_registers[rd]=fmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
+                        printf("FMSUB.S f%d <- f%d * f%d - f%d\n", rd, rs1, rs2, rs3);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        new_rrs3=F2I(invsext(float_registers[rs3],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        frs3=rs3;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fmsub_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
-                    case 0b01:
+                    /*case 0b01:
                         printf("FMSUB.D\n");
-                        break;
+                        break;*/
                 }   
                 break;
             case 0b10010:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        printf("FNMSUB.S\n");
                         int rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= fnmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3], stage);
+                        printf("FNMSUB.S f%d <- - f%d * f%d + f%d\n", rd, rs1, rs2, rs3);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        new_rrs3=F2I(invsext(float_registers[rs3],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        frs3=rs3;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fnmsub_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]= fnmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3], stage);
                         break;
-                    case 0b01:
+                    /*case 0b01:
                         printf("FNMSUB.D\n");
-                        /*rd=extract(*buf_int, 11,7);
+                        rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         rs2=extract(*buf_int, 24,20);
                         rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]+float_registers[rs3];*/
-                        break;
+                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]+float_registers[rs3];
+                        break;*/
                 }   
                 break;
             case 0b10011:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        printf("FNMADD.S\n");
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
                         int rs2=extract(*buf_int, 24,20);
                         int rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= fnmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
+                        printf("FNMADD.S f%d <- - f%d * f%d - f%d\n", rd, rs1, rs2, rs3);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        new_rrs3=F2I(invsext(float_registers[rs3],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        frs3=rs3;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fnmadd_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]= fnmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
-                    case 0b01:
-                        /*printf("FNMADD.D\n");
+                    /*case 0b01:
+                        printf("FNMADD.D\n");
                         rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         rs2=extract(*buf_int, 24,20);
                         rs3=extract(*buf_int, 31,27);
-                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]-float_registers[rs3];*/
-                        break;
+                        float_registers[rd]= -float_registers[rs1]*float_registers[rs2]-float_registers[rs3];
+                        break;*/
                 }   
                 break;
             case 0b10100:
@@ -1663,122 +1965,416 @@ void handle_instruction(char* buf, int stage){
                 rs2=extract(*buf_int, 24,20);
                 switch(extract(*buf_int, 31,25)){
                     case 0b0000000:
-                        printf("FADD.S\n");
-                        float_registers[rd]=fadd_c(float_registers[rs1],float_registers[rs2],stage);
+                        printf("FADD.S f%d <- f%d + f%d\n", rd, rs1, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fadd_c(I2F(rrs1),I2F(rrs2),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fadd_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
-                    case 0b0000001:
-                        /*printf("FADD.D\n");
-                        float_registers[rd]=float_registers[rs1]+float_registers[rs2];*/
-                        break;
+                    /*case 0b0000001:
+                        printf("FADD.D\n");
+                        float_registers[rd]=float_registers[rs1]+float_registers[rs2];
+                        break;*/
                     case 0b0000100:
-                        printf("FSUB.S\n");
-                        float_registers[rd]=fsub_c(float_registers[rs1],float_registers[rs2],stage);
+                        printf("FSUB.S f%d <- f%d - f%d\n", rd, rs1, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fsub_c(I2F(rrs1),I2F(rrs2),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fsub_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
-                    case 0b0000101:
-                        /*printf("FSUB.D\n");
-                        float_registers[rd]=float_registers[rs1]-float_registers[rs2];*/
-                        break;
+                    /*case 0b0000101:
+                        printf("FSUB.D\n");
+                        float_registers[rd]=float_registers[rs1]-float_registers[rs2];
+                        break;*/
                     case 0b0001000:
-                        printf("FMUL.S\n");
-                        float_registers[rd]=fmul_c(float_registers[rs1],float_registers[rs2],stage);
+                        printf("FMUL.S f%d <- f%d * f%d\n", rd, rs1, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fmul_c(I2F(rrs1),I2F(rrs2),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fmul_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
-                    case 0b0001001:
-                        /*printf("FMUL.D\n");
+                    /*case 0b0001001:
+                        printf("FMUL.D\n");
                         float_registers[rd]=float_registers[rs1]*float_registers[rs2];
                         break;*/
                     case 0b0001100:
-                        printf("FDIV.S\n");
-                        float_registers[rd]=fdiv_c(float_registers[rs1],float_registers[rs2],stage);
+                        printf("FDIV.S f%d <- f%d / f%d\n", rd, rs1, rs2);
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                        new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                        frs1=rs1;
+                                        frs2=rs2;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=F2I(fdiv_c(I2F(rrs1),I2F(rrs2),stage));
+                                        frd=rd;
+                                        rrd=new_rcalc;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=rcalc;
+                                        break;
+                                    case WBS:
+                                        float_registers[rd]=I2F(wb);
+                                        break;
+                        }
+                        //float_registers[rd]=fdiv_c(float_registers[rs1],float_registers[rs2],stage);
                         break;
-                    case 0b0001101:
-                        /*printf("FDIV.D\n");
+                    /*case 0b0001101:
+                        printf("FDIV.D\n");
                         float_registers[rd]=float_registers[rs1]*float_registers[rs2];
                         break;*/
                     case 0b0101100:
                         if(extract(*buf_int, 31,25)==0b00000){
-                            printf("FSQRT.S\n");
-                            float_registers[rd]=fsqrt_c(float_registers[rs1],stage);
+                            printf("FSQRT.S f%d <- sqrt(f%d)\n", rd, rs1);
+                            switch(stage){
+                                        case IFS:
+                                            new_ireg_rf=*buf_int;
+                                            break;
+                                        case RFS:
+                                            new_ireg_ex=*buf_int;
+                                            new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                            frs1=rs1;
+                                            break;
+                                        case EXS:
+                                            new_ireg_ma=*buf_int;
+                                            new_rcalc=F2I(fsqrt_c(I2F(rrs1),stage));
+                                            frd=rd;
+                                            rrd=new_rcalc;
+                                            break;
+                                        case MAS:
+                                            new_ireg_wb=*buf_int;
+                                            new_wb=rcalc;
+                                            break;
+                                        case WBS:
+                                            float_registers[rd]=I2F(wb);
+                                            break;
+                            }
+                            //float_registers[rd]=fsqrt_c(float_registers[rs1],stage);
                             break;
                         }
                         break;
-                    case 0b0101101:
+                    /*case 0b0101101:
                         if(extract(*buf_int, 31,25)==0b00000){
-                            /*printf("FSQRT.D\n");
+                            printf("FSQRT.D\n");
                             float_registers[rd]=sqrt(float_registers[rs1]);
-                            break;*/
+                            break;
                         }
-                        break;
+                        break;*/
                     case 0b0010000:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                printf("FSGNJ.S\n");
-                                float_registers[rd]= fsgnj_c(float_registers[rs1], float_registers[rs2],stage);
+                                printf("FSGNJ.S f%d <- abs(f%d) * sgn(f%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fsgnj_c(I2F(rrs1),I2F(rrs2), stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]= fsgnj_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                             case 0b001:
-                                printf("FSGNJN.S\n");
-                                float_registers[rd]= fsgnjn_c(float_registers[rs1], float_registers[rs2],stage);
+                                printf("FSGNJN.S f%d <- abs(f%d) * ~sgn(f%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fsgnjn_c(I2F(rrs1),I2F(rrs2), stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]= fsgnjn_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                             case 0b010:
-                                printf("FSGNJX.S\n");
-                                float_registers[rd]= fsgnjx_c(float_registers[rs1], float_registers[rs2],stage);
+                                printf("FSGNJN.S f%d <- abs(f%d) * (sgn(f%d) ^ sgn(f%d))\n", rd, rs1, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fsgnjx_c(I2F(rrs1),I2F(rrs2), stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]= fsgnjx_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                         }
                         break;
-                    case 0b0010001:
+                    /*case 0b0010001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                /*printf("FSGNJ.D\n");
+                                printf("FSGNJ.D\n");
                                 if(float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);*/
+                                else float_registers[rd]= -abs(float_registers[rs1]);
                                 break;
                             case 0b001:
-                                /*printf("FSGNJN.D\n");
+                                printf("FSGNJN.D\n");
                                 if(float_registers[rs2]<0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);*/
+                                else float_registers[rd]= -abs(float_registers[rs1]);
                                 break;
                             case 0b010:
-                                /*printf("FSGNJX.D\n");
+                                printf("FSGNJX.D\n");
                                 if(float_registers[rs2]>0 &&  float_registers[rs2]<0 || float_registers[rs2]<0 &&  float_registers[rs2]>0) float_registers[rd]=abs(float_registers[rs1]);
-                                else float_registers[rd]= -abs(float_registers[rs1]);*/
+                                else float_registers[rd]= -abs(float_registers[rs1]);
                                 break;
                         }
-                        break;
+                        break;*/
                     case 0b0010100:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                printf("FMIN.S\n");
-                                float_registers[rd]=fmin_c(float_registers[rs1],float_registers[rs2],stage);
+                                printf("FMIN.S f%d <- min(f%d, f%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fmin_c(I2F(rrs1),I2F(rrs2),stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]=fmin_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b001:
-                                printf("FMAX.S\n");
-                                float_registers[rd]=fmax_c(float_registers[rs1],float_registers[rs2],stage);
+                                printf("FMAX.S f%d <- max(f%d, f%d)\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fmax_c(I2F(rrs1),I2F(rrs2),stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]=fmax_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                         } 
                         break;
-                    case 0b0010101:
+                    /*case 0b0010101:
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
-                                /*printf("FMIN.D\n");
+                                printf("FMIN.D\n");
                                 if(float_registers[rs1]<float_registers[rs2]) float_registers[rd]=float_registers[rs1];
                                 else float_registers[rd]=float_registers[rs2];
-                                break;*/
+                                break;
                             case 0b001:
-                                /*printf("FMAX.D\n");
+                                printf("FMAX.D\n");
                                 if(float_registers[rs1]>float_registers[rs2]) float_registers[rd]=float_registers[rs1];
                                 else float_registers[rd]=float_registers[rs2];
-                                break;*/
+                                break;
                         } 
-                        break;
+                        break;*/
                     case 0b1100000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                printf("FCVT.W.S\n");
                                 int rm=extract(*buf_int, 14,12);
-                                int_registers[rd]=fcvt_w_c(float_registers[rs1],stage);
+                                printf("FCVT.W.S x%d <- int(f%d)\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                frs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=sext(wb,32);
+                                                break;
+                                }
+                                //int_registers[rd]=fcvt_w_c(float_registers[rs1],stage);
                                 break;
                             case 0b00001:
-                                printf("FCVT.WU.S\n");
-                                int_registers[rd]=fcvt_wu_c(float_registers[rs1],stage);
+                                printf("FCVT.WU.S x%d <- uint(f%d)\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                frs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=fcvt_wu_c(I2F(rrs1),stage);
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=wb;
+                                                break;
+                                }
+                                //int_registers[rd]=fcvt_wu_c(float_registers[rs1],stage);
                                 break;
                         } 
                         break;
@@ -1786,20 +2382,59 @@ void handle_instruction(char* buf, int stage){
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
                                 if(extract(*buf_int, 24,20)==0b00000){
-                                    printf("FMV.X.W\n"); //Still soft implemented
-                                    union f_ui
+                                    printf("FMV.X.W x%d <- binary(f%d)\n", rd, rs1);
+                                    switch(stage){
+                                                case IFS:
+                                                    new_ireg_rf=*buf_int;
+                                                    break;
+                                                case RFS:
+                                                    new_ireg_ex=*buf_int;
+                                                    new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                    frs2=rs2;
+                                                    break;
+                                                case EXS:
+                                                    new_ireg_ma=*buf_int;
+                                                    new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
+                                                    frd=rd;
+                                                    rrd=new_rcalc;
+                                                    break;
+                                                case MAS:
+                                                    new_ireg_wb=*buf_int;
+                                                    new_wb=rcalc;
+                                                    break;
+                                                case WBS:
+                                                    int_registers[rd]=sext(wb,32);
+                                                    break;
+                                    }
+                                    /*union f_ui
                                     {
                                         unsigned int ui;
                                         float f;
                                     };
                                     union f_ui fui;
                                     fui.f=float_registers[rs1];
-                                    int_registers[rd]=fui.ui;
+                                    int_registers[rd]=fui.ui;*/
                                 }
                                 break;
                             case 0b001:
                                 if(extract(*buf_int, 24,20)==0b00000){
                                     printf("FCLASS.S(not yet implemented)\n");
+                                    switch(stage){
+                                                case IFS:
+                                                    new_ireg_rf=*buf_int;
+                                                    break;
+                                                case RFS:
+                                                    new_ireg_ex=*buf_int;
+                                                    break;
+                                                case EXS:
+                                                    new_ireg_ma=*buf_int;
+                                                    break;
+                                                case MAS:
+                                                    new_ireg_wb=*buf_int;
+                                                    break;
+                                                case WBS:
+                                                    break;
+                                    }
                                 }
                                 break;
                         }  
@@ -1807,36 +2442,181 @@ void handle_instruction(char* buf, int stage){
                     case 0b1010000:
                         switch(extract(*buf_int, 14,12)){
                             case 0b010:
-                                printf("FEQ.S\n");
-                                int_registers[rd]= feq_c(float_registers[rs1],float_registers[rs2],stage);
+                                printf("FEQ.S x%d <- (f%d == f%d)?\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=feq_c(I2F(rrs1),I2F(rrs2), stage);
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=wb;
+                                                break;
+                                }
+                                //int_registers[rd]= feq_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b001:
-                                printf("FLT.S\n");
-                                int_registers[rd]= flt_c(float_registers[rs1],float_registers[rs2],stage);
+                                printf("FLT.S x%d <- (f%d < f%d)?\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=flt_c(I2F(rrs1),I2F(rrs2), stage);
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=wb;
+                                                break;
+                                }
+                                //int_registers[rd]= flt_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                             case 0b000:
-                                printf("FLE.S\n");
-                                int_registers[rd]= fle_c(float_registers[rs1],float_registers[rs2],stage);
+                                printf("FLE.S x%d <- (f%d <= f%d)?\n", rd, rs1, rs2);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(invsext(float_registers[rs1],32));
+                                                new_rrs2=F2I(invsext(float_registers[rs2],32));
+                                                frs1=rs1;
+                                                frs2=rs2;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=fle_c(I2F(rrs1),I2F(rrs2), stage);
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=wb;
+                                                break;
+                                }
+                                //int_registers[rd]= fle_c(float_registers[rs1],float_registers[rs2],stage);
                                 break;
                         } 
                         break;
                     case 0b1101000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                printf("FCVT.S.W\n");
-                                float_registers[rd]=fcvt_s_w_c(int_registers[rs1],stage);
+                                printf("FCVT.S.W f%d <- float(x%d)\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=sext(int_registers[rs1],32);
+                                                irs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fcvt_s_w_c(I2F(rrs1),stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]=fcvt_s_w_c(int_registers[rs1],stage);
                                 break;
                             case 0b00001:
-                                printf("FCVT.S.WU\n");
-                                float_registers[rd]=fcvt_s_wu_c(int_registers[rs1],stage);
+                                printf("FCVT.S.W f%d <- float(u(x%d))\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=int_registers[rs1];
+                                                irs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=F2I(fcvt_s_w_c(I2F(rrs1),stage));
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                //float_registers[rd]=fcvt_s_wu_c(int_registers[rs1],stage);
                                 break;
                         } 
                         break;
                     case 0b1111000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                printf("FMV.W.X\n");//Still Soft Implemented
-                                union f_ui
+                                printf("FMV.W.X f%d <- binary(x%d)\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=sext(int_registers[rs1],32);
+                                                irs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
+                                                frd=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                float_registers[rd]=I2F(wb);
+                                                break;
+                                }
+                                    
+                                /*union f_ui
                                     {
                                         unsigned int ui;
                                         float f;
@@ -1845,41 +2625,41 @@ void handle_instruction(char* buf, int stage){
                                 union f_ui fui;
                                 fui.ui=int_registers[rs1];
                                 float_registers[rd]=fui.f;
-                                break;
+                                break;*/
                         }
                         break;   
-                    case 0b0100000:
+                    /*case 0b0100000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00001:
                                 printf("FCVT.S.D(not yet implemented)\n");
                                 
                                 break;
                         } 
-                        break;
-                    case 0b0100001:
+                        break;*/
+                    /*case 0b0100001:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
                                 printf("FCVT.D.S(not yet implemented)\n");
                                 break;
                         } 
-                        break;
-                    case 0b1010001:
+                        break;*/
+                    /*case 0b1010001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b010:
-                               /* printf("FEQ.D\n");
+                                printf("FEQ.D\n");
                                 int_registers[rd]= (float_registers[rs1]==float_registers[rs2]);
-                                break;*/
+                                break;
                             case 0b001:
-                                /*printf("FLT.D\n");
+                                printf("FLT.D\n");
                                 int_registers[rd]= (float_registers[rs1]<float_registers[rs2]);
-                                break;*/
+                                break;
                             case 0b000:
-                                /*printf("FLE.D\n");
+                                printf("FLE.D\n");
                                 int_registers[rd]= (float_registers[rs1]<=float_registers[rs2]);
-                                break;*/
+                                break;
                         } 
-                        break;
-                    case 0b1110001:
+                        break;*/
+                    /*case 0b1110001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b001:
                                 if(extract(*buf_int, 24,20)==0b00000){
@@ -1888,8 +2668,8 @@ void handle_instruction(char* buf, int stage){
                                 }
                                 break;
                         } 
-                        break;
-                    case 0b1100001:
+                        break;*/
+                    /*case 0b1100001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b00000:
                                 printf("FCVT.W.D(not yet implemented)\n");
@@ -1898,8 +2678,8 @@ void handle_instruction(char* buf, int stage){
                                 printf("FCVT.WU.D(not yet implemented)\n");
                                 break;
                         } 
-                        break;
-                    case 0b1101001:
+                        break;*/
+                    /*case 0b1101001:
                         switch(extract(*buf_int, 14,12)){
                             case 0b00000:
                                 printf("FCVT.D.W(not yet implemented)\n");
@@ -1908,33 +2688,81 @@ void handle_instruction(char* buf, int stage){
                                 printf("FCVT.D.WU(not yet implemented)\n");
                                 break;
                         } 
-                        break;
+                        break;*/
                 }   
                 break;
             case 0b00001:
                 offset=extract(*buf_int, 31,20);
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
-                        printf("FLW\n");
                         //imm=extract(*buf_int, 11,0); <-???
-                        float_registers[rd]=*(float*) memory_access(int_registers[rs1]+sext(offset,12),0);
+                        printf("FLW f%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
+                        switch(stage){
+                                    case IFS:
+                                        new_ireg_rf=*buf_int;
+                                        break;
+                                    case RFS:
+                                        new_ireg_ex=*buf_int;
+                                        new_rrs1=invsext(int_registers[rs1],32);
+                                        irs1=rs1;
+                                        break;
+                                    case EXS:
+                                        new_ireg_ma=*buf_int;
+                                        new_rcalc=rrs1+sext(offset,12);
+                                        frd=rd;
+                                        ldhzd=-1;
+                                        break;
+                                    case MAS:
+                                        new_ireg_wb=*buf_int;
+                                        new_wb=F2I(*(float *) memory_access(rcalc, 0));
+                                        if(ldhzd==1) ldhzd=2;
+                                        break;
+                                    case WBS:
+                                        int_registers[rd]=I2F(wb);
+                                        if(ldhzd==2) ldhzd=0;
+                                        break;
+                                }
+                        //float_registers[rd]=*(float*) memory_access(int_registers[rs1]+sext(offset,12),0);
                         break;
-                    case 0b011:
+                    /*case 0b011:
                         printf("FLD\n");
                         float_registers[rd]=*(double*) memory_access(int_registers[rs1]+sext(offset,12),0);
-                        break;
+                        break;*/
                 }
             case 0b01001:
                 offset=(extract(*buf_int, 31,25)<<5)+extract(*buf_int, 11,7);;
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
-                        printf("FSW\n");
-                        *(float*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
+                        printf("FSW (MEM[x%d+%d])[31:0] <- f%d\n", rs1, offset, rs2);
+                        switch(stage){
+                            case IFS:
+                                new_ireg_rf=*buf_int;
+                                break;
+                            case RFS:
+                                new_ireg_ex=*buf_int;
+                                new_rrs1=invsext(int_registers[rs1],32);
+                                new_rrs2=F2I(float_registers[rs2]);
+                                irs1=rs1;
+                                frs2=rs2;
+                                break;
+                            case EXS:
+                                new_ireg_ma=*buf_int;
+                                new_rcalc=rrs1+sext(offset,12);
+                                new_m_data=rrs2;
+                                break;
+                            case MAS:
+                                new_ireg_wb=*buf_int;
+                                *(unsigned int*) memory_access(rcalc,1)=extract(m_data, 31,0);
+                                break;
+                            case WBS:
+                                break;
+                        }
+                        //*(float*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
                         break;
-                    case 0b011:
+                    /*case 0b011:
                         printf("FSD\n");
                         *(double*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
-                        break;
+                        break;*/
                 }
         }
     }
@@ -2109,6 +2937,7 @@ void handle_instruction(char* buf, int stage){
         }
     }
     */
+   if(stall==1) printf("STALLED.\n");
 }
 
 char tmp[100000];
@@ -2384,42 +3213,105 @@ int main(int argc, char *argv[]){
         pc_flag=0;
         int_registers[0]=0;
         clk++;
+        if(delay_IF>0) delay_IF--;
+        if(delay_RF>0) delay_RF--;
+        if(delay_EX>0) delay_EX--;
+        if(delay_MA>0) delay_MA--;
+        if(delay_WB>0) delay_WB--;
 
         //Instruction Fetch Stage
         //new_ireg_rf=i_memory_access(pc,0);
         //unsigned int dummy=0;
-        handle_instruction(i_memory_access(pc,0), IFS);
+        if(delay_IF==0) handle_instruction(i_memory_access(pc,0), IFS,0);
+        else handle_instruction(i_memory_access(pc,0), IFS,1);
+
         //Register Fetch Stage
-        handle_instruction(&ireg_rf, RFS);
+        if(delay_RF==0) handle_instruction(&ireg_rf, RFS,0);
+        else handle_instruction(&ireg_rf, RFS,1);
         //ALU / FPU Stage
-        handle_instruction(&ireg_ex, EXS);
+        if(delay_EX==0) handle_instruction(&ireg_ex, EXS, 0);
+        /*LOAD hazard*/
+        if(ldhzd==-1){
+            
+        }
+        else{
+            if(irs1==ird){
+                
+            }
+            if(irs2==frd){
+
+            }
+            if(frs1==frd){
+
+            }
+            if(frs2==frd){
+
+            }
+        }
+
+        else handle_instruction(&ireg_ex, EXS, 1);
         //Memory Access Stage
-        handle_instruction(&ireg_ma, MAS);
+        if(delay_MA==0) handle_instruction(&ireg_ma, MAS, 0);
+        else handle_instruction(&ireg_ma, MAS, 1);
         //Write Back Stage
-        handle_instruction(&ireg_wb, WBS);
+        if(delay_WB==0) handle_instruction(&ireg_wb, WBS, 0);
+        else handle_instruction(&ireg_wb, WBS,1);
 
-        wb=new_wb;
-        ireg_rf=new_ireg_rf;
-        ireg_ma=new_ireg_ma;
-        ireg_ex=new_ireg_ex;
-        ireg_wb=new_ireg_wb;
-        pc_rf=new_pc_rf;
-        pc_ma=new_pc_ma;
-        pc_ex=new_pc_ex;
-        pc_wb=new_pc_wb;
+        if(delay_IF==1) delay_IF==0;
+        if(delay_RF==1) delay_RF==0;
+        if(delay_EX==1) delay_EX==0;
+        if(delay_MA==1) delay_MA==0;
+        if(delay_WB==1) delay_WB==0;
+
+        //RF Stage -> EX Stage
+        if(delay_IF+delay_RF+delay_EX+delay_WB+delay_MA==0){
+            ireg_rf=new_ireg_rf;
+            pc_rf=new_pc_rf;    
+        }
+        else if(delay_RF+delay_EX+delay_WB+delay_MA==0){
+            ireg_rf=0;
+        }
+
+        //RF Stage -> EX Stage
+        if(delay_RF+delay_EX+delay_WB+delay_MA==0){
+            ireg_ex=new_ireg_ex;
+            pc_ex=new_pc_ex;
+            rrs1=new_rrs1;
+            rrs2=new_rrs2;
+            rrs3=new_rrs3;
+        }
+        else if(delay_EX+delay_WB+delay_MA==0){
+            ireg_ex=0;
+        }
+
+        // EX Stage -> MA Stage
+        if(delay_EX+delay_WB+delay_MA==0){
+            ireg_ma=new_ireg_ma;
+            m_addr=new_m_addr;
+            m_data=new_m_data;
+            pc_ma=new_pc_ma;
+            cond=new_cond;     
+            rcalc=new_rcalc;   
+        }
+        else if(delay_WB+delay_MA==0){
+            ireg_ma=0;
+        }
+
+        //MA Stage -> WB Stage
+        if(delay_WB+delay_MA==0){
+            ireg_wb=new_ireg_wb;
+            pc_wb=new_pc_wb; 
+            cond_wb=new_cond_wb;       
+            wb=new_wb;
+        }
+        else if(delay_MA==0){
+            ireg_wb=0;
+        }
         
-        rrs1=new_rrs1;
-        rrs2=new_rrs2;
-        m_addr=new_m_addr;
-        m_data=new_m_data;
-        rcalc=new_rcalc;
-        cond=new_cond;
-        cond_wb=new_cond_wb;
-
-
-
+        //hard wired to 0
         int_registers[0]=0;
-        if(pc_flag==0) pc+=4;
+
+        if(pc_flag==0 && delay_IF==0) pc+=4;
 
         if(end==1){
             printf("\rexit detected.\n");
@@ -2429,7 +3321,7 @@ int main(int argc, char *argv[]){
 
         //for display
         if(runmode==1) continue;
-        printf("Main PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
+        printf("Main(Fetch) PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
         int i;
         for(i=0; i<32; i++){
             printf("\t\x1b[35mx%d\x1b[0m: \t%lld", i, int_registers[i]);
