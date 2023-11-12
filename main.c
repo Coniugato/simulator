@@ -16,6 +16,12 @@
 #define N_LINE (1<<LEN_INDEX)
 #define LEN_LINE (1<<LEN_OFFSET)
 
+#define IFS 0
+#define RFS 1
+#define EXS 2
+#define MAS 3
+#define WBS 4
+
 #define I_N_WAYS 4
 #define I_LEN_OFFSET 4
 #define I_LEN_INDEX 12
@@ -40,6 +46,36 @@ float float_registers[32];
 
 int quit=0;
 int end=0;
+
+unsigned int ireg_rf=0;
+unsigned int ireg_ex=0;
+unsigned int ireg_ma=0;
+unsigned int ireg_wb=0;
+unsigned int new_ireg_rf=0;
+unsigned int new_ireg_ex=0;
+unsigned int new_ireg_ma=0;
+unsigned int new_ireg_wb=0;
+
+unsigned int rrs1=0;
+unsigned int rrs2=0;
+unsigned int new_rrs1=0;
+unsigned int new_rrs2=0;
+
+unsigned int rcalc=0;
+unsigned int new_rcalc=0;
+
+unsigned int wb=0;
+unsigned int new_wb=0;
+
+unsigned int nextpc;
+unsigned int taken=0;
+//unsigned int memwrite;
+//unsigned int memread;
+unsigned int m_addr=0;
+unsigned int new_m_addr=0;
+unsigned int m_data=0;
+unsigned int new_m_data=0;
+
 
 unsigned long long Dcache_hit=0, Dcache_miss=0, Icache_miss=0, Icache_hit=0;
 
@@ -258,6 +294,26 @@ int on_i_cache(unsigned long long addr){
 }
 
 void handle_instruction(char* buf, int stage){
+    printf("\n");
+    switch(stage){
+        case IFS:
+            printf("(IF stage)\n");
+            break;
+        case RFS:
+            printf("(RF stage)\n");
+            break;
+        case EXS:
+            printf("(EX stage)\n");
+            break;
+        case MAS:
+            printf("(MA stage)\n");
+            break;
+        case WBS:
+            printf("(WB stage)\n");
+            break;
+        default:
+            break;
+    }
     printf("Binary: \t");
     int* buf_int=(int*)buf;
     int i, j;
@@ -278,8 +334,25 @@ void handle_instruction(char* buf, int stage){
         switch(extract(*buf_int,6,2)){
             case 0b01101:
                 int imm=extract(*buf_int, 31,12);
-                printf("LUI %d, %lld\n", rd, imm);
-                int_registers[rd]=imm<<12;
+                printf("LUI %d, %lld (RV: %lld)\n", rd, imm, imm<<12);
+                switch(stage){
+                    case IFS:
+                        new_ireg_rf=*buf_int;
+                        break;
+                    case RFS:
+                        new_ireg_ex=*buf_int;
+                        break;
+                    case EXS:
+                        new_ireg_ma=*buf_int;
+                        break;
+                    case MAS:
+                        new_ireg_wb=*buf_int;
+                        new_wb=imm<<12;
+                        break;
+                    case WBS:
+                        int_registers[rd]=wb;
+                        break;
+                }
                 break;
             case 0b00101:
                 printf("AUIPC\n");
@@ -292,7 +365,27 @@ void handle_instruction(char* buf, int stage){
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         printf("ADDI x%d, %d\n", rd, imm);
-                        int_registers[rd]=int_registers[rs1]+imm;
+                        switch(stage){
+                            case IFS:
+                                new_ireg_rf=*buf_int;
+                                break;
+                            case RFS:
+                                new_ireg_ex=*buf_int;
+                                new_rrs1=int_registers[rs1];
+                                break;
+                            case EXS:
+                                new_ireg_ma=*buf_int;
+                                new_rcalc=rrs1+imm;
+                                break;
+                            case MAS:
+                                new_ireg_wb=*buf_int;
+                                new_wb=rcalc;
+                                break;
+                            case WBS:
+                                int_registers[rd]=wb;
+                                break;
+                        }
+                        //int_registers[rd]=int_registers[rs1]+imm;
                         break;
                     case 0b010:
                         printf("SLTI\n");
@@ -1351,13 +1444,38 @@ int main(int argc, char *argv[]){
     }
     while(pc<max_pc){
         
-        
         unsigned long long oldpc=pc;
         
         pc_flag=0;
         int_registers[0]=0;
-        handle_instruction(i_memory_access(pc,0), 0);
         clk++;
+
+        //Instruction Fetch Stage
+        //new_ireg_rf=i_memory_access(pc,0);
+        //unsigned int dummy=0;
+        handle_instruction(i_memory_access(pc,0), IFS);
+        //Register Fetch Stage
+        handle_instruction(&ireg_rf, RFS);
+        //ALU / FPU Stage
+        handle_instruction(&ireg_ex, EXS);
+        //Memory Access Stage
+        handle_instruction(&ireg_ma, MAS);
+        //Write Back Stage
+        handle_instruction(&ireg_wb, WBS);
+
+        wb=new_wb;
+        ireg_rf=new_ireg_rf;
+        ireg_ma=new_ireg_ma;
+        ireg_ex=new_ireg_ex;
+        ireg_wb=new_ireg_wb;
+        rrs1=new_rrs1;
+        rrs2=new_rrs2;
+        m_addr=new_m_addr;
+        m_data=new_m_data;
+        rcalc=new_rcalc;
+
+
+
         int_registers[0]=0;
         if(pc_flag==0) pc+=4;
 

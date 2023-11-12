@@ -1,0 +1,10 @@
+lui a0, 11
+lui a1, 12
+lui a2, 13
+lui a3, 14
+lui a4, 15
+lui a0, 16
+lui a1, 17
+lui a2, 18
+lui a3, 18
+lui a4, 20

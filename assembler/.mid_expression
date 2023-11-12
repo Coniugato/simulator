@@ -1,18 +1,10 @@
-INST .data int 2 END
-INST .data uint 5 END
-INST .data char 7 END
-INST li t3 20 END
-INST li t4 1 END
-INST blt t4 t3 L1 END
-INST mv t4 t3 END
-INST j L3 END
-INST li t4 1 END
-INST li t5 1 END
-INST li t0 2 END
-INST bge t0 t3 L3 END
-INST mv t6 t4 END
-INST add t4 t4 t5 END
-INST mv t5 t6 END
-INST addi t0 t0 1 END
-INST j L2 END
-INST mv a0 t4 END
+INST lui a0 11 END
+INST lui a1 12 END
+INST lui a2 13 END
+INST lui a3 14 END
+INST lui a4 15 END
+INST lui a0 16 END
+INST lui a1 17 END
+INST lui a2 18 END
+INST lui a3 18 END
+INST lui a4 20 END
