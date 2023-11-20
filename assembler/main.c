@@ -117,11 +117,13 @@ int main(int argc, char *argv[]){
     
     clear();
     while (fscanf(f, "%s", buf) != EOF){
-        
+        //printf("%s", buf);
         if(buf[0]=='#'){
             //ignore comment
             while(1){
                 char a = getc(f);
+                //printf("%c ", a);
+                //getchar();
                 if(a=='\n') break;
             }
         }
@@ -165,7 +167,7 @@ int main(int argc, char *argv[]){
                 char* tmp2=buf;
                 char* tmp3=label;
                 while(tmp2!=tmp){
-                  
+                  //printf("%c %c\n", *tmp2, *tmp3);
                   *tmp3=*tmp2;
                   tmp3++;
                   tmp2++;
@@ -195,7 +197,7 @@ int main(int argc, char *argv[]){
     *to='\0';
     mid_print(fm);
     clear();
-
+    //printf("@\n");
     fclose(f);
     fclose(fm);
 

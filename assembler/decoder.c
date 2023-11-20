@@ -310,6 +310,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
     unsigned int *int_inst = (unsigned int *)char_inst;
     fscanf(inf, "%s", opc);
     int n_oprand;
+    printf("%s\n", opc);
     if (strcmp(opc, ".data") == 0)
     {
         n_oprand = 2;
