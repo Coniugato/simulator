@@ -33,6 +33,7 @@
 
 int skip=0;
 int runmode=0;
+int breakpoint=0;
 
 char memory[134217728];
 char cache[N_WAYS][N_LINE][LEN_LINE];
@@ -614,6 +615,12 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=invsext(sext(rrs1,32)+sext(imm,12),32);
                                 ird=rd;
                                 rrd=new_rcalc;
+                                //handling breakpoint
+                                if(rrs1==0 && rd==0 && breakpoint==1){
+                                    printf("Breakpoint %d.\n", imm);
+                                    breakpoint=0;
+                                    runmode=0;
+                                }
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -3152,6 +3159,12 @@ void input_handle(void){
         if(c=='r'){
             printf("%c\n",c);
             runmode=1;
+            break;
+        }
+        if(c=='b'){
+            printf("%c\n",c);
+            runmode=1;
+            breakpoint=1;
             break;
         }
         if(c=='e'){
