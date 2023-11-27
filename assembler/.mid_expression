@@ -1,10 +1,21 @@
-INST lui a0 11 END
-INST lui a1 12 END
-INST lui a2 13 END
-INST lui a3 14 END
-INST lui a4 15 END
-INST lui a0 16 END
-INST lui a1 17 END
-INST lui a2 18 END
-INST lui a3 18 END
-INST lui a4 20 END
+INST .data int 50 END
+INST lw t0 gp 0 END
+INST jal ra sum END
+INST j end END
+INST beq t0 zero imm END
+INST addi sp sp -16 END
+INST sw sp 0 t0 END
+INST addi sp sp -16 END
+INST sw sp 0 ra END
+INST addi t0 t0 -1 END
+INST jal ra sum END
+INST mv t1 t0 END
+INST lw ra sp 0 END
+INST addi sp sp 16 END
+INST lw t0 sp 0 END
+INST addi sp sp 16 END
+INST add t0 t0 t1 END
+INST jalr zero ra 0 END
+INST lim t0 0 END
+INST jalr zero ra 0 END
+INST mv t2 t0 END

@@ -69,8 +69,28 @@ int reg_convert(char *s)
 {
     if (strlen(s) < 2)
     {
-        fprintf(stderr, "ERROR: invalid register name.");
+        fprintf(stderr, "ERROR: invalid register name %s.\n", s);
         exit(1);
+    }
+    else if (strcmp(s, "fp") == 0)
+    {
+        return 8;
+    }
+    else if (strcmp(s, "hp") == 0)
+    {
+        return 4;
+    }
+    else if (strcmp(s, "gp") == 0)
+    {
+        return 3;
+    }
+    else if (strcmp(s, "sp") == 0)
+    {
+        return 2;
+    }
+    else if (strcmp(s, "ra") == 0)
+    {
+        return 1;
     }
     if (s[0] == 't')
     {
@@ -121,26 +141,6 @@ int reg_convert(char *s)
     {
         int num = s[2] - '0';
         return num + 10;
-    }
-    else if (strcmp(s, "fp") == 0)
-    {
-        return 8;
-    }
-    else if (strcmp(s, "hp") == 0)
-    {
-        return 4;
-    }
-    else if (strcmp(s, "gp") == 0)
-    {
-        return 3;
-    }
-    else if (strcmp(s, "sp") == 0)
-    {
-        return 2;
-    }
-    else if (strcmp(s, "ra") == 0)
-    {
-        return 1;
     }
     else if (strcmp(s, "zero") == 0)
     {
@@ -384,7 +384,9 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         unsigned long imm = invsext(atoi_w(opr[2]), 12);
 
+        //printf("%x %x %x\n", imm, rd, rs1);
         *int_inst = (imm << 20) + (rd << 7) + (rs1 << 15) + 0b0010011;
+        //printf("@%x\n", *int_inst);
         // printf("%d %d %d, %llx\n", atoi_w(opr[2]), rd, rs1, *int_inst);
         writeall(outd, char_inst, 4);
     }
@@ -1097,8 +1099,8 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
-        unsigned long offset = invsext(search(labels, opr[2]) - pc, 12);
-        ////printf("@%llx\n", offset);
+        unsigned long offset = invsext(atoi_w(opr[2]), 12);
+        //printf("@%llx\n", offset);
 
         unsigned int conv_offset = (extract(offset, 11, 0) << 20);
         *int_inst = conv_offset + (rs1 << 15) + (0b000 << 12) + (rd << 7) + 0b1100111;

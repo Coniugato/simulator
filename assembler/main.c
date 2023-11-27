@@ -254,10 +254,12 @@ int main(int argc, char *argv[]){
     writeall(outd, char_inst, 4);
     //sp initialization
     rd = 2;
-    imm = ((1<<27)-1);
+    imm = 1<<27;
     *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
     writeall(outd, char_inst, 4);
-    imm = invsext(imm, 12);
+    imm=0;
+    imm = invsext(extract(imm, 11,0), 12);
+    printf("%x\n", imm);
     *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
     writeall(outd, char_inst, 4);
 
