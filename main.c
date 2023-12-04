@@ -34,6 +34,7 @@
 int skip=0;
 int runmode=0;
 int breakpoint=0;
+int imode=0;
 
 char memory[134217728];
 char cache[N_WAYS][N_LINE][LEN_LINE];
@@ -51,6 +52,7 @@ float float_registers[32];
 
 int quit=0;
 int end=0;
+int skip_jmp=0;
 
 unsigned int ireg_rf=0;
 unsigned int ireg_ex=0;
@@ -202,6 +204,8 @@ char* memory_access(unsigned long long addr, int wflag){
     }
     printf("\n");*/
 
+    //if(tag!=2047) printf("%d %d %d\n",tag, index, offset);
+
     int way=0;
     int way_found=-1;
     for(way=0; way<N_WAYS; way++){
@@ -213,7 +217,7 @@ char* memory_access(unsigned long long addr, int wflag){
             
             int j=0;
             for(j=0; j<N_WAYS; j++){
-                if(j!=way_found && (flag[j][index],4,1)>rank)
+                if(j!=way_found && extract(flag[j][index],4,1)>rank)
                     flag[j][index]=flag[j][index]-=2;
             }
             break;
@@ -232,7 +236,7 @@ char* memory_access(unsigned long long addr, int wflag){
                 wait_MA=0;
             }
         } 
-        else{
+        else if(wflag==0){
             if(wait_MA==0){
                 Dcache_miss++;
                 delay_MA=Dcache_DRAMReadClk;
@@ -300,7 +304,7 @@ char* memory_access(unsigned long long addr, int wflag){
                 wait_MA=0;
             } 
         }        
-        else{
+        else if(wflag==0){
             if(wait_MA==0){
                 delay_MA=DcacheReadClk;
                 Dcache_hit++;
@@ -322,6 +326,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
     unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
     unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
 
+
     /*int k=0;
     for(k=0; k<4; k++){
         printf("(%d,%d)",k,extract(i_flag[k][index],4,1));
@@ -339,7 +344,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
             
             int j=0;
             for(j=0; j<I_N_WAYS; j++){
-                if(j!=way_found && (i_flag[j][index],4,1)>rank)
+                if(j!=way_found && extract(i_flag[j][index],4,1)>rank)
                     i_flag[j][index]=i_flag[j][index]-=2;
             }
             break;
@@ -348,20 +353,21 @@ char* i_memory_access(unsigned long long addr, int wflag){
     //clk+=IcacheAccessClk;
     if(way_found==-1){
         //clk+=Icache_DRAMAccessClk;
-        Icache_miss++;
         if(wflag==1){
             if(wait_IF==0){
                 delay_IF=Icache_DRAMWriteClk;
                 wait_IF=1;
+                Icache_miss++;
             } 
             else{
                 wait_IF=0;
             }
         }
-        else{
+        else if(wflag==0){
             if(wait_IF==0){
                 delay_IF=Icache_DRAMReadClk;
                 wait_IF=1;
+                Icache_miss++;
             } 
             else{
                 wait_IF=0;
@@ -379,6 +385,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
                 i_flag[way][index]-=2;
             }
         }
+
         if(way_found==-1){
             fprintf(stderr, "InternalError!: way elect failed\n");
             exit(1);
@@ -414,20 +421,21 @@ char* i_memory_access(unsigned long long addr, int wflag){
         i_ctag[way_found][index]=tag;
     }
     else{
-        Icache_hit++;
         if(wflag==1){
             if(wait_IF==0){
                 delay_IF=IcacheWriteClk;
                 wait_IF=1;
+                Icache_hit++;
             } 
             else{
                 wait_IF=0;
             }
         }
-        else{
+        else if(wflag==0){
             if(wait_IF==0){
                 delay_IF=IcacheReadClk;
                 wait_IF=1;
+                Icache_hit++;
             } 
             else{
                 wait_IF=0;
@@ -3133,9 +3141,11 @@ void input_handle(void){
             printf("h\n\r");
             printf("Help For Debug Console:\n\r");
             printf("n           次の命令を実行\n\r");
-            printf("s XXX       XXX個後の命令まで実行\n\r");
+            printf("s XXX       XXXクロック後の命令まで実行\n\r");
             printf("e           最後の命令まで実行\n\r");
             printf("r           出力抑制して最後まで実行\n\r");
+            printf("j XXX       出力抑制してXXXクロック後の命令まで実行\n\r");
+            printf("i       出力抑制して次の命令まで実行\n\r");
             printf("q           シミュレータを中断\n\r");
             printf("m XXX       メモリのXXX番地の内容を表示(キャッシュ含む)\n\r");
             printf("m XXX-YYY   メモリのXXX番地からYYY番地まで(YYY番地を含まない)の内容を表示(キャッシュ含む)\n\r");
@@ -3161,6 +3171,12 @@ void input_handle(void){
             runmode=1;
             break;
         }
+        if(c=='i'){
+            printf("%c\n",c);
+            runmode=1;
+            imode=1;
+            break;
+        }
         if(c=='b'){
             printf("%c\n",c);
             runmode=1;
@@ -3182,6 +3198,20 @@ void input_handle(void){
                     continue;
                 }
                 skip=num-1;
+                break;
+            }
+        }
+        else if(c=='j'){
+            printf("j");
+            if(getchar()==' '){
+                printf(" ");
+                long long num=getnum(mesq);
+                if(num==-1){
+                    printf("invalid skip value.\n");
+                    continue;
+                }
+                skip_jmp=num-1;
+                runmode=1;
                 break;
             }
         }
@@ -3231,7 +3261,8 @@ void input_handle(void){
         }
         else if(c=='m'){
             printf("m");
-            if(getchar()==' '){
+            char c2=getchar();
+            if(c2==' '){
                 printf(" ");
                 long long stnum=getnum(mesq);
                 if(stnum==-1){
@@ -3277,15 +3308,64 @@ void input_handle(void){
                     printf("[[%d]]\n", way);
                     if(way>=0 || iway>=0){
                         if(way>=0){
-                            fui.i=*(int*) memory_access(memnum,0);
+                            fui.i=*(int*) memory_access(memnum,-1);
                             printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
                             if(iway>=0){
-                                fui.i=*(int*) i_memory_access(memnum,0);
+                                fui.i=*(int*) i_memory_access(memnum,-1);
                                 printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                             }
                         }
                         else if(iway>=0){
-                            fui.i=*(int*) i_memory_access(memnum,0);
+                            fui.i=*(int*) i_memory_access(memnum,-1);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                        }
+                        
+
+                        fui.i=*(int*) (memory+memnum);
+                        printf("\r\t\t\x1b[33m<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", fui.ui, fui.i, fui.ui, fui.f);
+                    }
+                    else{
+                        fui.i=*(int*) (memory+memnum);
+                        printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
+                    }
+                    
+                }
+            }
+            else if(c2=='s'){
+                printf("s\n\r");
+                long long stnum=int_registers[2];
+                long long ennum=134217728;
+                //printf("%d %d ", stnum, ennum);
+                unsigned long long memnum;
+                if(ennum-stnum>400){
+                    printf("the ouput will be larger than 100 entries. continue? y or n:");
+                    if(getchar()!='y'){
+                        printf("\n\r");
+                        continue;
+                    } 
+                }
+                for(memnum=stnum; memnum<ennum; memnum+=4){
+                    union f_ui{
+                        unsigned int ui;
+                        int i;
+                        float f;
+                    };
+                    union f_ui fui;
+
+                    int way=on_cache(memnum);
+                    int iway=on_i_cache(memnum);
+                    printf("[[%d]]\n", way);
+                    if(way>=0 || iway>=0){
+                        if(way>=0){
+                            fui.i=*(int*) memory_access(memnum,-1);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
+                            if(iway>=0){
+                                fui.i=*(int*) i_memory_access(memnum,-1);
+                                printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                            }
+                        }
+                        else if(iway>=0){
+                            fui.i=*(int*) i_memory_access(memnum,-1);
                             printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                         }
                         
@@ -3361,6 +3441,11 @@ int main(int argc, char *argv[]){
         
         unsigned long long oldpc=pc;
         
+        if(ireg_wb!=0 && imode==1){
+            runmode=0;
+            imode=0;
+        }
+
         pc_flag=0;
         int_registers[0]=0;
         clk++;
@@ -3576,9 +3661,15 @@ int main(int argc, char *argv[]){
 
 
         
-
+        //if(int_registers[5]<0) printf("%d,%d ", int_registers[5], clk);
 
         //for display
+        if(skip_jmp>0){
+            skip_jmp--;
+            if(skip_jmp==0){
+                runmode=0;
+            }
+        }
         if(runmode==1 && end!=1) continue;
         printf("Main(Fetch) PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
         int i;
