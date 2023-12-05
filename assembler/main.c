@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
             }
         }
         else{
-            //printf("<%s %d>\n",buf, skipped);
+            printf("<%s %d %d>\n",buf, state, skipped);
             if(state>0 && buf[0]!=',' && skipped==0){
               *to='\0';
               //printf("%d\n", n_inst);

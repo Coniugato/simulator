@@ -3493,6 +3493,12 @@ int main(int argc, char *argv[]){
         }
         else handle_instruction(&stall_i, IFS,1);
 
+        //int c_ldhzd=ldhzd;
+
+        //Write Back Stage
+        if(delay_WB<=1) handle_instruction(&ireg_wb, WBS, 0);
+        else handle_instruction(&ireg_wb, WBS,1);
+
         //printf("%d@@\n", delay_IF);
         //Register Fetch Stage
         if(delay_RF<=1) handle_instruction(&ireg_rf, RFS,0);
@@ -3568,11 +3574,7 @@ int main(int argc, char *argv[]){
         if(delay_MA<=1) handle_instruction(&ireg_ma, MAS, 0);
         else handle_instruction(&ireg_ma, MAS, 1);
         
-        int c_ldhzd=ldhzd;
 
-        //Write Back Stage
-        if(delay_WB<=1) handle_instruction(&ireg_wb, WBS, 0);
-        else handle_instruction(&ireg_wb, WBS,1);
 
         if(delay_IF==1) delay_IF=0;
         if(delay_RF==1) delay_RF=0;
@@ -3585,14 +3587,14 @@ int main(int argc, char *argv[]){
         if(nextpc==new_pc_ex) pc_flag=0;
 
         //IF Stage -> RF Stage
-        if(c_ldhzd==0 && delay_IF+delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(ldhzd==0 && delay_IF+delay_RF+delay_EX+delay_WB+delay_MA==0){
             if(pc_flag==0) pc+=4;
             ireg_rf=new_ireg_rf;
             pc_rf=new_pc_rf;    
         }
         else{
             wait_IF=1;
-            if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+            if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
                 ireg_rf=0;
             }
         }
@@ -3602,7 +3604,7 @@ int main(int argc, char *argv[]){
 
         if(runmode==0) printf("%d\n", rrd);
         //RF Stage -> EX Stage
-        if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
             ireg_ex=new_ireg_ex;
             pc_ex=new_pc_ex;
             rrs1=new_rrs1;
@@ -3648,7 +3650,7 @@ int main(int argc, char *argv[]){
             }
         } 
 
-        if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
             rrd=0;
             frd=-2;
             ird=-2;
