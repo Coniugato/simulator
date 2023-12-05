@@ -1,6 +1,8 @@
 .data int, 50
+.data float, 2.412323
 main: 
     lw t0, gp, 0
+    flw ft0, gp, 4
     jal ra, sum
     j end
 sum:   

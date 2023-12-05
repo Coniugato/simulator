@@ -204,7 +204,7 @@ char* memory_access(unsigned long long addr, int wflag){
     }
     printf("\n");*/
 
-    //if(tag!=2047) printf("%d %d %d\n",tag, index, offset);
+    if(runmode==0) printf("DCache Access: %x %d %d %d\n",addr, tag, index, offset);
 
     int way=0;
     int way_found=-1;
@@ -1510,7 +1510,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
-                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),16);
                                         break;
                                     case WBS:
                                         int_registers[rd]=sext(wb,16);
@@ -1537,7 +1537,8 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
-                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 31,0),8);
+                                        new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 31,0),32);
+                                        //if(runmode==0) printf("@%d\n", *(unsigned long long *) memory_access(rcalc, 0));
                                         break;
                                     case WBS:
                                         int_registers[rd]=sext(wb,32);
@@ -1936,6 +1937,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 }   
                 break;
             case 0b10000:
+
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
@@ -2700,7 +2702,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 break;
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
-                                                new_rcalc=F2I(fcvt_s_w_c(I2F(rrs1),stage));
+                                                new_rcalc=F2I(fcvt_s_w_c(rrs1,stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
                                                 break;
@@ -2727,7 +2729,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 break;
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
-                                                new_rcalc=F2I(fcvt_s_w_c(I2F(rrs1),stage));
+                                                new_rcalc=F2I(fcvt_s_w_c(rrs1,stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
                                                 break;
@@ -2847,6 +2849,9 @@ void handle_instruction(char* buf, int stage, int stall){
                 }   
                 break;
             case 0b00001:
+                rd=extract(*buf_int, 11,7);
+                rs1=extract(*buf_int, 19,15);
+                //rs2=extract(*buf_int, 24,20);
                 offset=extract(*buf_int, 31,20);
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
@@ -2872,7 +2877,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_wb=F2I(*(float *) memory_access(rcalc, 0));
                                         break;
                                     case WBS:
-                                        int_registers[rd]=I2F(wb);
+                                        float_registers[rd]=I2F(wb);
                                         ldhzd=0;
                                         break;
                                 }
@@ -2883,7 +2888,11 @@ void handle_instruction(char* buf, int stage, int stall){
                         float_registers[rd]=*(double*) memory_access(int_registers[rs1]+sext(offset,12),0);
                         break;*/
                 }
+                break;
             case 0b01001:
+                //rd=extract(*buf_int, 11,7);
+                rs1=extract(*buf_int, 19,15);
+                rs2=extract(*buf_int, 24,20);
                 offset=(extract(*buf_int, 31,25)<<5)+extract(*buf_int, 11,7);;
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
@@ -2918,6 +2927,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         *(double*)memory_access(int_registers[rs1]+sext(offset,12),1)=float_registers[rd];
                         break;*/
                 }
+                break;
         }
     }
     /* 圧縮命令。シミュレートしないことにする。
@@ -3558,6 +3568,8 @@ int main(int argc, char *argv[]){
         if(delay_MA<=1) handle_instruction(&ireg_ma, MAS, 0);
         else handle_instruction(&ireg_ma, MAS, 1);
         
+        int c_ldhzd=ldhzd;
+
         //Write Back Stage
         if(delay_WB<=1) handle_instruction(&ireg_wb, WBS, 0);
         else handle_instruction(&ireg_wb, WBS,1);
@@ -3573,14 +3585,14 @@ int main(int argc, char *argv[]){
         if(nextpc==new_pc_ex) pc_flag=0;
 
         //IF Stage -> RF Stage
-        if(ldhzd==0 && delay_IF+delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(c_ldhzd==0 && delay_IF+delay_RF+delay_EX+delay_WB+delay_MA==0){
             if(pc_flag==0) pc+=4;
             ireg_rf=new_ireg_rf;
             pc_rf=new_pc_rf;    
         }
         else{
             wait_IF=1;
-            if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+            if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
                 ireg_rf=0;
             }
         }
@@ -3590,7 +3602,7 @@ int main(int argc, char *argv[]){
 
         if(runmode==0) printf("%d\n", rrd);
         //RF Stage -> EX Stage
-        if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
             ireg_ex=new_ireg_ex;
             pc_ex=new_pc_ex;
             rrs1=new_rrs1;
@@ -3636,7 +3648,7 @@ int main(int argc, char *argv[]){
             }
         } 
 
-        if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
+        if(c_ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
             rrd=0;
             frd=-2;
             ird=-2;
@@ -3661,7 +3673,7 @@ int main(int argc, char *argv[]){
 
 
         
-        //if(int_registers[5]<0) printf("%d,%d ", int_registers[5], clk);
+        if(int_registers[7]<0) printf("%d,%d ", int_registers[7], clk);
 
         //for display
         if(skip_jmp>0){

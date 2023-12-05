@@ -15,6 +15,7 @@ int writeall(int fd, char *buf, int size_buf)
 {
     int write_count = size_buf;
     int write_flag = 0;
+    //printf("%x\n", buf);
     while (1)
     {
         write_flag = write(fd, buf, size_buf);
@@ -113,7 +114,7 @@ int reg_convert(char *s)
         else
             return num + 16;
     }
-    else if (s[0] == 'f' && s[0] == 's')
+    else if (s[0] == 'f' && s[1] == 's')
     {
         if (strlen(s) == 4)
         {
@@ -129,7 +130,7 @@ int reg_convert(char *s)
                 return num + 16;
         }
     }
-    else if (s[0] == 'f' && s[0] == 't')
+    else if (s[0] == 'f' && s[1] == 't')
     {
         int num = s[2] - '0';
         if (num <= 7)
@@ -137,7 +138,7 @@ int reg_convert(char *s)
         else
             return num + 20;
     }
-    else if (s[0] == 'f' && s[0] == 'a')
+    else if (s[0] == 'f' && s[1] == 'a')
     {
         int num = s[2] - '0';
         return num + 10;
@@ -148,13 +149,15 @@ int reg_convert(char *s)
     }
     else
     {
-        fprintf(stderr, "ERROR: invalid register name.");
+        fprintf(stderr, "ERROR: invalid register name %s.", s);
         exit(1);
     }
 }
 
 int type_convert(char *s)
 {
+    if (strcmp(s, "float") == 0)
+        return 0;
     if (strcmp(s, "char") == 0)
         return -1;
     if (strcmp(s, "uchar") == 0)
@@ -252,6 +255,18 @@ void val_res(int size, char *val)
             *((short *)(globals + s_globals)) = (short)rval;
             s_globals+=2;
             break;
+        case 0:
+            //現状エラー吐かない。何とかしたほうがいいかも
+            float fval = atof(val);
+            if (s_globals % 4 != 0)
+            {
+                int skip = 4 - s_globals % 4;
+                fprintf(stderr, "float data must be aligned 4 bytes. %d bytes skipped.\n", skip);
+                s_globals += skip;
+            }
+            *((float *)(globals + s_globals)) = (float)fval;
+            s_globals+=4;
+            break;
         case 4:
             rval = atoi_l(val);
             if (s_globals % 4 != 0)
@@ -309,6 +324,9 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
     int offset = 4;
     unsigned int *int_inst = (unsigned int *)char_inst;
     fscanf(inf, "%s", opc);
+
+    printf("%s, %d\n", opc, pc);
+
     int n_oprand;
     printf("%s\n", opc);
     if (strcmp(opc, ".data") == 0)
@@ -1624,6 +1642,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b00100 << 27) + (0b001 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fsgnjx.s") == 0)
     {
@@ -1642,6 +1661,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b00100 << 27) + (0b010 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fmin.s") == 0)
     {
@@ -1660,6 +1680,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b00101 << 27) + (0b000 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fmax.s") == 0)
     {
@@ -1678,6 +1699,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b00101 << 27) + (0b001 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.w.s") == 0)
     {
@@ -1695,6 +1717,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b00000 << 20) + (0b11000 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.wu.s") == 0)
     {
@@ -1712,6 +1735,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b00001 << 20) + (0b11000 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fmv.x.w") == 0)
     {
@@ -1729,6 +1753,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b000 << 12) + (0b00000 << 20) + (0b11100 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "feq.s") == 0)
     {
@@ -1747,6 +1772,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b10100 << 27) + (0b010 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "flt.s") == 0)
     {
@@ -1765,6 +1791,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b10100 << 27) + (0b001 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fle.s") == 0)
     {
@@ -1783,6 +1810,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs1 = reg_convert(opr[1]);
         int rs2 = reg_convert(opr[2]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (0b10100 << 27) + (0b000 << 12) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.s.w") == 0)
     {
@@ -1800,6 +1828,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b00000 << 20) + (0b11010 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.s.wu") == 0)
     {
@@ -1817,6 +1846,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b00001 << 20) + (0b11010 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fmv.w.x") == 0)
     {
@@ -2345,6 +2375,29 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         writeall(outd, char_inst, 4);
     }
     // RV32C Instructions(Partially Supported by convertion to non-compact instructions)
+    else if (strcmp(opc, "ret") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = 0;
+        int rs1 = 1;
+        unsigned long offset = 0;
+        //printf("@%llx\n", offset);
+
+        unsigned int conv_offset = (extract(offset, 11, 0) << 20);
+        *int_inst = conv_offset + (rs1 << 15) + (0b000 << 12) + (rd << 7) + 0b1100111;
+        ////printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
     else if (strcmp(opc, "li") == 0)
     {
         // convert to addi
@@ -2429,9 +2482,31 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
+    else if (strcmp(opc, "call") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = 1;
+        unsigned long offset = invsext(search(labels, opr[0]) - pc, 21);
+        ////printf("@%llx\n", offset);
+
+        unsigned int conv_offset = (extract(offset, 10, 1) << 21) + (extract(offset, 11, 11) << 20) + (extract(offset, 20, 20) << 31) + (extract(offset, 19, 12) << 12);
+        *int_inst = conv_offset + (rd << 7) + 0b1101111;
+        ////printf("%llx\n", conv_offset);
+        writeall(outd, char_inst, 4);
+    }
     else
     {
-        fprintf(stderr, "%s\n", "ERROR: invalid instruction.");
+        fprintf(stderr, "ERROR: invalid instruction %s.\n", opc);
         while (1)
         {
             fscanf(inf, "%s", opc);
