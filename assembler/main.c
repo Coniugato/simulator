@@ -14,7 +14,9 @@ Node* labels=NULL;
 //NOTE: from >= to
 
 int n_inst=0;
+int n_data=0;
 char buf[100000];
+
 char label[100000];
 char opcode[100000];
 char oprand[10][100000];
@@ -48,14 +50,16 @@ void print_debug(){
 void mid_print(FILE* f){
   
   if(label[0]!='\0'){
-
     printf("%s %d\n", label, n_inst);
-    labels=insert(labels, label, n_inst, 1);
+    if(opcode[0]=='.') labels=insert(labels, label, n_data, 1);
+    else  labels=insert(labels, label, n_inst, 1);
   }
 
   
-  if(strcmp(opcode, "lim")==0) n_inst+=4;
-  if(opcode[0]=='.') n_inst-=4;
+  if(strcmp(opcode, "lim")==0) n_inst+=8;
+  else if(strcmp(opcode, "addrl")==0) n_inst+=12;
+  else if(opcode[0]=='.'){ n_data+=4; }
+  else n_inst+=4;
 
   if(opcode[0]!='\0'){
     fprintf(f, "INST %s ", opcode);
@@ -115,88 +119,122 @@ int main(int argc, char *argv[]){
     char *tmp, *to=opcode;
     int labelled=0;
     
-    clear();
-    while (fscanf(f, "%s", buf) != EOF){
-        //printf("%s", buf);
-        if(buf[0]=='#'){
-            //ignore comment
+    int eof_flag=0;
+    while(1){
+        char* bufto = buf;
+        int index = 0;
+        labelled = 0;
+        int spaced = 0;
+        skipped =0;
+        clear();
+        while(1){
+          char c = fgetc(f);
+          printf("%c %d %d %d\n", c, labelled , index, spaced);
+          if(c=='#'){
+            if(buf!=bufto){
+              *bufto = '\0';
+              if(index>0)
+                strcpy(oprand[index-1],buf);
+              else
+                strcpy(opcode, buf);
+              bufto = buf;
+              labelled=2;
+              index++;
+            }
+            if(labelled==1){
+               fprintf(stderr, "invalid comment position.\n");
+              exit(1);
+            }
+            if(index>0) mid_print(fm);
             while(1){
-                char a = getc(f);
-                //printf("%c ", a);
-                //getchar();
-                if(a=='\n') break;
+              char c = fgetc(f);
+              printf("[C]%c\n", c);
+              if(c=='\n' || c==EOF) break;
             }
+            break;
+          }
+          else if(c==':'){
+            if(labelled==1 || index!=0){
+              fprintf(stderr, "invalid label position.\n");
+              exit(1);
+            }
+            if(buf==bufto){
+              fprintf(stderr, "empty label.\n");
+              exit(1);
+            }
+            labelled = 1;
+            *bufto = '\0';
+            strcpy(label, buf);
+            bufto = buf;
+          }
+          else if(c==' '){
+            if(index==0 && buf!=bufto){
+              *bufto = '\0';
+              strcpy(opcode, buf);
+              bufto = buf;
+              labelled=2;
+              index++;
+            }
+            else if(bufto != buf) spaced = 1;
+          }
+          else if(c=='\n'){
+            if(labelled!=1 || buf!=bufto){
+              if(buf!=bufto){
+                *bufto = '\0';
+                if(index==0)
+                  strcpy(opcode, buf);
+                else
+                  strcpy(oprand[index-1], buf);
+                index++;
+              }
+              if(index>0) mid_print(fm);
+              break;
+            }
+          }
+          else if(c==EOF){
+            if(labelled!=1){
+              if(buf!=bufto){
+                *bufto = '\0';
+                if(index==0)
+                  strcpy(opcode, buf);
+                else
+                  strcpy(oprand[index-1], buf);
+                index++;
+              }
+              if(index>0) mid_print(fm);
+              eof_flag=1;
+              break;
+            }
+            else{
+              fprintf(stderr, "invalid label position.\n");
+              exit(1);
+            }
+          }
+          else if(c==','){
+            if(bufto==buf){
+              fprintf(stderr, "empty operand.\n");
+              exit(1);
+            }
+            *bufto = '\0';
+            strcpy(oprand[index-1], buf);
+            bufto = buf;
+            index++;
+            skipped=1;
+          }
+          else if(spaced==1){
+            fprintf(stderr, "invalid space position.\n");
+            exit(1);
+          }
+          else{
+            *bufto  = c;
+            bufto++;
+          }
         }
-        else{
-            printf("<%s %d %d>\n",buf, state, skipped);
-            if(state>0 && buf[0]!=',' && skipped==0){
-              *to='\0';
-              //printf("%d\n", n_inst);
-              //print_debug();
-              
-
-              
-              labelled=0;
-              //printf("@@@@@%d@\n", state);
-              mid_print(fm);
-              clear();
-              n_inst+=4;
-              state=-1;
-              to=opcode;
-              
-            }
-            else if(state<=0 && buf[0]!=',' && skipped==0 && to!=opcode){
-              *to='\0';
-              if(labelled==1){
-                state=0;
-                labelled=0;
-              } 
-              else state=1;
-              to=oprand[0];
-            }
-
-            tmp=buf;
-            while(*tmp!='\0'){
-              //printf("%d-%c ", state, *tmp);
-              if(*tmp==':'){
-                if(state>1){
-                  fprintf(stderr, "%s\n", "ERROR: invalid label position.");
-                  exit(1);
-                }
-                labelled=1;
-                char* tmp2=buf;
-                char* tmp3=label;
-                while(tmp2!=tmp){
-                  //printf("%c %c\n", *tmp2, *tmp3);
-                  *tmp3=*tmp2;
-                  tmp3++;
-                  tmp2++;
-                }
-                state=0;
-                *tmp3='\0';
-                to=opcode;
-              }
-              else if(*tmp==','){
-                if(state==0) state=1;
-                state++;
-                skipped=1;
-                *to='\0';
-                to=oprand[state-1];
-              }
-              else{
-                skipped=0;
-                *to=*tmp;
-                to++;
-              }
-              tmp++;
-            }
-            
-            
-        }
+        if(eof_flag==1) break;
     }
     *to='\0';
-    mid_print(fm);
-    clear();
+    //mid_print(fm);
+    //clear();
     //printf("@\n");
     fclose(f);
     fclose(fm);

@@ -1,32 +1,36 @@
-INST .data int 3 END
-INST lw t0 gp 0 END
-INST fcvt.s.w fa0 zero END
-INST jal ra fib END
+INST addi t0 t0 1 END
+INST call int_test END
+INST call float_test END
 INST j end END
-INST addi t1 t0 -1 END
-INST bge zero t1 imm END
-INST addi sp sp -4 END
-INST sw sp 0 t0 END
-INST mv t4 t0 END
-INST addi sp sp -4 END
-INST sw sp 0 ra END
-INST addi t0 t0 -1 END
-INST jal ra fib END
-INST addi sp sp -4 END
-INST fsw sp 0 ft0 END
-INST lw t0 sp 8 END
-INST addi t0 t0 -2 END
-INST jal ra fib END
-INST fadd.s ft1 ft0 fa0 END
-INST flw ft2 sp 0 END
-INST addi sp sp 4 END
-INST lw ra sp 0 END
-INST addi sp sp 4 END
-INST lw t4 sp 0 END
-INST addi sp sp 4 END
-INST fadd.s ft0 ft1 ft2 END
-INST jalr zero ra 0 END
-INST lim t0 1 END
-INST fcvt.s.w ft0 t0 END
-INST jalr zero ra 0 END
-INST mv t3 t0 END
+INST .data int 20 END
+INST .data int 7 END
+INST addr t0 int_data END
+INST lw t1 t0 0 END
+INST lw t2 t0 4 END
+INST beq t1 t2 label1 END
+INST bne t1 t2 label2 END
+INST blt t1 t2 label3 END
+INST bge t1 t2 label4 END
+INST ret END
+INST li t3 1 END
+INST j next2 END
+INST li t4 1 END
+INST j next3 END
+INST li t5 1 END
+INST j next4 END
+INST li t6 1 END
+INST j next5 END
+INST .data float 1.6 END
+INST .data float 4.9 END
+INST .data float 4.9 END
+INST addr t0 float_data END
+INST flw ft1 t0 0 END
+INST flw ft2 t0 4 END
+INST flw ft3 t0 8 END
+INST flt.s a0 ft1 ft2 END
+INST feq.s a1 ft1 ft2 END
+INST fle.s a2 ft1 ft2 END
+INST flt.s a3 ft2 ft3 END
+INST fle.s a4 ft2 ft3 END
+INST ret 0 END
+INST mv a0 a0 END

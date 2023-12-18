@@ -15,16 +15,16 @@ sub O
 sll
 slt
 sltu
-xor
+xor O
 srl
 sra
-or
-and
+or O
+and O
 lb ?
 lh ?
 lw O
-lbu ?
-lhu ?
+lbu
+lhu
 sb ?
 sh ?
 sw O
@@ -37,6 +37,15 @@ bge
 bltu
 bgeu 
 
+mul  O  
+mulh    
+mulhsu    
+mulhu    
+div O   
+divu    
+rem  O  
+remu    
+
 fmadd-s
 fmsub-s
 fnmsub-s
@@ -45,12 +54,12 @@ fadd-s O
 fsub-s O
 fmul-s O
 fdiv-s O
-fsqrt-s
+fsqrt-s O
 fsgnj-s
 fsgnjn-s
 fsgnjx-s
-fmin-s
-fmax-s
+fmin-s O
+fmax-s O
 fcvt-w-s
 fcvt-wu-s
 fmv-x-w
@@ -62,3 +71,5 @@ fcvt-s-wu
 fmv-w-x
 flw O
 fsw O
+
+

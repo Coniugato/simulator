@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <errno.h>
 #include "AVL.h"
 
 extern char globals[100000000];
@@ -158,14 +159,14 @@ int type_convert(char *s)
 {
     if (strcmp(s, "float") == 0)
         return 0;
-    if (strcmp(s, "char") == 0)
+    /*if (strcmp(s, "char") == 0)
         return -1;
     if (strcmp(s, "uchar") == 0)
         return 1;
     if (strcmp(s, "short") == 0)
         return -2;
     if (strcmp(s, "ushort") == 0)
-        return 2;
+        return 2;*/
     if (strcmp(s, "int") == 0)
         return -4;
     if (strcmp(s, "uint") == 0)
@@ -199,6 +200,21 @@ long long atoi_l(char *s)
         return atoi_ul(s);
 }
 
+double atof_w(char* str){
+    errno = 0;
+    char* end;
+    double v = strtod(str, &end);
+    if (errno == ERANGE) {
+        fprintf(stderr, "Float convertion error\n");
+        exit(1);
+    }
+    else if (str == end) {
+        printf(stderr, "Float value cannot be converted\n");
+        exit(1);
+    }
+    return v;
+}
+
 void val_res(int size, char *val)
 {
     //printf("%d\n", s_globals);
@@ -223,7 +239,7 @@ void val_res(int size, char *val)
     {
         switch (size)
         {
-        case 1:
+        /*case 1:
             long long rval = atoi_l(val);
             *((unsigned char *)(globals + s_globals)) = (unsigned char)rval;
             s_globals+=1;
@@ -254,10 +270,10 @@ void val_res(int size, char *val)
             }
             *((short *)(globals + s_globals)) = (short)rval;
             s_globals+=2;
-            break;
+            break;*/
         case 0:
             //現状エラー吐かない。何とかしたほうがいいかも
-            float fval = atof(val);
+            float fval = atof_w(val);
             if (s_globals % 4 != 0)
             {
                 int skip = 4 - s_globals % 4;
@@ -268,7 +284,7 @@ void val_res(int size, char *val)
             s_globals+=4;
             break;
         case 4:
-            rval = atoi_l(val);
+            long long rval = atoi_l(val);
             if (s_globals % 4 != 0)
             {
                 int skip = 4 - s_globals % 4;
@@ -314,6 +330,7 @@ void val_res(int size, char *val)
             break;*/
         default:
             fprintf(stderr, "invalid byte size. skip.\n");
+            s_globals+=4;
             break;
         }
     }
@@ -329,6 +346,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
 
     int n_oprand;
     printf("%s\n", opc);
+    int admit_flag=0;
     if (strcmp(opc, ".data") == 0)
     {
         n_oprand = 2;
@@ -1116,8 +1134,12 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
             }
         }
         int rd = reg_convert(opr[0]);
+        if(search(labels, opr[1])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[1]);
+            exit(1);
+        } 
         unsigned long offset = invsext(search(labels, opr[1]) - pc, 21);
-        ////printf("@%llx\n", offset);
+        
 
         unsigned int conv_offset = (extract(offset, 10, 1) << 21) + (extract(offset, 11, 11) << 20) + (extract(offset, 20, 20) << 31) + (extract(offset, 19, 12) << 12);
         *int_inst = conv_offset + (rd << 7) + 0b1101111;
@@ -1162,6 +1184,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[1]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
 
         unsigned int conv_offset = (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7) + (extract(offset, 10, 5) << 25) + (extract(offset, 12, 12) << 31);
@@ -1184,6 +1210,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[1]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
 
         unsigned int conv_offset = (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7) + (extract(offset, 10, 5) << 25) + (extract(offset, 12, 12) << 31);
@@ -1206,6 +1236,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[2]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
 
         unsigned int conv_offset = (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7) + (extract(offset, 10, 5) << 25) + (extract(offset, 12, 12) << 31);
@@ -1229,6 +1263,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[2]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
         unsigned int conv_offset = (extract(offset, 12, 12) << 31) + (extract(offset, 10, 5) << 25) + (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7);
         *int_inst = conv_offset + (rs1 << 15) + (rs2 << 20) + (0b101 << 12) + 0b1100011;
@@ -1249,6 +1287,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[2]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
 
         unsigned int conv_offset = (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7) + (extract(offset, 10, 5) << 25) + (extract(offset, 12, 12) << 31);
@@ -1271,6 +1313,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rs1 = reg_convert(opr[0]);
         int rs2 = reg_convert(opr[1]);
+        if(search(labels, opr[2])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[2]);
+            exit(1);
+        } 
         unsigned long long offset = invsext(search(labels, opr[2]) - pc, 13);
 
         unsigned int conv_offset = (extract(offset, 4, 1) << 8) + (extract(offset, 11, 11) << 7) + (extract(offset, 10, 5) << 25) + (extract(offset, 12, 12) << 31);
@@ -2385,7 +2431,8 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
             // printf("%s\n", opr[i]);
             if (strcmp(opr[i], "END") == 0)
             {
-                error_toofew(opc);
+                //error_toofew(opc);
+                admit_flag=1;
             }
         }
         int rd = 0;
@@ -2441,6 +2488,61 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         writeall(outd, char_inst, 4);
         offset = 8;
     }
+    else if (strcmp(opc, "addr") == 0)
+    {
+        // ADDR rd, label
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            ////printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        if(search(labels, opr[1])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[1]);
+            exit(1);
+        } 
+        unsigned long imm = invsext(search(labels, opr[1]), 12);
+        // convert to addi
+        *int_inst = (imm << 20) + (3 << 15) + (rd << 7) + 0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if (strcmp(opc, "addrl") == 0)
+    {
+        // ADDR rd, label
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            ////printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        if(search(labels, opr[1])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[1]);
+            exit(1);
+        } 
+        unsigned long imm = invsext(search(labels, opr[1]), 32);
+        *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+        writeall(outd, char_inst, 4);
+        // convert to addi
+        imm = invsext(search(labels, opr[1]), 12);
+        *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
+        writeall(outd, char_inst, 4);
+        // convert to add
+        *int_inst = (rd << 7) + (rd << 15) + (3 << 20) + 0b0110011;
+        writeall(outd, char_inst, 4);
+        offset = 12;
+    }
     else if (strcmp(opc, "mv") == 0)
     {
         // convert to addi
@@ -2474,12 +2576,17 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
                 error_toofew(opc);
             }
         }
+        if(search(labels, opr[0])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[0]);
+            exit(1);
+        } 
+        //printf("@@%d\n", search(labels, opr[0]) - pc);
         unsigned long offset = invsext(search(labels, opr[0]) - pc, 21);
-        ////printf("@%llx\n", offset);
+        //printf("@%l\n", offset);
 
         unsigned int conv_offset = (extract(offset, 10, 1) << 21) + (extract(offset, 11, 11) << 20) + (extract(offset, 20, 20) << 31) + (extract(offset, 19, 12) << 12);
         *int_inst = conv_offset + 0b1101111;
-        ////printf("%llx\n", conv_offset);
+        printf("@@%s %x %x %x\n", opr[0], conv_offset, *int_inst, *(int *)char_inst);
         writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "call") == 0)
@@ -2496,6 +2603,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
             }
         }
         int rd = 1;
+        if(search(labels, opr[0])==-1){
+            fprintf(stderr, "undefined label %s\n", opr[0]);
+            exit(1);
+        } 
         unsigned long offset = invsext(search(labels, opr[0]) - pc, 21);
         ////printf("@%llx\n", offset);
 
@@ -2515,11 +2626,13 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         exit(1);
     }
-    fscanf(inf, "%s", opc);
-    if (strcmp(opc, "END") != 0)
-    {
-        fprintf(stderr, "%s\n", "ERROR: too many operands.");
-        exit(1);
+    if(admit_flag!=1){
+        fscanf(inf, "%s", opc);
+        if (strcmp(opc, "END") != 0)
+        {
+            fprintf(stderr, "%s\n", "ERROR: too many operands.");
+            exit(1);
+        }
     }
     return offset;
 }
