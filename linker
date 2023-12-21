@@ -1,0 +1,21 @@
+if [ "$1" = "" ]
+then
+    echo "No target file specified." >&2
+    exit 255
+fi
+target=$1
+shift
+if [ "$1" = "" ]
+then
+    echo "Main source file not specified." >&2
+    exit 255
+fi
+cat $1 > $target
+echo "    j end" >> $target
+shift
+while [ "$1" != "" ]
+do
+  cat $1 >> $target
+  shift
+done
+echo "end:nop" >> $target

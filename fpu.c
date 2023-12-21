@@ -4,7 +4,6 @@
 #include "fpu.h"
 #define EX f_extract
 
-
 unsigned long long f_extract(unsigned long long input, unsigned long long from, unsigned long long to){
   return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
 } 
@@ -548,7 +547,10 @@ float fcvt_s_wu_c(UI x, int status){
         float f;
     };
     union f_ui r;
-    UI xs = EX(x,31,31) ? (EX(x,7,7) ? (x + (1<<8)) : x) :
+    //UL x = x_in;
+    //x = EX(x, 32,0);
+    
+    UL xs = EX(x,31,31) ? (EX(x,7,7) ? ((UL)x + (1<<8)) : x) :
         EX(x,30,30) ? (EX(x,6,6) ? (x + (1<<7)) : x) :
         EX(x,29,29) ? (EX(x,5,5) ? (x + (1<<6)) : x) :
         EX(x,28,28) ? (EX(x,4,4) ? (x + (1<<5)) : x) :
@@ -557,9 +559,13 @@ float fcvt_s_wu_c(UI x, int status){
         EX(x,25,25) ? (EX(x,1,1) ? (x + (1<<2)) : x) :
         EX(x,24,24) ? (EX(x,0,0) ? (x + (1<<1)) : x) :
         x;
+    xs = EX(xs,32,0);
+
+    //if(EX(x,31,31)==1 && EX(x,7,7)==1) printf("###\n");
+    //printf("@@@%llx %llx\n", x, xs);
 
     UI y = 0;
-    for(int i=31; i>=0; i--){
+    for(int i=32; i>=0; i--){
       if(EX(xs, i, i)==1){
         if(i>=23)
           y = ((127+i)<<23)+EX(xs, i-1,i-23);

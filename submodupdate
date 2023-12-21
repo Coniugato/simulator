@@ -1,3 +1,4 @@
+git add .
 sudo hwclock -s
 gitupdate $1
 cd ~/processor-experiment-2023-5
@@ -5,6 +6,6 @@ echo "submodule fetch"
 git checkout simulator
 git pull origin simulator
 git submodule update --remote
-git add *
+git add .
 git commit -m "simulator submodule updated / $1"
 git push origin simulator

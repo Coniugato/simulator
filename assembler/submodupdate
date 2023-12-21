@@ -1,3 +1,4 @@
+git add .
 sudo hwclock -s
 gitupdate $1
 cd ~/processor-experiment-2023-5

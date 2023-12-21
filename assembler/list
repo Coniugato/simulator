@@ -1,6 +1,6 @@
 
 lui  O
-auipc
+auipc ?
 addi O
 slti
 sltiu
@@ -23,17 +23,17 @@ and O
 lb ?
 lh ?
 lw O
-lbu
-lhu
+lbu ?
+lhu ?
 sb ?
 sh ?
 sw O
 jal O
 jalr O
-beq
-bne
-blt
-bge
+beq O
+bne O
+blt O
+bge O
 bltu
 bgeu 
 
@@ -46,10 +46,10 @@ divu
 rem  O  
 remu    
 
-fmadd-s
-fmsub-s
-fnmsub-s
-fnmadd-s
+fmadd-s O
+fmsub-s O
+fnmsub-s O
+fnmadd-s O
 fadd-s O
 fsub-s O
 fmul-s O
@@ -60,14 +60,14 @@ fsgnjn-s
 fsgnjx-s
 fmin-s O
 fmax-s O
-fcvt-w-s
-fcvt-wu-s
+fcvt-w-s O
+fcvt-wu-s O
 fmv-x-w
-feq-s
-flt-s
-fle-s
-fcvt-s-w
-fcvt-s-wu
+feq-s O
+flt-s O
+fle-s O
+fcvt-s-w O
+fcvt-s-wu O
 fmv-w-x
 flw O
 fsw O
