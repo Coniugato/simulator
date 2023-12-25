@@ -44,7 +44,8 @@ long long atoi_w(char *c)
     {
         ret = -atoi(c + 1);
     }
-    ret = atoi(c);
+    else ret = atoi(c);
+    return ret;
 }
 
 unsigned long long invsext(long long input, unsigned long long n_dights)
