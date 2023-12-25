@@ -57,6 +57,7 @@ void mid_print(FILE* f){
 
   
   if(strcmp(opcode, "lim")==0) n_inst+=8;
+  else if(strcmp(opcode, "iaddrl")==0) n_inst+=8;
   else if(strcmp(opcode, "addrl")==0) n_inst+=12;
   else if(opcode[0]=='.'){ n_data+=4; }
   else n_inst+=4;
@@ -131,7 +132,7 @@ int main(int argc, char *argv[]){
         clear();
         while(1){
           char c = fgetc(f);
-          //printf("%c %d %d %d\n", c, labelled , index, spaced);
+          //printf("%c(%d) %d %d %d\n", c,c, labelled , index, spaced);
           if(c=='#'){
             if(buf!=bufto){
               *bufto = '\0';
@@ -194,15 +195,16 @@ int main(int argc, char *argv[]){
             }
           }
           else if(c==EOF){
-            if(labelled!=1){
-              if(buf!=bufto){
+            if(buf!=bufto){
                 *bufto = '\0';
                 if(index==0)
                   strcpy(opcode, buf);
                 else
                   strcpy(oprand[index-1], buf);
                 index++;
-              }
+                labelled=0;
+            }
+            if(labelled!=1){
               if(index>0) mid_print(fm);
               eof_flag=1;
               break;

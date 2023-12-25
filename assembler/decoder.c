@@ -9,6 +9,8 @@
 #include <errno.h>
 #include "AVL.h"
 
+#define N_BEFADD_INST 6
+
 extern char globals[100000000];
 extern unsigned long long s_globals;
 
@@ -2575,6 +2577,51 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         *int_inst = (rd << 7) + (rd << 15) + (3 << 20) + 0b0110011;
         writeall(outd, char_inst, 4);
         offset = 12;
+    }
+    else if (strcmp(opc, "iaddr") == 0)
+    {
+        // IADDR rd, label
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        //unsigned long imm = invsext(atoi_w(opr[1]), 12);
+        unsigned long offset = invsext(search(labels, opr[1])+4*(N_BEFADD_INST), 12);
+        //printf("%ld\n", offset);
+        *int_inst = (offset << 20) + (rd << 7) + 0b0010011;
+        writeall(outd, char_inst, 4);
+    }
+    else if (strcmp(opc, "iaddrl") == 0)
+    {
+        // LUI rd, imm
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            ////printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        unsigned long offset = invsext(search(labels, opr[1])+4*(N_BEFADD_INST), 32);
+        *int_inst = (extract(offset, 31, 12) << 12) + (rd << 7) + 0b0110111;
+        writeall(outd, char_inst, 4);
+        // convert to addi
+        unsigned long imm = invsext(offset, 12);
+        *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
+        writeall(outd, char_inst, 4);
+        offset = 8;
     }
     else if (strcmp(opc, "mv") == 0)
     {
