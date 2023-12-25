@@ -1010,7 +1010,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 //int_registers[rd]=int_registers[rs1]<<int_registers[rs2];
                                 break;
                             case 0b0000001:
-                                if(runmode==0) printf("MULH x%d <- x%d - x%d\n", rd, rs1, rs2);
+                                if(runmode==0) printf("MULH x%d <- (x%d * x%d)[63:32]\n", rd, rs1, rs2);
                                 switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1024,7 +1024,8 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
-                                        new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32)>>32,32);
+                                        new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32),64)>>32;
+                                        //printf("%d %d %lx %x \n",sext(rrs1,32), sext(rrs2,32), sext(rrs1,32)*sext(rrs2,32), new_rcalc);
                                         ird=rd;
                                         rrd=new_rcalc;
                                         break;
@@ -1069,7 +1070,10 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_wb=rcalc;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=sext(wb,32);
+                                        if(cond_wb)
+                                            int_registers[rd]=sext(wb,32);
+                                        else 
+                                            int_registers[rd]=0;
                                         break;
                                 }
                                 //if(int_registers[rs1]<int_registers[rs2]) int_registers[rd]=int_registers[rs1];
@@ -1091,6 +1095,8 @@ void handle_instruction(char* buf, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=(sext(rrs1,32)*rrs2)>>32;
+
+                                        //printf("%d %u %lx %x \n",sext(rrs1,32), rrs2, sext(rrs1,32)*rrs2, new_rcalc);
                                         ird=rd;
                                         rrd=new_rcalc;  
                                         break;
@@ -1135,15 +1141,18 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_wb=rcalc;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=sext(wb,32);
+                                        if(cond_wb)
+                                            int_registers[rd]=sext(wb,32);
+                                        else 
+                                            int_registers[rd]=0;
                                         break;
                                 }
                                 //if((unsigned int)int_registers[rs1]<(unsigned int)int_registers[rs2]) int_registers[rd]=int_registers[rs1];
                                 //else int_registers[rd]=0;
                                 break;
                             case 0b0000001:
-                                if(runmode==0) printf("MULHU\n");
-                                if(runmode==0) printf("MULHSU x%d <- u(x%d) * u(x%d) >> 32 \n", rd, rs1, rs2);
+                                //if(runmode==0) printf("MULHU\n");
+                                if(runmode==0) printf("MULHU x%d <- u(x%d) * u(x%d) >> 32 \n", rd, rs1, rs2);
                                 switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1157,9 +1166,11 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
-                                        new_rcalc=(rrs1*rrs2)>>32;
+                                        new_rcalc=((unsigned long long)rrs1*rrs2)>>32;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        
+                                        printf("%u %u %lx %x \n",rrs1, rrs2, rrs1*rrs2, extract(rrs1*rrs2, 63, 32));
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1924,7 +1935,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
-                                        if(sext(rrs1,32)>=sext(rrs2,32)) nextpc=pc_ex+offset;
+                                        if(rrs1>=rrs2) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
                                         break;
                                     case MAS:

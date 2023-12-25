@@ -2,22 +2,22 @@
 lui  O
 auipc ?
 addi O
-slti
-sltiu
-xori
-ori
-andi
-slli
-srli
-srai
+slti O
+sltiu O
+xori O
+ori O
+andi O
+slli O
+srli O
+srai O
 add O
 sub O
-sll
-slt
-sltu
+sll O
+slt O
+sltu O
 xor O
-srl
-sra
+srl O
+sra O
 or O
 and O
 lb ?
@@ -34,17 +34,18 @@ beq O
 bne O
 blt O
 bge O
-bltu
-bgeu 
+bltu O
+bgeu O
 
 mul  O  
 mulh    
 mulhsu    
 mulhu    
+
 div O   
-divu    
+divu O    
 rem  O  
-remu    
+remu O  
 
 fmadd-s O
 fmsub-s O
@@ -62,13 +63,13 @@ fmin-s O
 fmax-s O
 fcvt-w-s O
 fcvt-wu-s O
-fmv-x-w
+fmv-x-w O
 feq-s O
 flt-s O
 fle-s O
 fcvt-s-w O
 fcvt-s-wu O
-fmv-w-x
+fmv-w-x O
 flw O
 fsw O
 

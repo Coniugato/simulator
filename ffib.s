@@ -14,6 +14,7 @@ fib:
     sw sp, 0, t0 #save i
     mv t4, t0
     addi sp, sp, -4
+
     sw sp, 0, ra #save ra
 
     addi t0, t0, -1

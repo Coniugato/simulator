@@ -9,6 +9,7 @@ INST addi sp sp -4 END
 INST sw sp 0 t0 END
 INST mv t4 t0 END
 INST addi sp sp -4 END
+INST bp 20 END
 INST sw sp 0 ra END
 INST addi t0 t0 -1 END
 INST call fib END
