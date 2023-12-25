@@ -448,6 +448,25 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         // printf("%d %d %d, %llx\n", atoi_w(opr[2]), rd, rs1, *int_inst);
         writeall(outd, char_inst, 4);
     }
+    else if (strcmp(opc, "nop") == 0)
+    {
+        n_oprand = 0;
+        int i;
+        /*for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            ////printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }*/
+        int rd = 0;
+        int rs1 = 0;
+        int rs2 = 0;
+        *int_inst = (rd << 7) + (rs1 << 15) + (rs2 << 20) + 0b0110011;
+        writeall(outd, char_inst, 4);
+    }
     else if (strcmp(opc, "slti") == 0)
     {
         n_oprand = 3;
