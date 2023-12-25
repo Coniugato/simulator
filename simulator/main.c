@@ -204,7 +204,7 @@ char* memory_access(unsigned long long addr, int wflag){
     }
     printf("\n");*/
 
-    if(runmode==0) printf("DCache Access: %x %d %d %d\n",addr, tag, index, offset);
+    if(runmode==0) printf("DCache Access: %llx %lld %lld %lld\n",addr, tag, index, offset);
 
     int way=0;
     int way_found=-1;
@@ -450,7 +450,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
 int on_cache(unsigned long long addr){
     unsigned long long tag = extract(addr,31,31-LEN_TAG+1);
     unsigned long long index = extract(addr,31-LEN_TAG,LEN_OFFSET);
-    printf("[%d %d]\n", tag, index);
+    //printf("[%d %d]\n", tag, index);
     int way=0;
     for(way=0; way<N_WAYS; way++){
         int valid=extract(flag[way][index],0,0);
@@ -508,23 +508,23 @@ void handle_instruction(char* buf, int stage, int stall){
         if(runmode==0) printf("STALLED.");
         switch(stage){
             case IFS:
-                if(runmode==0) printf("Remained clock: %d\n", delay_IF);
+                if(runmode==0) printf("Remained clock: %lld\n", delay_IF);
                 new_pc_rf=pc;
                 break;
             case RFS:
-                if(runmode==0) printf("Remained clock: %d\n", delay_RF);
+                if(runmode==0) printf("Remained clock: %lld\n", delay_RF);
                 new_pc_ex=pc_rf;
                 break;
             case EXS:
-                if(runmode==0) printf("Remained clock: %d\n", delay_EX);
+                if(runmode==0) printf("Remained clock: %lld\n", delay_EX);
                 new_pc_ma=pc_ex;
                 break;
             case MAS:
-                if(runmode==0) printf("Remained clock: %d\n", delay_MA);
+                if(runmode==0) printf("Remained clock: %lld\n", delay_MA);
                 new_pc_wb=pc_ma;
                 break;
             case WBS:
-                if(runmode==0) printf("Remained clock: %d\n", delay_WB);
+                if(runmode==0) printf("Remained clock: %lld\n", delay_WB);
                 break;
             default:
                 break;
@@ -552,7 +552,7 @@ void handle_instruction(char* buf, int stage, int stall){
         switch(extract(*buf_int,6,2)){
             case 0b01101:
                 int imm=extract(*buf_int, 31,12);
-                if(runmode==0) printf("LUI x%d<-%lld (literal value: %lld)\n", rd, imm<<12, imm);
+                if(runmode==0) printf("LUI x%d<-%d (literal value: %d)\n", rd, imm<<12, imm);
                 switch(stage){
                     case IFS:
                         new_ireg_rf=*buf_int;
@@ -577,7 +577,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 break;
             case 0b00101:
                 imm=extract(*buf_int, 31,12);
-                if(runmode==0) printf("AUIPC x%d<-pc(=%lld)+%lld\n", rd, pc, imm);
+                if(runmode==0) printf("AUIPC x%d<-pc(=%d)+%d\n", rd, pc, imm);
                 switch(stage){
                     case IFS:
                         new_ireg_rf=*buf_int;
@@ -606,7 +606,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 int rs1=extract(*buf_int, 19,15);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
-                        if(runmode==0) printf("ADDI x%d <- x%d + %d\n", rd, rs1, sext(imm,12));
+                        if(runmode==0) printf("ADDI x%d <- x%d + %lld\n", rd, rs1, sext(imm,12));
                         switch(stage){
                             case IFS:
                                 new_ireg_rf=*buf_int;
@@ -619,7 +619,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 break;
                             case EXS:
                                 new_ireg_ma=*buf_int;
-                                if(runmode==0) printf("%d %d %d\n",sext(rrs1,32),sext(imm,12), invsext(sext(rrs1,32)+sext(imm,12),32));
+                                if(runmode==0) printf("%lld %lld %lld\n",sext(rrs1,32),sext(imm,12), invsext(sext(rrs1,32)+sext(imm,12),32));
                                 new_rcalc=invsext(sext(rrs1,32)+sext(imm,12),32);
                                 ird=rd;
                                 rrd=new_rcalc;
@@ -709,7 +709,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //else int_registers[rd]=0;
                         break;
                     case 0b100:
-                        if(runmode==0) printf("XORI x%d <- x%d ^ x%d\n", rd, rs1, sext(imm,12));
+                        if(runmode==0) printf("XORI x%d <- x%d ^ x%lld\n", rd, rs1, sext(imm,12));
                         switch(stage){
                             case IFS:
                                 new_ireg_rf=*buf_int;
@@ -736,7 +736,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //int_registers[rd]=int_registers[rs1]^imm;
                         break;
                     case 0b110:
-                        if(runmode==0) printf("ORI x%d <- x%d | x%d\n", rd, rs1, sext(imm,12));
+                        if(runmode==0) printf("ORI x%d <- x%d | x%lld\n", rd, rs1, sext(imm,12));
                         switch(stage){
                             case IFS:
                                 new_ireg_rf=*buf_int;
@@ -763,7 +763,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //int_registers[rd]=int_registers[rs1]|imm;
                         break;
                     case 0b111:
-                        if(runmode==0) printf("ANDI x%d <- x%d & x%d\n", rd, rs1, sext(imm,12));
+                        if(runmode==0) printf("ANDI x%d <- x%d & x%lld\n", rd, rs1, sext(imm,12));
                         switch(stage){
                             case IFS:
                                 new_ireg_rf=*buf_int;
@@ -1170,7 +1170,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         ird=rd;
                                         rrd=new_rcalc;
                                         
-                                        printf("%u %u %lx %x \n",rrs1, rrs2, rrs1*rrs2, extract(rrs1*rrs2, 63, 32));
+                                        printf("%u %u %x %llx \n",rrs1, rrs2, rrs1*rrs2, extract(rrs1*rrs2, 63, 32));
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1404,7 +1404,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case 0b111:
                         switch(extract(*buf_int, 31,25)){
                             case 0b0000000:
-                                if(runmode==0) printf("AND x%d <- x%d & x%d\n");
+                                if(runmode==0) printf("AND x%d <- x%d & x%d\n", rd, rs1, rs2);
                                 switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1474,7 +1474,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 //if(runmode==0) printf("%d %d\n", rd, rs1);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
-                        if(runmode==0) printf("LB x%d <- (MEM[x%d+%d])[7:0]\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("LB x%d <- (MEM[x%d+%lld])[7:0]\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1502,7 +1502,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 7,0),8);
                         break;
                     case 0b001:
-                        if(runmode==0) printf("LH x%d <- (MEM[x%d+%d])[15:0]\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("LH x%d <- (MEM[x%d+%lld])[15:0]\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1531,7 +1531,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12), 0), 15,0),16);
                         break;
                     case 0b010:
-                        if(runmode==0) printf("LW x%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("LW x%d <- (MEM[x%d+%lld])[31:0]\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1560,7 +1560,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //int_registers[rd]=sext(extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 31,0),32);//cocotb
                         break;
                     case 0b100:
-                        if(runmode==0) printf("LBU x%d <- u((MEM[x%d+%d])[7:0])\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("LBU x%d <- u((MEM[x%d+%lld])[7:0])\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1589,7 +1589,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case 0b101:
                         //if(runmode==0) printf("LHU\n");
-                        if(runmode==0) printf("LHU x%d <- u((MEM[x%d+%d])[15:0])\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("LHU x%d <- u((MEM[x%d+%lld])[15:0])\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1709,8 +1709,7 @@ void handle_instruction(char* buf, int stage, int stall){
             case 0b11011: 
                 rd=extract(*buf_int, 11,7);
                 offset=(extract(*buf_int, 31,31)<<20)+(extract(*buf_int, 19,12)<<12)+(extract(*buf_int, 20,20)<<11)+(extract(*buf_int, 30,21)<<1);
-                if(runmode==0) printf("JAL x%d <- PC+4; PC <- PC + %d\
-                n, %d", rd, sext(offset, 21));
+                if(runmode==0) printf("JAL x%d <- PC+4; PC <- PC + %lld\n", rd, sext(offset, 21));
                 switch(stage){
                             case IFS:
                                 new_ireg_rf=*buf_int;
@@ -1748,7 +1747,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
                         offset=extract(*buf_int, 31,20);
-                        if(runmode==0) printf("JALR x%d <- PC+4; PC <- x%d + %d\n", rd, rs1, sext(offset, 21));
+                        if(runmode==0) printf("JALR x%d <- PC+4; PC <- x%d + %lld\n", rd, rs1, sext(offset, 21));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -1856,7 +1855,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
-                                        if(runmode==0) printf("%d %d\n", sext(rrs1,32), sext(rrs2,32));
+                                        //if(runmode==0) printf("%d %d\n", sext(rrs1,32), sext(rrs2,32));
                                         if(sext(rrs1,32)<sext(rrs2,32)) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
                                         break;
@@ -2366,7 +2365,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 //float_registers[rd]= fsgnjn_c(float_registers[rs1], float_registers[rs2],stage);
                                 break;
                             case 0b010:
-                                if(runmode==0) printf("FSGNJN.S f%d <- abs(f%d) * (sgn(f%d) ^ sgn(f%d))\n", rd, rs1, rs1, rs2);
+                                if(runmode==0) printf("FSGNJX.S f%d <- abs(f%d) * (sgn(f%d) ^ sgn(f%d))\n", rd, rs1, rs1, rs2);
                                 switch(stage){
                                             case IFS:
                                                 new_ireg_rf=*buf_int;
@@ -2871,7 +2870,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 switch(extract(*buf_int, 14,12)){
                     case 0b010:
                         //imm=extract(*buf_int, 11,0); <-???
-                        if(runmode==0) printf("FLW f%d <- (MEM[x%d+%d])[31:0]\n", rd, rs1, sext(offset,12));
+                        if(runmode==0) printf("FLW f%d <- (MEM[x%d+%lld])[31:0]\n", rd, rs1, sext(offset,12));
                         switch(stage){
                                     case IFS:
                                         new_ireg_rf=*buf_int;
@@ -3182,9 +3181,9 @@ void input_handle(void){
         if(c=='d'){
             printf("%c\n",c);
             if(Icache_hit+Icache_miss==0) printf("\r[cache statistics]: Not Yet Available. No I-cache access was detected.\n");
-            else printf("\r[cache statistics]:(I-cache hit) %d \t(I-cache miss) %d \t(I-cache hit rate) %f\n", Icache_hit, Icache_miss, (double)Icache_hit/(double)(Icache_hit+Icache_miss));
+            else printf("\r[cache statistics]:(I-cache hit) %lld \t(I-cache miss) %lld \t(I-cache hit rate) %f\n", Icache_hit, Icache_miss, (double)Icache_hit/(double)(Icache_hit+Icache_miss));
             if(Dcache_hit+Dcache_miss==0) printf("\r[cache statistics]: Not Yet Available. No D-cache access was detected.\n");
-            else printf("\r[cache statistics]:(D-cache hit) %d \t(D-cache miss) %d \t(D-cache hit rate) %f\n", Dcache_hit, Dcache_miss, (double)Dcache_hit/(double)(Dcache_hit+Dcache_miss));
+            else printf("\r[cache statistics]:(D-cache hit) %lld \t(D-cache miss) %lld \t(D-cache hit rate) %f\n", Dcache_hit, Dcache_miss, (double)Dcache_hit/(double)(Dcache_hit+Dcache_miss));
             continue;
         }
         if(c=='n'){
@@ -3253,13 +3252,13 @@ void input_handle(void){
                 }
                 if(ctype=='d'){
 
-                    printf("[D-cache index %d]\n\r", idx);
+                    printf("[D-cache index %lld]\n\r", idx);
                     int i=0;
                     int way=0;
                     for(way=0; way<N_WAYS; way++){
                         int rank=extract(flag[way][idx],3,1);
                         if(rank==0) rank=5;
-                        printf("\r(way %d: tag %llx \t: %s %s : rank %d) ", way, ctag[way][idx], (extract(flag[way][idx],0,0)==1 ? "v" : "i"), (extract(flag[way][idx],5,5)==1 ? "d" : "p"), rank);
+                        printf("\r(way %d: tag %x \t: %s %s : rank %d) ", way, ctag[way][idx], (extract(flag[way][idx],0,0)==1 ? "v" : "i"), (extract(flag[way][idx],5,5)==1 ? "d" : "p"), rank);
                         for(i=0; i<LEN_LINE; i++){
                             printf("%02x ", cache[way][idx][i] & 0x000000FF);
                         }
@@ -3268,13 +3267,13 @@ void input_handle(void){
                 }
                 else if(ctype=='i'){
 
-                    printf("[I-cache index %d]\n\r", idx);
+                    printf("[I-cache index %lld]\n\r", idx);
                     int i=0;
                     int way=0;
                     for(way=0; way<I_N_WAYS; way++){
                         int rank=extract(i_flag[way][idx],3,1);
                         if(rank==0) rank=5;
-                        printf("\r(way %d: tag %llx \t: %s : rank %d) ", way, i_ctag[way][idx], (extract(i_flag[way][idx],0,0)==1 ? "v" : "i"), rank);
+                        printf("\r(way %d: tag %x \t: %s : rank %d) ", way, i_ctag[way][idx], (extract(i_flag[way][idx],0,0)==1 ? "v" : "i"), rank);
                         for(i=0; i<I_LEN_LINE; i++){
                             char data=i_cache[way][idx][i];
                             printf("%02x ", data & 0x000000FF);
@@ -3334,15 +3333,15 @@ void input_handle(void){
                     if(way>=0 || iway>=0){
                         if(way>=0){
                             fui.i=*(int*) memory_access(memnum,-1);
-                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
                             if(iway>=0){
                                 fui.i=*(int*) i_memory_access(memnum,-1);
-                                printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                                printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                             }
                         }
                         else if(iway>=0){
                             fui.i=*(int*) i_memory_access(memnum,-1);
-                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                         }
                         
 
@@ -3351,7 +3350,7 @@ void input_handle(void){
                     }
                     else{
                         fui.i=*(int*) (memory+memnum);
-                        printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
+                        printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
                     }
                     
                 }
@@ -3379,19 +3378,19 @@ void input_handle(void){
 
                     int way=on_cache(memnum);
                     int iway=on_i_cache(memnum);
-                    printf("[[%d]]\n", way);
+                    //printf("[[%d]]\n", way);
                     if(way>=0 || iway>=0){
                         if(way>=0){
                             fui.i=*(int*) memory_access(memnum,-1);
-                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Dcache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, way, fui.ui, fui.i, fui.ui, fui.f);
                             if(iway>=0){
                                 fui.i=*(int*) i_memory_access(memnum,-1);
-                                printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                                printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                             }
                         }
                         else if(iway>=0){
                             fui.i=*(int*) i_memory_access(memnum,-1);
-                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
+                            printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<Icache way %d>\x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, iway, fui.ui, fui.i, fui.ui, fui.f);
                         }
                         
 
@@ -3400,7 +3399,7 @@ void input_handle(void){
                     }
                     else{
                         fui.i=*(int*) (memory+memnum);
-                        printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08x\x1b[0m\x1b[33m]\t<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
+                        printf("\r\x1b[33m[addr\x1b[0m \x1b[32m%08llx\x1b[0m\x1b[33m]\t<main memory> \x1b[0m\x1b[31m(0x)\x1b[0m %08x \t\x1b[36m(int)\x1b[0m %d\t\x1b[35m(uint)\x1b[0m %u \t\x1b[34m(float)\x1b[0m %f\n\r", memnum, fui.ui, fui.i, fui.ui, fui.f);
                     }
                     
                 }
@@ -3504,25 +3503,25 @@ int main(int argc, char *argv[]){
         //unsigned int dummy=0;
         if(delay_IF<=1){
             stall_i=*(unsigned int *)i_memory_access(pc,0);
-            handle_instruction(&stall_i, IFS,0);
+            handle_instruction((char*)&stall_i, IFS,0);
         }
-        else handle_instruction(&stall_i, IFS,1);
+        else handle_instruction((char*)&stall_i, IFS,1);
 
         //int c_ldhzd=ldhzd;
 
         //Write Back Stage
-        if(delay_WB<=1) handle_instruction(&ireg_wb, WBS, 0);
-        else handle_instruction(&ireg_wb, WBS,1);
+        if(delay_WB<=1) handle_instruction((char*)&ireg_wb, WBS, 0);
+        else handle_instruction((char*)&ireg_wb, WBS,1);
 
         //printf("%d@@\n", delay_IF);
         //Register Fetch Stage
-        if(delay_RF<=1) handle_instruction(&ireg_rf, RFS,0);
-        else handle_instruction(&ireg_rf, RFS,1);
+        if(delay_RF<=1) handle_instruction((char*)&ireg_rf, RFS,0);
+        else handle_instruction((char*)&ireg_rf, RFS,1);
         //printf("%d@@\n", irs1);
         //ALU / FPU Stage
         if(delay_EX<=1){
             
-            handle_instruction(&ireg_ex, EXS, 0);
+            handle_instruction((char*)&ireg_ex, EXS, 0);
             if(pc_flag==1){
                 if(nextpc==new_pc_ex){
                     if(runmode==0) printf("untaken.\n");
@@ -3583,11 +3582,11 @@ int main(int argc, char *argv[]){
                 new_rrs3=o_rrd;
             }
         }
-        else handle_instruction(&ireg_ex, EXS, 1);
+        else handle_instruction((char*)&ireg_ex, EXS, 1);
         //Memory Access Stage
          //printf("@@@%d, %d\n", delay_MA, wait_MA);
-        if(delay_MA<=1) handle_instruction(&ireg_ma, MAS, 0);
-        else handle_instruction(&ireg_ma, MAS, 1);
+        if(delay_MA<=1) handle_instruction((char*)&ireg_ma, MAS, 0);
+        else handle_instruction((char*)&ireg_ma, MAS, 1);
         
 
 
@@ -3690,7 +3689,7 @@ int main(int argc, char *argv[]){
 
 
         
-        if(int_registers[7]<0) printf("%d,%d ", int_registers[7], clk);
+        if(int_registers[7]<0) printf("%d,%lld ", int_registers[7], clk);
 
         //for display
         if(skip_jmp>0){
@@ -3704,10 +3703,10 @@ int main(int argc, char *argv[]){
         //printf("[#]%d %d %d %d\n", o_frd, frd, frs1, frs2);
 
         if(runmode==1 && end!=1) continue;
-        printf("Main(Fetch) PC: %d->%d/%d \t CLOCK: %d\n", oldpc, pc, max_pc, clk);
+        printf("Main(Fetch) PC: %lld->%d/%d \t CLOCK: %lld\n", oldpc, pc, max_pc, clk);
         int i;
         for(i=0; i<32; i++){
-            printf("\t\x1b[35mx%d\x1b[0m: \t%lld", i, int_registers[i]);
+            printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);
             if((i+1)%4==0) printf("\n");
             else printf(" "); 
         }

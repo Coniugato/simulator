@@ -170,7 +170,7 @@ void handle_instruction(char* buf){
                                 printf("\t\t  SLL x%d <- x%d << x%d\n", rd, rs1, rs2);
                                 break;
                             case 0b0000001:
-                                printf("\t\t  MULH x%d <- x%d - x%d\n", rd, rs1, rs2);
+                                printf("\t\t  MULH  x%d <- x%d * x%d >> 32\n", rd, rs1, rs2);
                                 break;
                         }
                         break;
@@ -190,7 +190,7 @@ void handle_instruction(char* buf){
                                 printf("\t\t  SLTU x%d <- (u(x%d) < u(x%d)) ? x%d : 0\n", rd, rs1, rs2, rs1);
                                 break;
                             case 0b0000001:
-                                printf("\t\t  MULHSU x%d <- u(x%d) * u(x%d) >> 32 \n", rd, rs1, rs2);
+                                printf("\t\t  MULHU x%d <- u(x%d) * u(x%d) >> 32 \n", rd, rs1, rs2);
                                 break;
                         }
                         break;
@@ -407,7 +407,7 @@ void handle_instruction(char* buf){
                                 printf("\t\t  FSGNJN.S f%d <- abs(f%d) * ~sgn(f%d)\n", rd, rs1, rs2);
                                 break;
                             case 0b010:
-                                printf("\t\t  FSGNJN.S f%d <- abs(f%d) * (sgn(f%d) ^ sgn(f%d))\n", rd, rs1, rs1, rs2);
+                                printf("\t\t  FSGNJX.S f%d <- abs(f%d) * (sgn(f%d) ^ sgn(f%d))\n", rd, rs1, rs1, rs2);
                                 break;
                         }
                         break;

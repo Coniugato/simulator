@@ -1,6 +1,7 @@
-.data int, 20
+.data int, 7
 main: 
     lw t0, gp, 0
+    li sp, 1000
     jal ra, fib
     j end
 fib:

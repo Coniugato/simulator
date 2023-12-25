@@ -1,0 +1,13 @@
+cd ./$(git rev-parse --show-cdup)
+rm .mid*
+cd simulator
+rm .mid*
+make clean
+cd ../displayer 
+make clean
+rm .mid*
+cd ../assembler
+make clean
+rm .mid*
+cd ../test_binaries
+rm .mid*

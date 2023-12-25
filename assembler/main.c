@@ -367,7 +367,7 @@ int main(int argc, char *argv[]){
             read_offset+=read_count;
         }
         if(read_offset==0) break; 
-        fprintf(f,"%08x", buf2[0]);  
+        fprintf(f,"%08x\n", buf2[0]);  
     }
     
     return 0;
