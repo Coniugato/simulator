@@ -456,7 +456,7 @@ int on_cache(unsigned long long addr){
         int valid=extract(flag[way][index],0,0);
         //printf("(%d %d), %d\n", ctag[way][index], valid, tag);
         if(tag==ctag[way][index] && valid==1) return way;
-        printf("(%d, %d)\n", ctag[way][index], valid);
+        //printf("(%d, %d)\n", ctag[way][index], valid);
     }
     return -1;
 }
@@ -1170,7 +1170,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         ird=rd;
                                         rrd=new_rcalc;
                                         
-                                        printf("%u %u %x %llx \n",rrs1, rrs2, rrs1*rrs2, extract(rrs1*rrs2, 63, 32));
+                                        //printf("%u %u %x %llx \n",rrs1, rrs2, rrs1*rrs2, extract(rrs1*rrs2, 63, 32));
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1433,7 +1433,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 //int_registers[rd]=int_registers[rs1]&int_registers[rs2];
                                 break;
                             case 0b0000001:
-                                if(runmode==0) printf("REMU\n");
+                                //if(runmode==0) printf("REMU\n");
                                 if(runmode==0) printf("REMU x%d <- u(%d) %% u(%d)\n", rd, rs1, rs2);
                                 switch(stage){
                                     case IFS:
@@ -1650,7 +1650,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //*(unsigned char*) memory_access(int_registers[rs1]+sext(offset,12),1)=extract(int_registers[rs2], 7,0);
                         break;
                     case 0b001:
-                        if(runmode==0) printf("SH\n");
+                        //if(runmode==0) printf("SH\n");
                         if(runmode==0) printf("SB (MEM[x%d+%d])[15:0] <- x%d\n", rs1, offset, rs2);
                         switch(stage){
                                     case IFS:
@@ -1694,6 +1694,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
                                         new_m_data=rrs2;
+                                        //printf("@@%d\n", new_m_data);
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -3329,7 +3330,7 @@ void input_handle(void){
 
                     int way=on_cache(memnum);
                     int iway=on_i_cache(memnum);
-                    printf("[[%d]]\n", way);
+                    //printf("[[%d]]\n", way);
                     if(way>=0 || iway>=0){
                         if(way>=0){
                             fui.i=*(int*) memory_access(memnum,-1);
@@ -3557,7 +3558,8 @@ int main(int argc, char *argv[]){
             else if(irs1==o_ird && irs1!=0){
                 new_rrs1=o_rrd;
             }
-            if(irs2==frd && irs2!=0){
+            if(irs2==ird && irs2!=0){
+                if(runmode==0) printf("forwarding x%d=%d -> x%d\n", ird, rrd, irs2);
                 new_rrs2=rrd;
             }
             else if(irs2==o_ird && irs2!=0){

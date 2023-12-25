@@ -45,7 +45,6 @@ long long atoi_w(char *c)
         ret = -atoi(c + 1);
     }
     else ret = atoi(c);
-    return ret;
 }
 
 unsigned long long invsext(long long input, unsigned long long n_dights)
@@ -68,7 +67,7 @@ void error_toofew(char *name)
     exit(1);
 }
 
-int reg_convert(char *s)
+int reg_convert_inner(char *s)
 {
     if (strlen(s) < 2)
     {
@@ -111,10 +110,14 @@ int reg_convert(char *s)
     else if (s[0] == 's')
     {
         int num = s[1] - '0';
+        if(strlen(s)==3){
+            num=10+(s[2]-'0');
+        }
         if (num <= 1)
             return 8 + num;
         else
             return num + 16;
+        
     }
     else if (s[0] == 'f' && s[1] == 's')
     {
@@ -135,6 +138,9 @@ int reg_convert(char *s)
     else if (s[0] == 'f' && s[1] == 't')
     {
         int num = s[2] - '0';
+        if(strlen(s)==4){
+            num=10+(s[3]-'0');
+        }
         if (num <= 7)
             return num;
         else
@@ -154,6 +160,12 @@ int reg_convert(char *s)
         fprintf(stderr, "ERROR: invalid register name %s.", s);
         exit(1);
     }
+}
+
+int reg_convert(char *s){
+    int ret = reg_convert_inner(s);
+    if(ret < 0 || ret > 31){fprintf(stderr, "register conversion error %s -> %d ?\n", s, ret); exit(1);}
+    return ret;
 }
 
 int type_convert(char *s)
