@@ -1,15 +1,13 @@
 INST addi t0 t0 1 END
 INST call test END
 INST j end END
-INST .data float 1.32 END
-INST .data float 0.14 END
-INST .data float -4.1 END
+INST .data float 0.1562 END
+INST .data int 1042284544 END
 INST addr t0 data END
 INST flw ft0 t0 0 END
-INST flw ft1 t0 4 END
-INST flw ft2 t0 8 END
-INST fmadd.s ft3 ft0 ft1 ft2 END
-INST fmsub.s ft4 ft0 ft1 ft2 END
-INST fnmadd.s ft5 ft0 ft1 ft2 END
-INST fnmsub.s ft6 ft0 ft1 ft2 END
-INST mv a0 a0 END
+INST lw t1 t0 4 END
+INST fmv.x.w t2 ft0 END
+INST fmv.w.x ft1 t2 END
+INST fmv.w.x ft2 t1 END
+INST fmv.x.w t3 ft2 END
+INST nop END

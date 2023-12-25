@@ -61,6 +61,8 @@ void mid_print(FILE* f){
   else if(opcode[0]=='.'){ n_data+=4; }
   else n_inst+=4;
 
+  printf("N_INST : %d\n", n_inst);
+
   if(opcode[0]!='\0'){
     fprintf(f, "INST %s ", opcode);
   }
@@ -255,6 +257,7 @@ int main(int argc, char *argv[]){
         if(strcmp(buf, "INST")==0){
             int offset = assemble(f, outd, addr, labels);
             addr+=offset;
+            printf("[[%d]]\n", addr);
             //printf("%d\n", addr);
         }
     }

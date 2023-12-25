@@ -55,9 +55,9 @@ fsub-s O
 fmul-s O
 fdiv-s O
 fsqrt-s O
-fsgnj-s
-fsgnjn-s
-fsgnjx-s
+fsgnj-s O
+fsgnjn-s O
+fsgnjx-s O
 fmin-s O
 fmax-s O
 fcvt-w-s O

@@ -2551,12 +2551,12 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 case RFS:
                                                     new_ireg_ex=*buf_int;
                                                     new_rrs1=F2I(float_registers[rs1]);
-                                                    frs2=rs2;
+                                                    frs1=rs1;
                                                     break;
                                                 case EXS:
                                                     new_ireg_ma=*buf_int;
                                                     new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
-                                                    frd=rd;
+                                                    ird=rd;
                                                     rrd=new_rcalc;
                                                     break;
                                                 case MAS:

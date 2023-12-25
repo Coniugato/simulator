@@ -1929,6 +1929,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (0b000 << 12) + (0b00000 << 20) + (0b11110 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fmadd.d") == 0)
     {
