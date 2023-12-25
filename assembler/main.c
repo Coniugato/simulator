@@ -50,7 +50,7 @@ void print_debug(){
 void mid_print(FILE* f){
   
   if(label[0]!='\0'){
-    printf("%s %d\n", label, n_inst);
+    //printf("%s %d\n", label, n_inst);
     if(opcode[0]=='.') labels=insert(labels, label, n_data, 1);
     else  labels=insert(labels, label, n_inst, 1);
   }
@@ -61,7 +61,7 @@ void mid_print(FILE* f){
   else if(opcode[0]=='.'){ n_data+=4; }
   else n_inst+=4;
 
-  printf("N_INST : %d\n", n_inst);
+  //printf("N_INST : %d\n", n_inst);
 
   if(opcode[0]!='\0'){
     fprintf(f, "INST %s ", opcode);
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
         clear();
         while(1){
           char c = fgetc(f);
-          printf("%c %d %d %d\n", c, labelled , index, spaced);
+          //printf("%c %d %d %d\n", c, labelled , index, spaced);
           if(c=='#'){
             if(buf!=bufto){
               *bufto = '\0';
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]){
             if(index>0) mid_print(fm);
             while(1){
               char c = fgetc(f);
-              printf("[C]%c\n", c);
+              //printf("[C]%c\n", c);
               if(c=='\n' || c==EOF) break;
             }
             break;
@@ -257,7 +257,7 @@ int main(int argc, char *argv[]){
         if(strcmp(buf, "INST")==0){
             int offset = assemble(f, outd, addr, labels);
             addr+=offset;
-            printf("[[%d]]\n", addr);
+            //printf("[[%d]]\n", addr);
             //printf("%d\n", addr);
         }
     }
@@ -278,7 +278,7 @@ int main(int argc, char *argv[]){
     #define N_ADD_INST 7
     //gp initialization
     char char_inst[4];
-    int* int_inst=char_inst;
+    int* int_inst=(int*)char_inst;
     int rd = 3;
     unsigned long imm = addr+4*N_ADD_INST;
     *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
@@ -302,7 +302,7 @@ int main(int argc, char *argv[]){
     writeall(outd, char_inst, 4);
     imm=0;
     imm = invsext(extract(imm, 11,0), 12);
-    printf("%x\n", imm);
+    //printf("%x\n", imm);
     *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
     writeall(outd, char_inst, 4);
 
@@ -329,7 +329,7 @@ int main(int argc, char *argv[]){
     int tmpbuf=0;
     //printf("%d\n", s_globals);
     for(ib=0; ib<(4-s_globals%4); ib++){
-      writeall(outd, &tmpbuf, 1);
+      writeall(outd, (char*)&tmpbuf, 1);
     }
     
     fclose(f);

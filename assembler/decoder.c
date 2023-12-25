@@ -209,7 +209,7 @@ double atof_w(char* str){
         exit(1);
     }
     else if (str == end) {
-        printf(stderr, "Float value cannot be converted\n");
+        fprintf(stderr, "Float value cannot be converted\n");
         exit(1);
     }
     return v;
@@ -342,10 +342,10 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
     unsigned int *int_inst = (unsigned int *)char_inst;
     fscanf(inf, "%s", opc);
 
-    printf("%s, %d\n", opc, pc);
+    //printf("%s, %d\n", opc, pc);
 
     int n_oprand;
-    printf("%s\n", opc);
+    //printf("%s\n", opc);
     int admit_flag=0;
     if (strcmp(opc, ".data") == 0)
     {
@@ -2606,7 +2606,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
 
         unsigned int conv_offset = (extract(offset, 10, 1) << 21) + (extract(offset, 11, 11) << 20) + (extract(offset, 20, 20) << 31) + (extract(offset, 19, 12) << 12);
         *int_inst = conv_offset + 0b1101111;
-        printf("@@%s %x %x %x\n", opr[0], conv_offset, *int_inst, *(int *)char_inst);
+        //printf("@@%s %x %x %x\n", opr[0], conv_offset, *int_inst, *(int *)char_inst);
         writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "call") == 0)

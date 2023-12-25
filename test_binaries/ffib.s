@@ -1,7 +1,8 @@
 .data int, 20
 main: 
     lw t0, gp, 0
-    call fib
+    fcvt.s.w fa0, zero
+    jal ra, fib
     j end
 fib:
     addi t1, t0, -1
@@ -19,7 +20,7 @@ fib:
     call fib #call fib[i-1]
 
     addi sp, sp, -4
-    sw sp, 0, t0 #save fib[i-1]
+    fsw sp, 0, ft0 #save fib[i-1]
 
 
     lw t0, sp, 8
@@ -29,9 +30,9 @@ fib:
 
 
     #restore
-    mv t1, t0 #t1 <- fib[i-2]
+    fadd.s ft1, ft0, fa0 #t1 <- fib[i-2]
 
-    lw t2, sp, 0 #restore fib[i-1]
+    flw ft2, sp, 0 #restore fib[i-1]
     addi sp, sp, 4
 
     lw ra, sp, 0 #restore ra
@@ -41,9 +42,10 @@ fib:
     addi sp, sp, 4
 
 
-    add t0, t1, t2
-    jalr zero, ra, 0
+    fadd.s ft0, ft1, ft2
+    ret 0
 imm:
     lim t0, 1
-    jalr zero, ra, 0 #later set up ret (pseudo) instruction
+    fcvt.s.w ft0, t0
+    ret 0 
 end: mv t3, t0 #t3 as output
