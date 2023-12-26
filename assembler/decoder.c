@@ -2411,7 +2411,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
     }
-    else if (strcmp(opc, "fld") == 0)
+    /*else if (strcmp(opc, "fld") == 0)
     {
         n_oprand = 3;
         int i;
@@ -2454,7 +2454,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         *int_inst = conv_offset + (rs2 << 20) + (rs1 << 15) + (0b011 << 12) + 0b0100111;
         ////printf("%llx\n", conv_offset);
         writeall(outd, char_inst, 4);
-    }
+    }*/
     // RV32C Instructions(Partially Supported by convertion to non-compact instructions)
     else if (strcmp(opc, "ret") == 0)
     {
@@ -2515,7 +2515,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rd = reg_convert(opr[0]);
         unsigned long imm = invsext(atoi_w(opr[1]), 32);
-        *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+        *int_inst = ((extract(imm, 31, 12)+(extract(imm, 11, 11)==1 ? 1 : 0)) << 12) + (rd << 7) + 0b0110111;
         writeall(outd, char_inst, 4);
         // convert to addi
         imm = invsext(atoi_w(opr[1]), 12);
@@ -2567,7 +2567,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
             exit(1);
         } 
         unsigned long imm = invsext(search(labels, opr[1]), 32);
-        *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
+        *int_inst = ((extract(imm, 31, 12)+(extract(imm, 11, 11)==1 ? 1 : 0)) << 12) + (rd << 7) + 0b0110111;
         writeall(outd, char_inst, 4);
         // convert to addi
         imm = invsext(search(labels, opr[1]), 12);
@@ -2615,7 +2615,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         int rd = reg_convert(opr[0]);
         unsigned long offset = invsext(search(labels, opr[1])+4*(N_BEFADD_INST), 32);
-        *int_inst = (extract(offset, 31, 12) << 12) + (rd << 7) + 0b0110111;
+        *int_inst = ((extract(offset, 31, 12)+(extract(offset, 11, 11)==1 ? 1 : 0)) << 12) + (rd << 7) + 0b0110111;
         writeall(outd, char_inst, 4);
         // convert to addi
         unsigned long imm = invsext(offset, 12);
