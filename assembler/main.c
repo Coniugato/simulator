@@ -56,6 +56,7 @@ void mid_print(FILE* f){
   }
 
   
+  //printf("%s\n", opcode);
   if(strcmp(opcode, "lim")==0) n_inst+=8;
   else if(strcmp(opcode, "iaddrl")==0) n_inst+=8;
   else if(strcmp(opcode, "addrl")==0) n_inst+=12;
@@ -170,7 +171,7 @@ int main(int argc, char *argv[]){
             strcpy(label, buf);
             bufto = buf;
           }
-          else if(c==' '){
+          else if(c==' ' || c=='\t'){
             if(index==0 && buf!=bufto){
               *bufto = '\0';
               strcpy(opcode, buf);
