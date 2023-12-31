@@ -2508,7 +2508,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
                                                 new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
-                                                frd=rd;
+                                                ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
                                             case MAS:
@@ -2535,7 +2535,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
                                                 new_rcalc=fcvt_wu_c(I2F(rrs1),stage);
-                                                frd=rd;
+                                                ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
                                             case MAS:
@@ -2629,7 +2629,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
                                                 new_rcalc=feq_c(I2F(rrs1),I2F(rrs2), stage);
-                                                frd=rd;
+                                                ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
                                             case MAS:
@@ -2658,7 +2658,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
                                                 new_rcalc=flt_c(I2F(rrs1),I2F(rrs2), stage);
-                                                frd=rd;
+                                                ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
                                             case MAS:
@@ -2687,7 +2687,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
                                                 new_rcalc=fle_c(I2F(rrs1),I2F(rrs2), stage);
-                                                frd=rd;
+                                                ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
                                             case MAS:
