@@ -1,0 +1,8 @@
+cd ./$(git rev-parse --show-cdup)
+cd assembler
+make
+cd ../simulator 
+make
+cd ../displayer
+make
+cd ..
