@@ -29,7 +29,7 @@
 #define I_N_LINE (1<<I_LEN_INDEX)
 #define I_LEN_LINE (1<<I_LEN_OFFSET)
 
-
+FILE *fin,*fout;
 
 int skip=0;
 int runmode=0;
@@ -190,6 +190,42 @@ float I2F(unsigned int input){
     union f_ui fui;
     fui.ui=input;
     return fui.f;
+}
+
+int read_int(void){
+    int val;
+    if(fscanf(fin, "%d", &val)==EOF){
+        fprintf(stderr, "input EOF detected.\n");
+        exit(1);
+    }
+    return val;
+}
+
+float read_float(void){
+    float val;
+    if(fscanf(fin, "%f", &val)==EOF){
+        fprintf(stderr, "input EOF detected.\n");
+        exit(1);
+    }
+    return val;
+}
+
+void write_int(int val){
+    if((fout = fopen("output", "a")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+        exit(1);
+    }
+    fprintf(fout, "%d\n", val);
+    fclose(fout);
+}
+
+void write_float(float val){
+    if((fout = fopen("output", "a")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+        exit(1);
+    }
+    fprintf(fout, "%f\n", val);
+    fclose(fout);
 }
 
 char* memory_access(unsigned long long addr, int wflag){
@@ -1949,8 +1985,35 @@ void handle_instruction(char* buf, int stage, int stall){
                 }   
                 break;
             case 0b10000:
-
-                switch(extract(*buf_int, 26,25)){
+                rd=extract(*buf_int, 11,7);
+                if(runmode==0) printf("FIN file->f%d\n", rd);
+                switch(stage){
+                    case IFS:
+                        new_ireg_rf=*buf_int;
+                        break;
+                    case RFS:
+                        new_ireg_ex=*buf_int;
+                        //new_rrs1=invsext(int_registers[rs1],32);
+                        //new_rrs2=F2I(float_registers[rs2]);
+                        //irs1=rs1;
+                        //frs2=rs2;
+                        break;
+                    case EXS:
+                        new_ireg_ma=*buf_int;
+                        frd = rd;
+                        //new_rcalc=rrs1+sext(offset,12);
+                        //new_m_data=rrs2;
+                        break;
+                    case MAS:
+                        new_ireg_wb=*buf_int; float fval=read_float();
+                        //printf("@%f\n", fval);
+                        new_wb=F2I(fval);
+                        break;
+                    case WBS:
+                        float_registers[rd]=I2F(wb);
+                        break;
+                }
+                /*switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
@@ -1986,14 +2049,14 @@ void handle_instruction(char* buf, int stage, int stall){
                         }
                         //float_registers[rd]=fmadd_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
-                    /*case 0b01:
+                    (*case 0b01:
                         if(runmode==0) printf("FMADD.D\n");
                         //Not Implemented.
-                        break;*/
-                }   
+                        break;*)
+                }   */
                 break;
             case 0b10001:
-                switch(extract(*buf_int, 26,25)){
+                /*switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
@@ -2029,10 +2092,37 @@ void handle_instruction(char* buf, int stage, int stall){
                         }
                         //float_registers[rd]=fmsub_c(float_registers[rs1],float_registers[rs2],float_registers[rs3],stage);
                         break;
-                    /*case 0b01:
+                    (*case 0b01:
                         if(runmode==0) printf("FMSUB.D\n");
-                        break;*/
-                }   
+                        break;*)
+                }   */
+                rs1=extract(*buf_int, 19,15);
+                if(runmode==0) printf("FOUT file<-f%d\n", rs1);
+                switch(stage){
+                    case IFS:
+                        new_ireg_rf=*buf_int;
+                        break;
+                    case RFS:
+                        new_ireg_ex=*buf_int;
+                        new_rrs1=F2I(float_registers[rs1]);
+                        //new_rrs2=F2I(float_registers[rs2]);
+                        frs1=rs1;
+                        //frs2=rs2;
+                        break;
+                    case EXS:
+                        new_ireg_ma=*buf_int;
+                        //ird = rd;
+                        new_rcalc=rrs1;
+                        //new_m_data=rrs2;
+                        break;
+                    case MAS:
+                        new_ireg_wb=*buf_int;
+                        write_float(I2F(rcalc));
+                        break;
+                    case WBS:
+                        //int_registers[rd]=wb;
+                        break;
+                }
                 break;
             case 0b10010:
                 switch(extract(*buf_int, 26,25)){
@@ -2943,6 +3033,66 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;*/
                 }
                 break;
+            case 0b11111:
+                //rd=extract(*buf_int, 11,7);
+                rs1=extract(*buf_int, 19,15);
+                //rs2=extract(*buf_int, 24,20);
+                //offset=(extract(*buf_int, 31,25)<<5)+extract(*buf_int, 11,7);;
+                if(runmode==0) printf("OUT file<-x%d\n", rd);
+                switch(stage){
+                    case IFS:
+                        new_ireg_rf=*buf_int;
+                        break;
+                    case RFS:
+                        new_ireg_ex=*buf_int;
+                        new_rrs1=invsext(int_registers[rs1],32);
+                        //new_rrs2=F2I(float_registers[rs2]);
+                        irs1=rs1;
+                        //frs2=rs2;
+                        break;
+                    case EXS:
+                        new_ireg_ma=*buf_int;
+                        //ird = rd;
+                        new_rcalc=rrs1;
+                        //new_m_data=rrs2;
+                        break;
+                    case MAS:
+                        new_ireg_wb=*buf_int;
+                        write_int(rcalc);
+                        break;
+                    case WBS:
+                        //int_registers[rd]=wb;
+                        break;
+                }
+        }
+    }
+    else if(extract(*buf_int, 6,0)==0b1111110){
+        int rd=extract(*buf_int, 11,7);
+        if(runmode==0) printf("IN file->x%d\n", rd);
+            switch(stage){
+                case IFS:
+                    new_ireg_rf=*buf_int;
+                    break;
+                case RFS:
+                    new_ireg_ex=*buf_int;
+                    //new_rrs1=invsext(int_registers[rs1],32);
+                    //new_rrs2=F2I(float_registers[rs2]);
+                    //irs1=rs1;
+                    //frs2=rs2;
+                    break;
+                case EXS:
+                    new_ireg_ma=*buf_int;
+                    ird = rd;
+                    //new_rcalc=rrs1+sext(offset,12);
+                    //new_m_data=rrs2;
+                    break;
+                case MAS:
+                    new_ireg_wb=*buf_int;
+                    new_wb=read_int();
+                    break;
+                case WBS:
+                    int_registers[rd]=wb;
+                    break;
         }
     }
     /* 圧縮命令。シミュレートしないことにする。
@@ -3429,6 +3579,12 @@ int main(int argc, char *argv[]){
             perror("ERROR: cannot open source file"); exit(1);
     }
 
+    
+    if((fin = fopen("input", "r")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+        exit(1);
+    }
+
 
     //load program
     int max_pc=0;
@@ -3750,5 +3906,6 @@ int main(int argc, char *argv[]){
         switch_to_mode(0, &st);
         printf("exiting simulator ...\n");
     }
+    fclose(fin);
     return 0;
 }

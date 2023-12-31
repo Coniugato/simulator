@@ -331,8 +331,9 @@ void handle_instruction(char* buf){
                 }   
                 break;
             case 0b10000:
-
-                switch(extract(*buf_int, 26,25)){
+                rd=extract(*buf_int, 11,7);
+                printf("\t\t  FIN f%d <- file\n", rd);
+                /*switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
@@ -340,10 +341,12 @@ void handle_instruction(char* buf){
                         int rs3=extract(*buf_int, 31,27);
                         printf("\t\t  FMADD.S f%d <- f%d * f%d + f%d\n", rd, rs1, rs2, rs3);
                         break;
-                }   
+                }   */
                 break;
             case 0b10001:
-                switch(extract(*buf_int, 26,25)){
+                rs1=extract(*buf_int, 19,15);
+                printf("\t\t  FOUT file <-  f%d\n", rs1);
+                /*switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
                         int rs1=extract(*buf_int, 19,15);
@@ -351,7 +354,7 @@ void handle_instruction(char* buf){
                         int rs3=extract(*buf_int, 31,27);
                         printf("\t\t  FMSUB.S f%d <- f%d * f%d - f%d\n", rd, rs1, rs2, rs3);
                         break;
-                }   
+                }   */
                 break;
             case 0b10010:
                 switch(extract(*buf_int, 26,25)){
@@ -493,7 +496,15 @@ void handle_instruction(char* buf){
                         break;
                 }
                 break;
+            case 0b11111:
+                rs1=extract(*buf_int, 19,15);
+                printf("\t\t  OUT file <-  x%d\n", rs1);
+                break;
         }
+    }
+    else if(extract(*buf_int, 6,0)==0b1111110){
+        int rd=extract(*buf_int, 11,7);
+        printf("\t\t  IN x%d <- file\n", rd);
     }
 }
 

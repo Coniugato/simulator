@@ -1512,7 +1512,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         writeall(outd, char_inst, 4);
     }
     // RV64F　Instructions
-    else if (strcmp(opc, "fmadd.s") == 0)
+    /*else if (strcmp(opc, "fmadd.s") == 0)
     {
         n_oprand = 4;
         int i;
@@ -1531,7 +1531,76 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs3 = reg_convert(opr[3]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (rs3 << 27) + 0b1000011;
         writeall(outd, char_inst, 4);
+    }*/
+    else if (strcmp(opc, "fin") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        *int_inst = (rd << 7) + 0b1000011;
+        writeall(outd, char_inst, 4);
     }
+    else if (strcmp(opc, "fout") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        *int_inst = (rs1 << 15) + 0b1000111;
+        writeall(outd, char_inst, 4);
+    }
+    else if (strcmp(opc, "in") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        *int_inst = (rd << 7) + 0b1111110;
+        writeall(outd, char_inst, 4);
+    }
+    else if (strcmp(opc, "out") == 0)
+    {
+        n_oprand = 1;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rs1 = reg_convert(opr[0]);
+        *int_inst = (rs1 << 15) + 0b1111111;
+        writeall(outd, char_inst, 4);
+    }
+    /*
     else if (strcmp(opc, "fmsub.s") == 0)
     {
         n_oprand = 4;
@@ -1551,7 +1620,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rs3 = reg_convert(opr[3]);
         *int_inst = (0b00 << 25) + (rd << 7) + (rs1 << 15) + (rs2 << 20) + (rs3 << 27) + 0b1000111;
         writeall(outd, char_inst, 4);
-    }
+    }*/
     else if (strcmp(opc, "fnmsub.s") == 0)
     {
         n_oprand = 4;
