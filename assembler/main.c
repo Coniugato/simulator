@@ -279,19 +279,25 @@ int main(int argc, char *argv[]){
     }
 
     #define N_ADD_INST 7
+
+    int n_inst_bytes = addr+N_ADD_INST*4;
+    int n_data_bytes = s_globals;
+    writeall(outd, (char*)&n_inst_bytes, 4);
+    writeall(outd, (char*)&n_data_bytes, 4);
     //gp initialization
     char char_inst[4];
     int* int_inst=(int*)char_inst;
     int rd = 3;
-    unsigned long imm = addr+4*N_ADD_INST;
+    unsigned long imm = 0; //addr+4*N_ADD_INST;
     *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
     writeall(outd, char_inst, 4);
-    imm = invsext(addr+4*N_ADD_INST, 12);
+    imm = 0; //invsext(addr+4*N_ADD_INST, 12);
     *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
     writeall(outd, char_inst, 4);
     //hp initialization
     rd = 4;
-    imm = addr+4*N_ADD_INST+((s_globals%4==0) ? s_globals : (s_globals/4*4+4));
+    //imm = addr+4*N_ADD_INST+((s_globals%4==0) ? s_globals : (s_globals/4*4+4));
+    imm=s_globals;
     //printf("%d %d\n", s_globals, ((s_globals%4==0) ? s_globals : (s_globals/4+4)));
     *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
     writeall(outd, char_inst, 4);

@@ -1,13 +1,14 @@
 cd ./$(git rev-parse --show-cdup)
-rm .mid* input output
+rm -rf .mid* 
+echo -n  "" > input
 cd simulator
-rm .mid* input output
+rm -rf .mid* 
 make clean
 cd ../displayer 
 make clean
-rm .mid* input output
+rm -rf .mid* 
 cd ../assembler
 make clean
-rm .mid* input output
+rm -rf .mid* 
 cd ../test_binaries
-rm .mid* input output
+rm -rf .mid* 

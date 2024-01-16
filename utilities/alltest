@@ -1,0 +1,20 @@
+cd ./$(git rev-parse --show-cdup)
+utilities/allmake
+cd test_binaries
+ESC=$(printf '\033')
+for file in $(ls *.s)
+do
+    binname=${file:0:-2}
+    echo "[TEST] "$binname".s ..."
+    echo "assembling "$binname".s ..."
+    echo -n "${ESC}[31m"
+    ../assembler/asm $binname".s" $binname
+    echo -n "${ESC}[m"
+    echo "simulating "$binname" ..."
+    touch $binname".input"
+    echo -n "${ESC}[31m"
+    ../simulator/sim $binname -auto -ifnc > $binname".executed"
+    echo -n "${ESC}[m"
+    sed  s/"${ESC}\[[0-9]*m"//g -i $binname".executed"
+    echo ""
+done

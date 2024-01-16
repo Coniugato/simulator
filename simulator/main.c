@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <termios.h>
+#include <string.h>
 #include "fpu.h"
 #include "input_handle.h"
 
@@ -29,6 +30,8 @@
 #define I_N_LINE (1<<I_LEN_INDEX)
 #define I_LEN_LINE (1<<I_LEN_OFFSET)
 
+#define N_INSTRUCTIONS 80004
+
 FILE *fin,*fout;
 
 int skip=0;
@@ -37,9 +40,12 @@ int breakpoint=0;
 int imode=0;
 
 char memory[134217728];
+char i_memory[N_INSTRUCTIONS];
 char cache[N_WAYS][N_LINE][LEN_LINE];
 unsigned int ctag[N_WAYS][N_LINE];
 char flag[N_WAYS][N_LINE];
+char outfilename[1000000];
+char infilename[1000000];
 
 char i_cache[I_N_WAYS][I_N_LINE][I_LEN_LINE];
 unsigned int i_ctag[I_N_WAYS][I_N_LINE];
@@ -211,8 +217,8 @@ float read_float(void){
 }
 
 void write_int(int val){
-    if((fout = fopen("output", "a")) == NULL) {
-        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+    if((fout = fopen(outfilename, "a")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot open output file.");
         exit(1);
     }
     fprintf(fout, "%d\n", val);
@@ -220,8 +226,8 @@ void write_int(int val){
 }
 
 void write_float(float val){
-    if((fout = fopen("output", "a")) == NULL) {
-        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+    if((fout = fopen(outfilename, "a")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot open output file.");
         exit(1);
     }
     fprintf(fout, "%f\n", val);
@@ -356,6 +362,7 @@ char* memory_access(unsigned long long addr, int wflag){
     return cache[way_found][index]+offset;
 }
 
+
 char* i_memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
@@ -368,7 +375,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
         printf("(%d,%d)",k,extract(i_flag[k][index],4,1));
     }
     printf("\n");*/
-
+    /*
     int way=0;
     int way_found=-1;
     for(way=0; way<I_N_WAYS; way++){
@@ -385,9 +392,10 @@ char* i_memory_access(unsigned long long addr, int wflag){
             }
             break;
         }
-    } //printf("@@@%d\n", ctag[1][6]);
+    } */
+    //printf("@@@%d\n", ctag[1][6]);
     //clk+=IcacheAccessClk;
-    if(way_found==-1){
+    /*if(way_found==-1){
         //clk+=Icache_DRAMAccessClk;
         if(wflag==1){
             if(wait_IF==0){
@@ -456,7 +464,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
 
         i_ctag[way_found][index]=tag;
     }
-    else{
+    else{*/
         if(wflag==1){
             if(wait_IF==0){
                 delay_IF=IcacheWriteClk;
@@ -477,11 +485,13 @@ char* i_memory_access(unsigned long long addr, int wflag){
                 wait_IF=0;
             }
         }
-    } 
+    /*}*/ 
      //printf("@@@%d\n", ctag[1][6]);
-    if(wflag==1) i_flag[way_found][index]=(i_flag[way_found][index]-(extract(i_flag[way_found][index],5,5)<<5))+32;
-    return i_cache[way_found][index]+offset;
+    /*if(wflag==1) i_flag[way_found][index]=(i_flag[way_found][index]-(extract(i_flag[way_found][index],5,5)<<5))+32;
+    return i_cache[way_found][index]+offset;*/
+    return i_memory+addr;
 }
+
 
 int on_cache(unsigned long long addr){
     unsigned long long tag = extract(addr,31,31-LEN_TAG+1);
@@ -497,6 +507,7 @@ int on_cache(unsigned long long addr){
     return -1;
 }
 
+/*
 int on_i_cache(unsigned long long addr){
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
     unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
@@ -508,6 +519,7 @@ int on_i_cache(unsigned long long addr){
     }
     return -1;
 }
+*/
 
 long long int convsext(unsigned long long input, int from, int to){
     return invsext(sext(input,from),to);
@@ -2640,6 +2652,69 @@ void handle_instruction(char* buf, int stage, int stall){
                                 break;
                         } 
                         break;
+                    
+                    case 0b1101101:
+                        switch(extract(*buf_int, 24,20)){
+                            case 0b00000:
+                                int rm=extract(*buf_int, 14,12);
+                                if(runmode==0) printf("FLOOR x%d <- floor(f%d)\n", rd, rs1);
+                                switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(float_registers[rs1]);
+                                                frs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                //一旦fcvt_w_cで代用
+                                                new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
+                                                ird=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=sext(wb,32);
+                                                break;
+                                }
+                                //int_registers[rd]=fcvt_w_c(float_registers[rs1],stage);
+                                break;
+                            case 0b00001:
+                                if(runmode==0) printf("FROUND x%d <- round(f%d)\n", rd, rs1);
+                                 switch(stage){
+                                            case IFS:
+                                                new_ireg_rf=*buf_int;
+                                                break;
+                                            case RFS:
+                                                new_ireg_ex=*buf_int;
+                                                new_rrs1=F2I(float_registers[rs1]);
+                                                frs1=rs1;
+                                                break;
+                                            case EXS:
+                                                new_ireg_ma=*buf_int;
+                                                //一旦fcvt_w_cで代用
+                                                new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
+                                                ird=rd;
+                                                rrd=new_rcalc;
+                                                break;
+                                            case MAS:
+                                                new_ireg_wb=*buf_int;
+                                                new_wb=rcalc;
+                                                break;
+                                            case WBS:
+                                                int_registers[rd]=sext(wb,32);
+                                                break;
+                                }
+                                //int_registers[rd]=fcvt_wu_c(float_registers[rs1],stage);
+                                break;
+                        } 
+                        break;
+
                     case 0b1110000:   
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
@@ -3325,7 +3400,7 @@ void input_handle(void){
             printf("m XXX       メモリのXXX番地の内容を表示(キャッシュ含む)\n\r");
             printf("m XXX-YYY   メモリのXXX番地からYYY番地まで(YYY番地を含まない)の内容を表示(キャッシュ含む)\n\r");
             printf("c dXXX      データキャッシュのインデックスXXXのラインを表示\n\r");
-            printf("c iXXX      命令キャッシュのインデックスXXXのラインを表示\n\r");
+            printf("c iXXX      命令メモリのアドレスXXX番地を表示\n\r");
             printf("d           キャッシュ統計を表示\n\r");
             continue;
         }
@@ -3418,8 +3493,8 @@ void input_handle(void){
                 }
                 else if(ctype=='i'){
 
-                    printf("[I-cache index %lld]\n\r", idx);
-                    int i=0;
+                    printf("[I-memory addr %lld]\t", idx);
+                    /*int i=0;
                     int way=0;
                     for(way=0; way<I_N_WAYS; way++){
                         int rank=extract(i_flag[way][idx],3,1);
@@ -3430,7 +3505,8 @@ void input_handle(void){
                             printf("%02x ", data & 0x000000FF);
                         }
                         printf("\n");
-                    }
+                    }*/
+                    printf("%x\n\r", *((int*)(i_memory+idx)));
                 }
             }
         }
@@ -3479,7 +3555,7 @@ void input_handle(void){
                     union f_ui fui;
 
                     int way=on_cache(memnum);
-                    int iway=on_i_cache(memnum);
+                    int iway=-1; //on_i_cache(memnum);
                     //printf("[[%d]]\n", way);
                     if(way>=0 || iway>=0){
                         if(way>=0){
@@ -3528,7 +3604,7 @@ void input_handle(void){
                     union f_ui fui;
 
                     int way=on_cache(memnum);
-                    int iway=on_i_cache(memnum);
+                    int iway=-1; //on_i_cache(memnum);
                     //printf("[[%d]]\n", way);
                     if(way>=0 || iway>=0){
                         if(way>=0){
@@ -3567,6 +3643,7 @@ void input_handle(void){
 
 
 int main(int argc, char *argv[]){
+    int automode=0;
     if(argc<2){
         fprintf(stdout, "ERROR: file is not specified.\n"); exit(1);
     }
@@ -3580,18 +3657,60 @@ int main(int argc, char *argv[]){
     }
 
     
-    if((fin = fopen("input", "r")) == NULL) {
-        fprintf(stderr, "%s\n", "ERROR: cannot read file.");
+
+
+    strcpy(infilename, "input");
+    if(argc>=3){
+        int argval=2;
+        while(argval<argc){
+            if(strcmp(argv[argval], "-auto")==0){
+                automode=1;
+            }
+            else if(strcmp(argv[argval], "-ifnc")==0){
+                strcpy(infilename, source);
+                strcat(infilename, ".input");
+            }
+            else{
+                fprintf(stderr, "Unknown option %s was ignored.\n", argv[argval]);
+            }
+            argval++;
+        }
+    }
+
+    if((fin = fopen(infilename, "r")) == NULL) {
+        fprintf(stderr, "ERROR: cannot read file. Needed file %s does not exist.\n", infilename);
         exit(1);
     }
 
+    strcpy(outfilename, source);
+    strcat(outfilename, ".output");
 
     //load program
     int max_pc=0;
+    int mode=0;
+    int max_d=0;
+    int n_insts=0, n_data=0;
     while(1){
         int read_count=0, read_offset=0;
+        char* loc;
         while(read_offset+read_count<4){
-            read_count=read(fd, memory+max_pc+read_offset, 4);
+            switch(mode){
+                case 0:
+                    loc=(char*)&n_insts;
+                    break;
+                case 1:
+                    loc=(char*)&n_data;
+                    break;
+                case 2:
+                    loc=i_memory+max_pc;
+                    break;
+                case 3:
+                    loc = memory+max_d;
+                    break;
+                default:
+
+            }
+            read_count=read(fd, loc+read_offset, 4);
             if(read_count<0){
                 perror("ERROR: read failed"); exit(1);
             }
@@ -3603,16 +3722,39 @@ int main(int argc, char *argv[]){
             }
             read_offset+=read_count;
         }
-        if(read_offset==0) break; 
-        max_pc+=4;  
+        //printf("%d %d %d %x\n", mode, max_pc, max_d, *(unsigned int*)loc);
+        if(mode==2 && *(unsigned int *)loc == 0x0000006f){
+            mode=3;
+            if(max_pc+4!=n_insts){
+                fprintf(stderr, "Not corresponding binary lengths, index %d v.s. real %d\n", n_insts , max_pc+4);
+                exit(1);
+            }
+            continue;
+        }
+        if(read_offset==0) break;
+        //printf("@%d\n", mode);
+        if(mode==0) mode++;
+        else if(mode==1) mode++;
+        else if(mode==2) max_pc+=4;
+        else if(mode==3) max_d+=4;
     }
-
+    if(mode!=3){
+        fprintf(stderr, "Binary Structure not valid.\n");
+        exit(1);
+    }
     //simulate
     termios_t st;
     printf("simulator.\n");
+    printf("INSTRUCTION section BYTES: %d\n", n_insts);
+    printf("DATA section BYTES: %d\n", n_data);
+
+    if(automode==0){
     switch_to_bytemode(0, &st);
     input_handle();
-    switch_to_mode(0, &st);
+    switch_to_mode(0, &st);}
+    else{
+        runmode=1;
+    }
     if(quit==1){
             printf("\rquitting simulator ...\n");
             return 0;
@@ -3774,7 +3916,7 @@ int main(int argc, char *argv[]){
 
         if(pc_flag==1 && nextpc!=new_pc_ex) pc=nextpc;
 
-        if(runmode==0) printf("%d\n", rrd);
+        /*if(runmode==0) printf("%d\n", rrd);*/
         //RF Stage -> EX Stage
         if(ldhzd==0 && delay_RF+delay_EX+delay_WB+delay_MA==0){
             ireg_ex=new_ireg_ex;
@@ -3847,7 +3989,7 @@ int main(int argc, char *argv[]){
 
 
         
-        if(int_registers[7]<0) printf("%d,%lld ", int_registers[7], clk);
+        /*if(int_registers[7]<0) printf("%d,%lld ", int_registers[7], clk);*/
 
         //for display
         if(skip_jmp>0){
@@ -3901,9 +4043,10 @@ int main(int argc, char *argv[]){
     if(quit!=1){
         printf("simulation normally terminated.\n");
         termios_t st;
+        if(automode==0){
         switch_to_bytemode(0, &st);
         input_handle();
-        switch_to_mode(0, &st);
+        switch_to_mode(0, &st);}
         printf("exiting simulator ...\n");
     }
     fclose(fin);

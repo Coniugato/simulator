@@ -435,6 +435,17 @@ void handle_instruction(char* buf){
                                 break;
                         } 
                         break;
+                    case 0b1101101:
+                        switch(extract(*buf_int, 24,20)){
+                            case 0b00000:
+                                int rm=extract(*buf_int, 14,12);
+                                printf("\t\t  FLOOR x%d <- floor(f%d)\n", rd, rs1);
+                                break;
+                            case 0b00001:
+                                printf("\t\t  FROUND x%d <- round(f%d)\n", rd, rs1);
+                                break;
+                        } 
+                        break;
                     case 0b1110000:   
                         switch(extract(*buf_int, 14,12)){
                             case 0b000:
@@ -548,13 +559,16 @@ int main(int argc, char *argv[]){
     printf("displayer.\n");
     printf(MAG);
     printf("-----BINARY START-----\n");
+    printf(DEF);
+    printf("INSTRUCTION SECTION LENGTH: %d\n", *(int*)(memory));
+    printf("DATA SECTION LENGTH: %d\n", *(int*)(memory+4));
     printf(CYN);
     printf("-----INSTRUCTION SECTION-----\n");
     printf(DEF);
-    int index=0;
+    int index=8;
     while(index<max_pc){
         printf(YLW);
-        printf("%08x %s(%s%d%s)\t: ", index, DEF, GRN, index, DEF);
+        printf("%08x %s(%s%d%s)\t: ", index-8, DEF, GRN, index-8, DEF);
         printf(DEF);
         if(end==0){    
             handle_instruction(memory+index);

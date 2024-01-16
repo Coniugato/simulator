@@ -2384,6 +2384,25 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b01 << 25) + (rd << 7) + (rs1 << 15) + (0b00000 << 20) + (0b11000 << 27) + 0b1010011;
+        
+    }
+    else if (strcmp(opc, "floor") == 0)
+    {
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        *int_inst = (0b01 << 25) + (rd << 7) + (rs1 << 15) + (0b00000 << 20) + (0b11011 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.wu.d") == 0)
     {
@@ -2401,6 +2420,25 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int rd = reg_convert(opr[0]);
         int rs1 = reg_convert(opr[1]);
         *int_inst = (0b01 << 25) + (rd << 7) + (rs1 << 15) + (0b00001 << 20) + (0b11000 << 27) + 0b1010011;
+    }
+    else if (strcmp(opc, "fround") == 0)
+    {
+        n_oprand = 2;
+        int i;
+        for (i = 0; i < n_oprand; i++)
+        {
+            fscanf(inf, "%s", opr[i]);
+            // printf("%s\n", opr[i]);
+            if (strcmp(opr[i], "END") == 0)
+            {
+                error_toofew(opc);
+            }
+        }
+        int rd = reg_convert(opr[0]);
+        int rs1 = reg_convert(opr[1]);
+        //printf("%s %s %d %d\n",opr[0], opr[1], rd, rs1);
+        *int_inst = (0b01 << 25) + (rd << 7) + (rs1 << 15) + (0b00001 << 20) + (0b11011 << 27) + 0b1010011;
+        writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "fcvt.d.w") == 0)
     {
