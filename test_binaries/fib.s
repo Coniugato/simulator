@@ -1,4 +1,4 @@
-main: 
+main:  
   li t3, 20'
   li t4,1
   blt t4,t3,L1
