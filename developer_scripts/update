@@ -1,0 +1,5 @@
+cd ./$(git rev-parse --show-cdup)
+utilities/allclean
+gitupdate $1
+cd $(cat main_loc.txt)
+./submodupdate $1

@@ -1,6 +1,8 @@
 cd ./$(git rev-parse --show-cdup)
 utilities/allmake
 cd test_binaries
+rm *.output
+rm *.executed
 ESC=$(printf '\033')
 for file in $(ls *.s)
 do
