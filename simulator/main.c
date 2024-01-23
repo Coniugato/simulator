@@ -225,6 +225,15 @@ void write_int(int val){
     fclose(fout);
 }
 
+void write_char(int val){
+    if((fout = fopen(outfilename, "a")) == NULL) {
+        fprintf(stderr, "%s\n", "ERROR: cannot open output file.");
+        exit(1);
+    }
+    fprintf(fout, "%lld\n", extract(val, 7, 0));
+    fclose(fout);
+}
+
 void write_float(float val){
     if((fout = fopen(outfilename, "a")) == NULL) {
         fprintf(stderr, "%s\n", "ERROR: cannot open output file.");
@@ -3133,7 +3142,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
-                        write_int(rcalc);
+                        write_char(rcalc);
                         break;
                     case WBS:
                         //int_registers[rd]=wb;
