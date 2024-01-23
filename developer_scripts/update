@@ -2,4 +2,5 @@ cd ./$(git rev-parse --show-cdup)
 utilities/allclean
 gitupdate $1"_autopush_" package
 cd $(cat main_loc.txt)
+pwd
 ./submodupdate $1
