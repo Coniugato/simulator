@@ -4,4 +4,4 @@ gitupdate "$1_autopush_" package
 MAINLOC=$(cat developer_scripts/main_loc.txt)
 echo $MAINLOC
 cd $MAINLOC
-./submodupdate $1
+./submodupdate "$1_autopush_"
