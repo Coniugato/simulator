@@ -1,5 +1,5 @@
 # シミュレータパッケージの使い方
-`simulator`、`assembler`、`displayer`、`test_binaries`、`utilities`からなります。
+`simulator`、`assembler`、`displayer`、`test_binaries`、`utilities`、`developer_scripts`からなります。
 ## 仕様　　　　
 - `simulator`  
 シミュレータです。`make`すると`sim`という名前の実行ファイルが生成されます。  
@@ -93,3 +93,5 @@ echo "end:nop" >> $target
 *多分テストに便利なので以下のコマンドもぜひ使ってください*  
 `alltest`スクリプトを追加しました。これは`test_binaries`ディレクトリ内のすべての拡張子`.s`のファイルに対して`.s`を除いた名前のアセンブラでバイナリを生成し、この名前を`xxx`として、シミュレータで実行し最後の結果を`xxx.executed`に保存します。また出力の結果を`xxx.output`で保存します。入力ファイルがない場合は空ファイル`xxx.input`を自動生成をするため、本質的に入力が必要な場合以外は入力ファイルを作ってあげる必要はありません(もちろん作っても動きます)。  
 アセンブラやシミュレータがエラーを吐いた時には赤字で表示されます。
+- `developer_scripts`
+開発者用スクリプトです。基本的に使う必要はないはずです。
