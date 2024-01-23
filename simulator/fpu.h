@@ -46,3 +46,7 @@ UI fcvt_wu_c(float f, int status);
 float fcvt_s_wu_c(UI x, int status);
 
 float fcvt_s_w_c(int xi, int status);
+
+UI floor_c(float f, int status);
+
+UI fround_c(float f, int status);

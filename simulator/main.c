@@ -2669,8 +2669,8 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 break;
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
-                                                //一旦fcvt_w_cで代用
-                                                new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
+                                                //一旦fcvt_w_cで代用->なおした
+                                                new_rcalc=invsext(floor_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
                                                 break;
@@ -2697,8 +2697,8 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 break;
                                             case EXS:
                                                 new_ireg_ma=*buf_int;
-                                                //一旦fcvt_w_cで代用
-                                                new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
+                                                //一旦fcvt_w_cで代用->なおした
+                                                new_rcalc=invsext(fround_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
                                                 break;

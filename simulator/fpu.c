@@ -24,6 +24,13 @@ unsigned long long f_invsext(long long input, unsigned long long n_dights){
   else return input;
 } 
 
+void print_binary(UI a, int i){
+  for(; i>=1; i--){
+    printf("%lld",EX(a,i-1,i-1));
+  }
+  printf("\n");
+}
+
 float fadd_c(float f1, float f2, int status){
     union f_ui{
         unsigned int ui;
@@ -540,6 +547,106 @@ UI fcvt_wu_c(float f, int status){
     return y;
 }
 
+UI floor_c(float f, int status){
+      union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    UI s = f_extract(x, 31, 31);
+    UI e = f_extract(x, 30, 23);
+    UI m = f_extract(x, 22, 0);
+
+    UI ep = f_invsext(e - 127,8);
+    UI mp = (1<<23)+m;
+
+    //printf("%0x %0x %0x\n",s,e,m);
+
+    UI y = (s==0) ? (
+      (ep==0) ? 1:
+      ((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+        : ( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )
+      )
+    ) :
+    (
+      (ep==0) ? ~1+1:
+      ((e<=126) ? (m==0 ? 0 : ~1+1) :
+      ((ep<=23) ? 
+        ~((1<<ep)+EX(m,22,23-ep))+(ep==23 || EX(m,22-ep,0)==0 ? 1 : 0)
+        : ~( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )+1
+      ))
+    );
+    return y;
+}
+
+UI fround_c(float f, int status){
+      union f_ui{
+        unsigned int ui;
+        float f;
+    };
+    union f_ui u, r;
+    u.f=f;
+
+    UI x=u.ui;
+
+    //printf("\n%d\n", x);
+
+    UI s = f_extract(x, 31, 31);
+    UI e = f_extract(x, 30, 23);
+    UI m = f_extract(x, 22, 0);
+
+    //print_binary(s,1);
+    //printf("%d %d\n",e, m);
+    //print_binary(m,23);
+    //printf("%lld\n", EX(m,22,22));
+
+    UI ep = f_invsext(e - 127,8);
+    UI mp = (1<<23)+m;
+
+    UI y = (s==0) ? (
+      (ep==0) ? (EX(m,22,22)==1 ? 2 : 1) :
+      ((e  == 126) ? 1 :
+      ((ep<=22) ? 
+        (
+          EX(m,22-ep, 22-ep)==1 ?
+          (1<<ep)+EX(m,22,23-ep)+1 :
+          (1<<ep)+EX(m,22,23-ep)
+        )
+        : ( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )
+      ))
+    ) :
+    (
+      (ep==0) ? (EX(m, 22,22)==1 ? ~1 : ~0):
+      ((e ==126) ? ~1+1 :
+      ((ep<=22) ? 
+        (
+          EX(m,22-ep, 22-ep)==0 ?
+          ~((1<<ep)+EX(m,22,23-ep))+1 :
+          ~((1<<ep)+EX(m,22,23-ep))
+        )
+        : ~( (ep<32) ? 
+          (1<<ep)+(m<<(ep-23)) :
+          ((ep==32) ? m<<9 : 0)
+          )+1
+      ))
+    );
+    return y;
+}
+
+
 //fcvt_s_wuでは？
 float fcvt_s_wu_c(UI x, int status){
     union f_ui{
@@ -616,8 +723,75 @@ float fcvt_s_w_c(int xi, int status){
 
 #define NONDEBUG
 #ifndef NONDEBUG
+unsigned int F2I(float input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.f=input;
+    return fui.ui;
+}
+
+float I2F(unsigned int input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.ui=input;
+    return fui.f;
+}
+
 int main(void){
-    printf("%f\n", fcvt_s_w_c(1124223, 0));
+    printf("%f %d\n", 3.6, fround_c(3.6, 0));
+    printf("%f %d\n", 3.3, fround_c(3.3, 0));
+    printf("%f %d\n", 2.6, fround_c(2.6, 0));
+    printf("%f %d\n", 2.3, fround_c(2.3, 0));
+    printf("%f %d\n", 1.75, fround_c(1.75, 0));
+    printf("%f %d\n", 1.55, fround_c(1.55, 0));
+    printf("%f %d\n", 1.3, fround_c(1.3, 0));
+    printf("%f %d\n", 0.6, fround_c(0.6, 0));
+    printf("%f %d\n", 0.3, fround_c(0.3, 0));
+    printf("%f %d\n", -0.3, fround_c(-0.3, 0));
+    printf("%f %d\n", -0.6, fround_c(-0.6, 0));
+    printf("%f %d\n", -1.3, fround_c(-1.3, 0));
+    printf("%f %d\n", -1.75, fround_c(-1.75, 0));
+    printf("%f %d\n", -2.3, fround_c(-2.3, 0));
+    printf("%f %d\n", -2.6, fround_c(-2.6, 0));
+    printf("%f %d\n", -3.3, fround_c(-3.3, 0));
+    printf("%f %d\n", -3.6, fround_c(-3.6, 0));
+
+    printf("#################\n");
+    printf("%f %d\n", 3.6, floor_c(3.6, 0));
+    printf("%f %d\n", 3.3, floor_c(3.3, 0));
+    printf("%f %d\n", 3.0, floor_c(3.0, 0));
+    printf("%f %d\n", 2.6, floor_c(2.6, 0));
+    printf("%f %d\n", 2.3, floor_c(2.3, 0));
+    printf("%f %d\n", 2.0, floor_c(2.0, 0));
+    printf("%f %d\n", 1.75, floor_c(1.75, 0));
+    printf("%f %d\n", 1.55, floor_c(1.55, 0));
+    printf("%f %d\n", 1.3, floor_c(1.3, 0)); 
+    printf("%f %d\n", 1.0, floor_c(1.0, 0));
+    printf("%f %d\n", 0.6,floor_c(0.6, 0));
+    printf("%f %d\n", 0.3,  floor_c(0.3, 0));
+    printf("%f %d\n", 0.0, floor_c(0.0, 0));
+    printf("%f %d\n", -0.0, floor_c(-0.0, 0));
+    printf("%f %d\n", -0.3, floor_c(-0.3, 0));
+    printf("%f %d\n", -0.6, floor_c(-0.6, 0));
+    printf("%f %d\n", -1.3, floor_c(-1.3, 0));
+    printf("%f %d\n", -1.0, floor_c(-1.0, 0));
+    printf("%f %d\n", -126.99, floor_c(-126.99, 0));
+    printf("%f %d\n", -127.0, floor_c(-127.0, 0));
+    printf("%f %d\n", -142414.0, floor_c(-142414.0, 0));
+    printf("%f %d\n", 142414.0, floor_c(142414.0, 0));
+    printf("%f %d\n", -2.0, floor_c(-2.0, 0));
+    printf("%f %d\n", -2.6, floor_c(-2.6, 0));
+    printf("%f %d\n", -3.0, floor_c(-3.0, 0));
+    printf("%f %d\n", -3.3, floor_c(-3.3, 0));
+    printf("%f %d\n", -3.6, floor_c(-3.6, 0));
     return 0;
 }
 #endif
