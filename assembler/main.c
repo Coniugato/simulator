@@ -337,9 +337,9 @@ int main(int argc, char *argv[]){
     }
     int tmpbuf=0;
     //printf("%d\n", s_globals);
-    for(ib=0; ib<(4-s_globals%4); ib++){
+    /*for(ib=0; ib<(4-s_globals%4); ib++){半端の処理のためにあったが、半端が出なくなったので無視、正確には0のときは4-0ではなく0にする必要あり
       writeall(outd, (char*)&tmpbuf, 1);
-    }
+    }*/
     
     fclose(f);
 
