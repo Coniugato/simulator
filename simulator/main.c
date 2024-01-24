@@ -2022,6 +2022,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case EXS:
                         new_ireg_ma=*buf_int;
                         frd = rd;
+                        ldhzd=1;
                         //new_rcalc=rrs1+sext(offset,12);
                         //new_m_data=rrs2;
                         break;
@@ -2032,6 +2033,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case WBS:
                         float_registers[rd]=I2F(wb);
+                        ldhzd=0;
                         break;
                 }
                 /*switch(extract(*buf_int, 26,25)){
@@ -3167,6 +3169,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 case EXS:
                     new_ireg_ma=*buf_int;
                     ird = rd;
+                    ldhzd=1;
                     //new_rcalc=rrs1+sext(offset,12);
                     //new_m_data=rrs2;
                     break;
@@ -3175,6 +3178,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     new_wb=read_int();
                     break;
                 case WBS:
+                    ldhzd=0;
                     int_registers[rd]=wb;
                     break;
         }
