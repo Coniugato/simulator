@@ -252,7 +252,7 @@ int main(int argc, char *argv[]){
     int addr=0;
     int outd;
 
-    chmod('.mid_binary',S_IRUSR | S_IWUSR);
+    chmod(".mid_binary",S_IRUSR | S_IWUSR);
     if((outd=open(".mid_binary",O_WRONLY | O_CREAT | O_TRUNC))<0){
             perror("ERROR: cannot open source file \'.mid_binary\'"); exit(1);
     }
