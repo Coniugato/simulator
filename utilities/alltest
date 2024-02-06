@@ -4,9 +4,13 @@ utilities/allmake
 cd test_binaries
 rm -rf *.output
 rm -rf *.executed
-touch .mid_binary
-chmod u+rw .mid_binary
+
 ESC=$(printf '\033')
+ARC=$(uname -m)
+if [ ${ARC} = "arm64" ]; then
+    echo "a"
+    sed_option=".bak"
+fi
 for file in $(ls *.s)
 do
     binname=${file:0:${#file}-2}
@@ -20,6 +24,6 @@ do
     echo "${ESC}[31m"
     ../simulator/sim $binname -auto -ifnc   >"$binname.executed"
     echo "${ESC}[m"
-    sed  -i .bak s/"${ESC}\[[0-9]*m"//g $binname".executed"
+    sed  -i $sed_option s/"${ESC}\[[0-9]*m"//g $binname".executed"
     echo ""
 done
