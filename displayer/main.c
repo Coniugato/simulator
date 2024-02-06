@@ -90,12 +90,12 @@ void handle_instruction(char* buf){
     }
     printf(DEF);
     printf("\n");
-
+    int rd, imm, rs1, rs2, rs3, shamt, offset, rem, rm;
     if(extract(*buf_int, 1,0)==0b11){
-        int rd=extract(*buf_int, 11,7);
+        rd=extract(*buf_int, 11,7);
         switch(extract(*buf_int,6,2)){
             case 0b01101:
-                int imm=extract(*buf_int, 31,12);
+                imm=extract(*buf_int, 31,12);
                 printf("\t\t  LUI x%d<-%d (literal value: %d)\n", rd, imm<<12, imm);
                 break;
             case 0b00101:
@@ -127,7 +127,7 @@ void handle_instruction(char* buf){
                     case 0b001:
                         switch(extract(*buf_int, 31,27)){
                             case 0b00000:
-                                int shamt=extract(*buf_int, 25,20);
+                                shamt=extract(*buf_int, 25,20);
                                 printf("\t\t  SLLI x%d <- x%d << %d\n", rd, rs1, shamt);
                                 break;
                         }
@@ -135,7 +135,7 @@ void handle_instruction(char* buf){
                     case 0b101:
                         switch(extract(*buf_int, 31,27)){
                             case 0b00000:
-                                int shamt=extract(*buf_int, 25,20);
+                                shamt=extract(*buf_int, 25,20);
                                 printf("\t\t  SRLI x%d <- u(x%d) >> %d\n", rd, rs1, shamt);
                                 break;
                             case 0b01000:
@@ -147,9 +147,9 @@ void handle_instruction(char* buf){
                 }
                 break;
             case 0b01100:
-                int rd=extract(*buf_int, 11,7);
+                rd=extract(*buf_int, 11,7);
                 rs1=extract(*buf_int, 19,15);
-                int rs2=extract(*buf_int, 24,20);
+                rs2=extract(*buf_int, 24,20);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         switch(extract(*buf_int, 31,25)){
@@ -240,7 +240,7 @@ void handle_instruction(char* buf){
                 }
                 break;
             case 0b00000: 
-                int offset=extract(*buf_int, 31,20);
+                offset=extract(*buf_int, 31,20);
                 rd=extract(*buf_int, 11,7);
                 rs1=extract(*buf_int, 19,15);
                 //printf("\t\t  %d %d\n", rd, rs1);
@@ -359,10 +359,10 @@ void handle_instruction(char* buf){
             case 0b10010:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        int rd=extract(*buf_int, 11,7);
+                        rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
-                        int rs2=extract(*buf_int, 24,20);
-                        int rs3=extract(*buf_int, 31,27);
+                        rs2=extract(*buf_int, 24,20);
+                        rs3=extract(*buf_int, 31,27);
                         printf("\t\t  FNMSUB.S f%d <- - f%d * f%d + f%d\n", rd, rs1, rs2, rs3);
                         break;
                 }   
@@ -370,10 +370,10 @@ void handle_instruction(char* buf){
             case 0b10011:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        int rd=extract(*buf_int, 11,7);
-                        int rs1=extract(*buf_int, 19,15);
-                        int rs2=extract(*buf_int, 24,20);
-                        int rs3=extract(*buf_int, 31,27);
+                        rd=extract(*buf_int, 11,7);
+                        rs1=extract(*buf_int, 19,15);
+                        rs2=extract(*buf_int, 24,20);
+                        rs3=extract(*buf_int, 31,27);
                         printf("\t\t  FNMADD.S f%d <- - f%d * f%d - f%d\n", rd, rs1, rs2, rs3);
                         break;
                 }   
@@ -427,7 +427,7 @@ void handle_instruction(char* buf){
                     case 0b1100000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                int rm=extract(*buf_int, 14,12);
+                                rm=extract(*buf_int, 14,12);
                                 printf("\t\t  FCVT.W.S x%d <- int(f%d)\n", rd, rs1);
                                 break;
                             case 0b00001:
@@ -438,7 +438,7 @@ void handle_instruction(char* buf){
                     case 0b1101101:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                int rm=extract(*buf_int, 14,12);
+                                rm=extract(*buf_int, 14,12);
                                 printf("\t\t  FLOOR x%d <- floor(f%d)\n", rd, rs1);
                                 break;
                             case 0b00001:

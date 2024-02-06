@@ -606,9 +606,10 @@ void handle_instruction(char* buf, int stage, int stall){
     if(stall==1) stage=-1;
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
+        int imm, shamt, rs2,rs3, offset, rm;
         switch(extract(*buf_int,6,2)){
             case 0b01101:
-                int imm=extract(*buf_int, 31,12);
+                imm=extract(*buf_int, 31,12);
                 if(runmode==0) printf("LUI x%d<-%d (literal value: %d)\n", rd, imm<<12, imm);
                 switch(stage){
                     case IFS:
@@ -644,7 +645,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case EXS:
                         new_ireg_ma=*buf_int;
-                        new_rcalc=invsext(pc_ex,32)+imm<<12;
+                        new_rcalc=invsext(pc_ex,32)+(imm<<12);
                         ird=rd;
                         rrd=new_rcalc;
                         break;
@@ -849,7 +850,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case 0b001:
                         switch(extract(*buf_int, 31,27)){
                             case 0b00000:
-                                int shamt=extract(*buf_int, 25,20);
+                                shamt=extract(*buf_int, 25,20);
                                 if(runmode==0) printf("SLLI x%d <- x%d << %d\n", rd, rs1, shamt);
                                 switch(stage){
                                     case IFS:
@@ -881,7 +882,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case 0b101:
                         switch(extract(*buf_int, 31,27)){
                             case 0b00000:
-                                int shamt=extract(*buf_int, 25,20);
+                                shamt=extract(*buf_int, 25,20);
                                 if(runmode==0) printf("SRLI x%d <- u(x%d) >> %d\n", rd, rs1, shamt);
                                 switch(stage){
                                     case IFS:
@@ -940,9 +941,9 @@ void handle_instruction(char* buf, int stage, int stall){
                 }
                 break;
             case 0b01100:
-                int rd=extract(*buf_int, 11,7);
+                rd=extract(*buf_int, 11,7);
                 rs1=extract(*buf_int, 19,15);
-                int rs2=extract(*buf_int, 24,20);
+                rs2=extract(*buf_int, 24,20);
                 switch(extract(*buf_int, 14,12)){
                     case 0b000:
                         switch(extract(*buf_int, 31,25)){
@@ -1525,7 +1526,7 @@ void handle_instruction(char* buf, int stage, int stall){
                 break;
             //FENCE ~ SFENCE.VMA 省略
             case 0b00000: 
-                int offset=extract(*buf_int, 31,20);
+                offset=extract(*buf_int, 31,20);
                 rd=extract(*buf_int, 11,7);
                 rs1=extract(*buf_int, 19,15);
                 //if(runmode==0) printf("%d %d\n", rd, rs1);
@@ -2150,10 +2151,10 @@ void handle_instruction(char* buf, int stage, int stall){
             case 0b10010:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        int rd=extract(*buf_int, 11,7);
+                        rd=extract(*buf_int, 11,7);
                         rs1=extract(*buf_int, 19,15);
-                        int rs2=extract(*buf_int, 24,20);
-                        int rs3=extract(*buf_int, 31,27);
+                        rs2=extract(*buf_int, 24,20);
+                        rs3=extract(*buf_int, 31,27);
                         if(runmode==0) printf("FNMSUB.S f%d <- - f%d * f%d + f%d\n", rd, rs1, rs2, rs3);
                         switch(stage){
                                     case IFS:
@@ -2197,10 +2198,10 @@ void handle_instruction(char* buf, int stage, int stall){
             case 0b10011:
                 switch(extract(*buf_int, 26,25)){
                     case 0b00:
-                        int rd=extract(*buf_int, 11,7);
-                        int rs1=extract(*buf_int, 19,15);
-                        int rs2=extract(*buf_int, 24,20);
-                        int rs3=extract(*buf_int, 31,27);
+                        rd=extract(*buf_int, 11,7);
+                        rs1=extract(*buf_int, 19,15);
+                        rs2=extract(*buf_int, 24,20);
+                        rs3=extract(*buf_int, 31,27);
                         if(runmode==0) printf("FNMADD.S f%d <- - f%d * f%d - f%d\n", rd, rs1, rs2, rs3);
                         switch(stage){
                                     case IFS:
@@ -2607,7 +2608,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case 0b1100000:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                int rm=extract(*buf_int, 14,12);
+                                rm=extract(*buf_int, 14,12);
                                 if(runmode==0) printf("FCVT.W.S x%d <- int(f%d)\n", rd, rs1);
                                 switch(stage){
                                             case IFS:
@@ -2667,7 +2668,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     case 0b1101101:
                         switch(extract(*buf_int, 24,20)){
                             case 0b00000:
-                                int rm=extract(*buf_int, 14,12);
+                                rm=extract(*buf_int, 14,12);
                                 if(runmode==0) printf("FLOOR x%d <- floor(f%d)\n", rd, rs1);
                                 switch(stage){
                                             case IFS:
@@ -3721,6 +3722,7 @@ int main(int argc, char *argv[]){
                     loc = memory+max_d;
                     break;
                 default:
+                    ;
 
             }
             read_count=read(fd, loc+read_offset, 4);

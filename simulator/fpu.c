@@ -62,7 +62,7 @@ float fadd_c(float f1, float f2, int status){
     UI my1 = f_extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
 
     UL my1_shift=0;
-    for(my1_shift==0; my1_shift<26; my1_shift++){
+    for(my1_shift=0; my1_shift<26; my1_shift++){
         if(f_extract(my1, 25-my1_shift, 25-my1_shift)==1) break;
     }
 

@@ -47,6 +47,7 @@ long long atoi_w(char *c)
         ret = -atoi(c + 1);
     }
     else ret = atoi(c);
+    return ret;
 }
 
 unsigned long long invsext(long long input, unsigned long long n_dights)
@@ -252,6 +253,8 @@ void val_res(int size, char *val)
     }
     else
     {
+        float fval;
+        long long rval;
         switch (size)
         {
         /*case 1:
@@ -288,7 +291,8 @@ void val_res(int size, char *val)
             break;*/
         case 0:
             //現状エラー吐かない。何とかしたほうがいいかも
-            float fval = atof_w(val);
+
+            fval = atof_w(val);
             if (s_globals % 4 != 0)
             {
                 int skip = 4 - s_globals % 4;
@@ -299,7 +303,7 @@ void val_res(int size, char *val)
             s_globals+=4;
             break;
         case 4:
-            long long rval = atoi_l(val);
+            rval = atoi_l(val);
             if (s_globals % 4 != 0)
             {
                 int skip = 4 - s_globals % 4;
