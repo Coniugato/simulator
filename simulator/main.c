@@ -372,6 +372,40 @@ char* memory_access(unsigned long long addr, int wflag){
 }
 
 
+char* dd_memory_access(unsigned long long addr, int wflag){
+    //printf("@@@%d\n", ctag[1][6]);
+    unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
+    unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
+    unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
+        if(wflag==1){
+            if(wait_MA==0){
+                delay_MA=DcacheWriteClk;
+                Dcache_hit++;
+                wait_MA=1;
+            } 
+            else{
+                wait_MA=0;
+            } 
+        }        
+        else if(wflag==0){
+            if(wait_MA==0){
+                delay_MA=DcacheReadClk;
+                Dcache_hit++;
+                wait_MA=1;
+            } 
+            else{
+                wait_MA=0;
+            } 
+        }
+    /*}*/ 
+     //printf("@@@%d\n", ctag[1][6]);
+    /*if(wflag==1) i_flag[way_found][index]=(i_flag[way_found][index]-(extract(i_flag[way_found][index],5,5)<<5))+32;
+    return i_cache[way_found][index]+offset;*/
+    return memory+addr;
+}
+
+
+
 char* i_memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);

@@ -357,10 +357,10 @@ void val_res(int size, char *val)
 
 int assemble(FILE *inf, int outd, int pc, Node *labels)
 {
-    int offset = 4;
+    int addr_offset = 4;
     unsigned int *int_inst = (unsigned int *)char_inst;
     fscanf(inf, "%s", opc);
-
+    //printf("%s\n", opc);
     //printf("%s, %d\n", opc, pc);
 
     int n_oprand;
@@ -382,7 +382,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         int ty = type_convert(opr[0]);
         val_res(ty, opr[1]);
         //printf("%s %s %d\n", opr[0], opr[1], s_globals);
-        offset = 0;
+        addr_offset = 0;
     }
     // RV64I Instructions
     else if (strcmp(opc, "lui") == 0)
@@ -2632,7 +2632,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         imm = invsext(atoi_w(opr[1]), 12);
         *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
         writeall(outd, char_inst, 4);
-        offset = 8;
+        addr_offset = 8;
     }
     else if (strcmp(opc, "addr") == 0)
     {
@@ -2687,7 +2687,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         // convert to add
         *int_inst = (rd << 7) + (rd << 15) + (3 << 20) + 0b0110011;
         writeall(outd, char_inst, 4);
-        offset = 12;
+        addr_offset = 12;
     }
     else if (strcmp(opc, "iaddr") == 0)
     {
@@ -2732,7 +2732,8 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         unsigned long imm = invsext(offset, 12);
         *int_inst = (imm << 20) + (rd << 15) + (rd << 7) + 0b0010011;
         writeall(outd, char_inst, 4);
-        offset = 8;
+        addr_offset = 8;
+        //printf("(%d,\n", offset);
     }
     else if (strcmp(opc, "mv") == 0)
     {
@@ -2817,6 +2818,7 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
         }
         exit(1);
     }
+
     if(admit_flag!=1){
         fscanf(inf, "%s", opc);
         if (strcmp(opc, "END") != 0)
@@ -2825,5 +2827,6 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
             exit(1);
         }
     }
-    return offset;
+    //printf("%s, %d)\n", opc, offset);
+    return addr_offset;
 }
