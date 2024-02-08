@@ -31,15 +31,16 @@
 #define I_LEN_LINE (1<<I_LEN_OFFSET)
 
 #define N_INSTRUCTIONS 80004
-
+#define N_MEMORY 134217728
 FILE *fin,*fout;
 
 int skip=0;
 int runmode=0;
 int breakpoint=0;
 int imode=0;
+int immediate_break=0;
 
-char memory[134217728];
+char memory[N_MEMORY];
 char i_memory[N_INSTRUCTIONS];
 char cache[N_WAYS][N_LINE][LEN_LINE];
 unsigned int ctag[N_WAYS][N_LINE];
@@ -243,8 +244,15 @@ void write_float(float val){
     fclose(fout);
 }
 
+
 char* memory_access(unsigned long long addr, int wflag){
     //printf("[MEMACCESS DETECTED] %lld, %d\n", addr, wflag);
+    if(addr<0 || addr >= N_MEMORY){
+        fprintf(stderr, "data memory leaked. addr: %d problematic PC: %d\n", addr, pc_ma);
+        immediate_break=1;
+        exit(1);
+    }
+
     unsigned long long tag = extract(addr,31,31-LEN_TAG+1);
     unsigned long long index = extract(addr,31-LEN_TAG,LEN_OFFSET);
     unsigned long long offset = extract(addr,LEN_OFFSET-1,0);
@@ -371,7 +379,7 @@ char* memory_access(unsigned long long addr, int wflag){
     return cache[way_found][index]+offset;
 }
 
-
+//version not using cache
 char* dd_memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
@@ -412,7 +420,11 @@ char* i_memory_access(unsigned long long addr, int wflag){
     unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
     unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
 
-
+    if(addr<0 || addr >= N_INSTRUCTIONS){
+        fprintf(stderr, "instruction memory leaked. addr: %d problematic PC: %d\n", addr, pc);
+        immediate_break=1;
+        exit(1);
+    }
     /*int k=0;
     for(k=0; k<4; k++){
         printf("(%d,%d)",k,extract(i_flag[k][index],4,1));
@@ -4052,6 +4064,8 @@ int main(int argc, char *argv[]){
         //printf("[#]%d %d %d %d\n", o_frd, frd, frs1, frs2);
 
         if(runmode==1 && end!=1) continue;
+
+        
         printf("Main(Fetch) PC: %lld->%d/%d \t CLOCK: %lld\n", oldpc, pc, max_pc, clk);
         int i;
         for(i=0; i<32; i++){

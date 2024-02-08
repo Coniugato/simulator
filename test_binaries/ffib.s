@@ -1,4 +1,4 @@
-.data int, 32
+.data int, 7
 main: 
     lw t0, gp, 0
     fcvt.s.w fa0, zero
