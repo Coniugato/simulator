@@ -6,6 +6,7 @@ fin fa1
 in a3
 in t0
 out a3
+addi sp, sp, -4
 fsw sp, 0, fa0
 fout fa1
 flw ft0, sp, 0

@@ -248,7 +248,7 @@ void write_float(float val){
 char* memory_access(unsigned long long addr, int wflag){
     //printf("[MEMACCESS DETECTED] %lld, %d\n", addr, wflag);
     if(addr<0 || addr >= N_MEMORY){
-        fprintf(stderr, "data memory leaked. addr: %d problematic PC: %d\n", addr, pc_ma);
+        fprintf(stderr, "data memory leaked. addr: %lld problematic PC: %d clk: %lld\n", addr, pc_ma, clk);
         immediate_break=1;
         exit(1);
     }
@@ -421,7 +421,7 @@ char* i_memory_access(unsigned long long addr, int wflag){
     unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
 
     if(addr<0 || addr >= N_INSTRUCTIONS){
-        fprintf(stderr, "instruction memory leaked. addr: %d problematic PC: %d\n", addr, pc);
+        fprintf(stderr, "instruction memory leaked. addr: %lld problematic PC: %d  clk: %lld\n", addr, pc, clk);
         immediate_break=1;
         exit(1);
     }

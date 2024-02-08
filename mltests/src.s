@@ -10426,17 +10426,13 @@ min_caml_sin_label2:
 	fadd.s	fa0, fa3, fa5
     ret
 min_caml_print_char:
-	bp 3
     out a0
-	bp 4
     ret
 min_caml_int_of_float:
     fcvt.w.s    a0, fa0
     ret
 min_caml_print_int:
-	bp 1
     out a0
-	bp 2
     ret
 min_caml_floor:
     fcvt.w.s    a0, fa0

@@ -8,7 +8,8 @@ if [ $? != 0 ]; then
 fi
 BNAME=${1:0:${#1}-3}
 $SIMPATH/assembler/asm $BNAME".s" $BNAME 
-rm $BNAME.output
+rm -f $BNAME.output
+touch $BNAME.output
 if [ $? != 0 ]; then
     exit 1
 fi

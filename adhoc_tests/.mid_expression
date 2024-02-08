@@ -1,0 +1,56 @@
+INST j min_caml_start END
+INST bge a0 zero .Bge1 END
+INST li a0 0 END
+INST ret END
+INST nop END
+INST li a1 1 END
+INST sw hp 0 a0 END
+INST mv a0 a1 END
+INST mv a1 t6 END
+INST sw hp 4 ra END
+INST addi hp hp 8 END
+INST call min_caml_create_array END
+INST addi hp hp -8 END
+INST lw ra hp 4 END
+INST mv a1 a0 END
+INST lw t6 a1 0 END
+INST lw a1 hp 0 END
+INST addi a2 a1 -1 END
+INST mv a0 a2 END
+INST sw hp 4 ra END
+INST addi hp hp 8 END
+INST lw t5 t6 0 END
+INST jalr ra t5 0 END
+INST addi hp hp -8 END
+INST lw ra hp 4 END
+INST mv a1 a0 END
+INST lw a2 hp 0 END
+INST add a0 a2 a1 END
+INST ret END
+INST addi sp sp -4 END
+INST mv t6 sp END
+INST iaddrl a0 f.10 END
+INST sw t6 0 a0 END
+INST li a0 9 END
+INST sw hp 0 ra END
+INST addi hp hp 4 END
+INST lw t5 t6 0 END
+INST jalr ra t5 0 END
+INST addi hp hp -4 END
+INST lw ra hp 0 END
+INST sw hp 0 ra END
+INST addi hp hp 4 END
+INST call min_caml_print_int END
+INST addi hp hp -4 END
+INST lw ra hp 0 END
+INST j __end__ END
+INST out a0 END
+INST ret END
+INST beq a0 zero create_array_exit END
+INST addi sp sp -4 END
+INST sw sp 0 a1 END
+INST addi a0 a0 -1 END
+INST j min_caml_create_array END
+INST mv a0 sp END
+INST ret END
+INST nop END
