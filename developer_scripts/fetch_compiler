@@ -1,0 +1,19 @@
+cd ./$(git rev-parse --show-cdup)
+SIMPATH=$PWD
+mkdir mlsrc 2>/dev/null
+COMPLOC=$(cat developer_scripts/comp_loc.txt)
+cd $COMPLOC
+git stash -a
+git pull origin mycompiler
+dune build
+TARGETPATH="$SIMPATH/mlsrc/mcc.exe"
+if [ $(ls $TARGETPATH) = $TARGETPATH ]; then
+    chmod u+xrw $TARGETPATH
+else
+    echo "exec file $TARGETPATH will be created."
+fi
+cp _build/default/main.exe "$SIMPATH/mlsrc/mcc.exe"
+chmod u+xrw $TARGETPATH
+cp -r lib "$SIMPATH/mlsrc/lib"
+echo $(date)": ""Version "$(git show --format='%H' --no-patch)" fetched. "
+echo $(date)": ""Version "$(git show --format='%H' --no-patch)" fetched. " >> $SIMPATH/developer_scripts/fetch_history

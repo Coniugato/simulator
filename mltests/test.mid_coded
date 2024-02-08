@@ -1,0 +1,19 @@
+{
+	name : fib.10, 
+	args : [x.11, ], 
+	fargs : [], 
+	body : 
+		Let((Ti3.14, Int), Li(1), 
+		Ans(IfLE(x.11, C(1), 
+			Ans(Li(1)), 
+			Let((Ti5.19, Int), Add(x.11, C(-1)), 
+			Let((Ti6.15, Int), CallDir(fib.10, [Ti5.19, ], []), 
+			Let((Ti8.17, Int), Add(x.11, C(-2)), 
+			Let((Ti9.16, Int), CallDir(fib.10, [Ti8.17, ], []), 
+			Ans(Add(Ti6.15, V(Ti9.16))))))))))
+	recur : true
+}
+
+Let((Ti1.13, Int), Li(10), 
+Let((Ti2.12, Int), CallDir(fib.10, [Ti1.13, ], []), 
+Ans(CallDir(min_caml_print_int, [Ti2.12, ], []))))

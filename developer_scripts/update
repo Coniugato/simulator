@@ -1,7 +1,12 @@
+if [ ${ARC} = "x86_64" ]; then
+    sudo ntpdate -v ntp.nict.jp
+fi
 cd ./$(git rev-parse --show-cdup)
 utilities/allclean
+rm -rf mlsrc
 gitupdate "$1_autopush_" package
 MAINLOC=$(cat developer_scripts/main_loc.txt)
 echo $MAINLOC
 cd $MAINLOC
 ./submodupdate "$1_autopush_"
+

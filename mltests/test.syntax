@@ -1,0 +1,69 @@
+LetRec(
+	{
+		name : (fib, None),
+		args : [(x,None); ],
+		body :
+			If(
+				LE(
+					Var(x),
+					Int(1)),
+				Int(1)
+				Add(
+					App(
+						Var(fib),
+						[
+							Sub(
+								Var(x),
+								Int(1)),
+						]),
+					App(
+						Var(fib),
+						[
+							Sub(
+								Var(x),
+								Int(2)),
+						])))
+	},
+App(
+	Var(print_int),
+	[
+		App(
+			Var(fib),
+			[
+				Int(10),
+			]),
+	]))LetRec(
+	{
+		name : (fib, Fun([Int], Int)),
+		args : [(x,Int); ],
+		body :
+			If(
+				LE(
+					Var(x),
+					Int(1)),
+				Int(1)
+				Add(
+					App(
+						Var(fib),
+						[
+							Sub(
+								Var(x),
+								Int(1)),
+						]),
+					App(
+						Var(fib),
+						[
+							Sub(
+								Var(x),
+								Int(2)),
+						])))
+	},
+App(
+	Var(print_int),
+	[
+		App(
+			Var(fib),
+			[
+				Int(10),
+			]),
+	]))
