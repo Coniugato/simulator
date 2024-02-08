@@ -13,6 +13,7 @@ else
     echo "exec file $TARGETPATH will be created."
 fi
 cp _build/default/main.exe "$SIMPATH/mlsrc/mcc.exe"
+cp rt/src.ml "$SIMPATH/mltests/src.ml"
 chmod u+xrw $TARGETPATH
 cp -r lib "$SIMPATH/mlsrc/lib"
 echo $(date)": ""Version "$(git show --format='%H' --no-patch)" fetched. "
