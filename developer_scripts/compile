@@ -13,6 +13,7 @@ fi
 BNAME=${1:0:${#1}-3}
 cp $BNAME.ml $SIMPATH/mlsrc/$BNAME.ml
 cd $SIMPATH/mlsrc
+pwd
 ./mcc.exe $BNAME
 if [ $? != 0 ]; then
     exit 1

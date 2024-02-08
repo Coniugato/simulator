@@ -3191,7 +3191,8 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
-                        write_char(rcalc);
+                        //あとでwrite_charにもどすこと
+                        write_int(rcalc);
                         break;
                     case WBS:
                         //int_registers[rd]=wb;
