@@ -1,6 +1,30 @@
 simulator.
 INSTRUCTION section BYTES: 36
 DATA section BYTES: 0
+0
+4
+4
+8
+8
+c
+c
+10
+10
+14
+14
+18
+18
+1c
+1c
+1c
+1c
+20
+20
+24
+24
+28
+28
+2c
 Main(Fetch) PC: 40->44/32 	 CLOCK: 24
 	x0: 	0 	x1: 	0 	x2: 	134217728 	x3: 	0
 	x4: 	0 	x5: 	0 	x6: 	0 	x7: 	0

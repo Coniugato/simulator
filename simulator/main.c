@@ -3191,8 +3191,8 @@ void handle_instruction(char* buf, int stage, int stall){
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
-                        //あとでwrite_charにもどすこと
-                        write_int(rcalc);
+                        //あとでwrite_charにもどすこと->もどした
+                        write_char(rcalc);
                         break;
                     case WBS:
                         //int_registers[rd]=wb;
@@ -4064,6 +4064,8 @@ int main(int argc, char *argv[]){
 
         //printf("[#]%d %d %d %d\n", o_frd, frd, frs1, frs2);
 
+        //for debug
+        printf("%x\n", pc);
         if(runmode==1 && end!=1) continue;
 
         
