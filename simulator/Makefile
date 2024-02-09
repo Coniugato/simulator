@@ -14,4 +14,4 @@ fpui: fpui.c
 	gcc -lm -c fpui.c -O7 -o fpui
 
 clean:
-	rm -rf sim main input_handle fpu
+	rm -rf sim main input_handle fpu fpui
