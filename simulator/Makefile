@@ -1,4 +1,4 @@
-OPT = -O3 -mtune=native -march=native -mfpmath=both
+OPT = -O3 
 
 all: main input_handle fpu fpui
 	gcc main input_handle fpu fpui $(OPT) -o sim -lm
