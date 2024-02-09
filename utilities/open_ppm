@@ -4,5 +4,5 @@ SIMPATH=$PWD
 cd $CUR
 filename=$1".ppm"
 cat $1 > $filename
-python $SIMPATH/developer_scripts/ppmize.py $filename
+python3 $SIMPATH/developer_scripts/ppmize.py $filename
 code $filename

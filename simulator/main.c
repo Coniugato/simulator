@@ -10,6 +10,133 @@
 #include "fpu.h"
 #include "input_handle.h"
 
+enum INST {
+    LUI,
+    AUIPC,
+    ADDI,
+    SLTI,
+    XORI,
+    ORI,
+    ANDI,
+    SLLI,
+    SRLI,
+    ADD,
+    SUB,
+    SLL,
+    SLT,
+    XOR,
+    SRL,
+    OR,
+    AND,
+    LW,
+    SW,
+    JAL,
+    JALR,
+    BEQ,
+    BNE,
+    BLT,
+    BGE,
+    OUT,
+    IN,
+    MUL,
+    DIV,
+    REM,
+    FIN,
+    FOUT,
+    FADD_S,
+    FSUB_S,
+    FMUL_S,
+    FDIV_S,
+    FSQRT_S,
+    FSGNJ_S,
+    FSGNJN_S,
+    FSGNJX_S,
+    FMIN_S,
+    FMAX_S,
+    FCVT_W_S,
+    FMV_X_W,
+    FEQ_S,
+    FLT_S,
+    FLE_S,
+    FCVT_S_W,
+    FMV_W_X,
+    FLW,
+    FSW,
+    FLOOR,
+};
+
+const char* inst_to_string[] ={
+    "LUI",
+    "AUIPC",
+    "ADDI",
+    "SLTI",
+    "XORI",
+    "ORI",
+    "ANDI",
+    "SLLI",
+    "SRLI",
+    "ADD",
+    "SUB",
+    "SLL",
+    "SLT",
+    "XOR",
+    "SRL",
+    "OR",
+    "AND",
+    "LW",
+    "SW",
+    "JAL",
+    "JALR",
+    "BEQ",
+    "BNE",
+    "BLT",
+    "BGE",
+    "OUT",
+    "IN",
+    "MUL",
+    "DIV",
+    "REM",
+    "FIN",
+    "FOUT",
+    "FADD_S",
+    "FSUB_S",
+    "FMUL_S",
+    "FDIV_S",
+    "FSQRT_S",
+    "FSGNJ_S",
+    "FSGNJN_S",
+    "FSGNJX_S",
+    "FMIN_S",
+    "FMAX_S",
+    "FCVT_W_S",
+    "FMV_X_W",
+    "FEQ_S",
+    "FLT_S",
+    "FLE_S",
+    "FCVT_S_W",
+    "FMV_W_X",
+    "FLW",
+    "FSW",
+    "FLOOR",
+};
+
+unsigned long long record[60];
+
+void write_stat(char* name){
+    char stat[10000];
+    strcpy(stat, name);
+    strcat(stat, ".stat");
+
+    FILE* fp = fopen(stat, "w");
+
+    for(enum INST inst=LUI; inst <= FLOOR; inst++){
+        fprintf(fp, "%s : %llu\n", inst_to_string[inst], record[inst]);
+    }
+
+    fclose(fp);
+    return;
+}
+
 #define N_WAYS 4
 #define LEN_OFFSET 4
 #define LEN_INDEX 12
@@ -669,6 +796,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         new_rcalc=imm<<12;
                         ird=rd;
                         rrd=new_rcalc;
+                        record[LUI]++;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -694,6 +822,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         new_rcalc=invsext(pc_ex,32)+(imm<<12);
                         ird=rd;
                         rrd=new_rcalc;
+                        record[AUIPC]++;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -733,6 +862,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                     breakpoint=0;
                                     runmode=0;
                                 }
+                                record[ADDI]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -762,6 +892,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=rrs1;
                                 ird=rd;
                                 rrd=new_rcalc;
+                                record[SLTI]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -828,6 +959,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=invsext(sext(rrs1,32)^sext(imm,12),32);
                                 ird=rd;
                                 rrd=new_rcalc;
+                                record[XORI]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -855,6 +987,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=invsext(sext(rrs1,32)|sext(imm,12),32);
                                 ird=rd;
                                 rrd=new_rcalc;
+                                record[ORI]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -882,6 +1015,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=invsext(sext(rrs1,32)&sext(imm,12),32);
                                 ird=rd;
                                 rrd=new_rcalc;
+                                record[ANDI]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -912,6 +1046,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1<<shamt;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SLLI]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -944,6 +1079,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1>>shamt;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SRLI]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1011,6 +1147,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1+rrs2;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[ADD]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1040,6 +1177,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=invsext(sext(rrs1,32)-sext(rrs2,32),32);
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SUB]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1069,6 +1207,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32),32);
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[MUL]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1102,6 +1241,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1<<rrs2;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SLL]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1167,6 +1307,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SLT]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1309,6 +1450,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=invsext(sext(rrs1,32)^sext(rrs2,32),32);
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[XOR]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1339,6 +1481,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=invsext(sext(rrs1,32)/sext(rrs2,32),32);
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[DIV]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1372,6 +1515,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1>>extract(rrs2,4,0);
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[SRL]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1457,6 +1601,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rrs2=invsext(int_registers[rs2],32);
                                         irs1=rs1;
                                         irs2=rs2;
+                                        record[OR]++;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1486,6 +1631,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rrs2=invsext(int_registers[rs2],32);
                                         irs1=rs1;
                                         irs2=rs2;
+                                        record[REM]++;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1519,6 +1665,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rrs2=invsext(int_registers[rs2],32);
                                         irs1=rs1;
                                         irs2=rs2;
+                                        record[AND]++;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1649,6 +1796,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_ireg_ma=*buf_int;
                                         new_rcalc=rrs1+sext(offset,12);
                                         ldhzd=1;
+                                        record[LW]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1793,6 +1941,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rrs2=invsext(int_registers[rs2],32);
                                         irs1=rs1;
                                         irs2=rs2;
+                                        record[SW]++;
                                         break;
                                     case EXS:
                                         new_ireg_ma=*buf_int;
@@ -1829,6 +1978,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_rcalc=pc_ex+4;
                                 ird=rd;
                                 rrd=rcalc;
+                                record[JAL]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -1869,6 +2019,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=pc_ex+4;
                                         ird=rd;
                                         rrd=new_rcalc;
+                                        record[JALR]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1910,6 +2061,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_ireg_ma=*buf_int;
                                         if(rrs1==rrs2) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
+                                        record[BEQ]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1936,6 +2088,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_ireg_ma=*buf_int;
                                         if(rrs1!=rrs2) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
+                                        record[BNE]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1963,6 +2116,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         //if(runmode==0) printf("%d %d\n", sext(rrs1,32), sext(rrs2,32));
                                         if(sext(rrs1,32)<sext(rrs2,32)) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
+                                        record[BLT]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -1989,6 +2143,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_ireg_ma=*buf_int;
                                         if(sext(rrs1,32)>=sext(rrs2,32)) nextpc=pc_ex+offset;
                                         else nextpc=pc_ex+4; pc_flag=1;
+                                        record[BGE]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -2072,6 +2227,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         ldhzd=1;
                         //new_rcalc=rrs1+sext(offset,12);
                         //new_m_data=rrs2;
+                        record[FIN]++;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int; float fval=read_float();
@@ -2184,6 +2340,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //ird = rd;
                         new_rcalc=rrs1;
                         //new_m_data=rrs2;
+                        record[FOUT]++;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -2313,6 +2470,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=F2I(fadd_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        record[FADD_S]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -2346,6 +2504,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=F2I(fsub_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        record[FSUB_S]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -2379,6 +2538,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=F2I(fmul_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        record[FMUL_S]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -2412,6 +2572,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=F2I(fdiv_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        record[FDIV_S]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -2445,6 +2606,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                             //printf("@@@%f\n", I2F(rrs1), I2F(new_rcalc));
                                             frd=rd;
                                             rrd=new_rcalc;
+                                            record[FSQRT_S]++;
                                             break;
                                         case MAS:
                                             new_ireg_wb=*buf_int;
@@ -2485,6 +2647,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fsgnj_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FSGNJ_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2514,6 +2677,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fsgnjn_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FSGNJN_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2543,6 +2707,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fsgnjx_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FSGNJX_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2595,6 +2760,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fmin_c(I2F(rrs1),I2F(rrs2),stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FMIN_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2624,6 +2790,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fmax_c(I2F(rrs1),I2F(rrs2),stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FMAX_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2670,6 +2837,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                record[FCVT_W_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2731,6 +2899,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=invsext(floor_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                record[FLOOR]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2792,6 +2961,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                     new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
                                                     ird=rd;
                                                     rrd=new_rcalc;
+                                                    record[FMV_X_W]++;
                                                     break;
                                                 case MAS:
                                                     new_ireg_wb=*buf_int;
@@ -2854,6 +3024,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=feq_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                record[FEQ_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2883,6 +3054,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=flt_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                record[FLT_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2912,6 +3084,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=fle_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                record[FLE_S]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -2943,6 +3116,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=F2I(fcvt_s_w_c(rrs1,stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FCVT_S_W]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -3001,6 +3175,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                                 new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                record[FMV_W_X]++;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=*buf_int;
@@ -3109,6 +3284,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                         new_rcalc=rrs1+sext(offset,12);
                                         frd=rd;
                                         ldhzd=1;
+                                        record[FLW]++;
                                         break;
                                     case MAS:
                                         new_ireg_wb=*buf_int;
@@ -3150,6 +3326,7 @@ void handle_instruction(char* buf, int stage, int stall){
                                 new_ireg_ma=*buf_int;
                                 new_rcalc=rrs1+sext(offset,12);
                                 new_m_data=rrs2;
+                                record[FSW]++;
                                 break;
                             case MAS:
                                 new_ireg_wb=*buf_int;
@@ -3188,6 +3365,7 @@ void handle_instruction(char* buf, int stage, int stall){
                         //ird = rd;
                         new_rcalc=rrs1;
                         //new_m_data=rrs2;
+                        record[OUT]++;
                         break;
                     case MAS:
                         new_ireg_wb=*buf_int;
@@ -3220,6 +3398,7 @@ void handle_instruction(char* buf, int stage, int stall){
                     ldhzd=1;
                     //new_rcalc=rrs1+sext(offset,12);
                     //new_m_data=rrs2;
+                    record[IN]++;
                     break;
                 case MAS:
                     new_ireg_wb=*buf_int;
@@ -4084,6 +4263,7 @@ int main(int argc, char *argv[]){
 
         if(end==1){
             printf("\rexit detected.\n");
+            write_stat(source);
             break;
         }
         //printf("%d\n",end);
