@@ -2440,6 +2440,6 @@ in
 
 (* rt size_x size_y version *)
 (* version は 3 or 6 *)
-let _ = rt 32 32 3
+let _ = rt 4 4 3
 
 in ()

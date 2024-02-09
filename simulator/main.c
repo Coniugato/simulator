@@ -8,6 +8,7 @@
 #include <termios.h>
 #include <string.h>
 #include "fpu.h"
+#include "fpui.h"
 #include "input_handle.h"
 
 #define N_WAYS 4
@@ -123,6 +124,7 @@ unsigned int m_data=0;
 unsigned int new_m_data=0;
 
 unsigned int ldhzd=0;
+unsigned long long n_ended=0;
 
 
 unsigned long long Dcache_hit=0, Dcache_miss=0, Icache_miss=0, Icache_hit=0;
@@ -581,6 +583,7 @@ long long int convsext(unsigned long long input, int from, int to){
 }
 
 void handle_instruction(char* buf, int stage, int stall){
+    if(stall==1 && runmode==1) return;
     if(runmode==0) printf("\n");
 
     switch(stage){
@@ -3871,7 +3874,9 @@ int main(int argc, char *argv[]){
         //int c_ldhzd=ldhzd;
 
         //Write Back Stage
-        if(delay_WB<=1) handle_instruction((char*)&ireg_wb, WBS, 0);
+        if(delay_WB<=1){ handle_instruction((char*)&ireg_wb, WBS, 0);
+            if(ireg_wb!=0) n_ended+=1;
+        }
         else handle_instruction((char*)&ireg_wb, WBS,1);
 
         //printf("%d@@\n", delay_IF);
@@ -3883,34 +3888,39 @@ int main(int argc, char *argv[]){
         if(delay_EX<=1){
             
             handle_instruction((char*)&ireg_ex, EXS, 0);
-            if(pc_flag==1){
-                if(nextpc==new_pc_ex){
-                    if(runmode==0) printf("untaken.\n");
-                }
-                else{
-                    if(runmode==0) printf("taken. nextPC: %d\n", nextpc);
-                }
-            } 
+            
             
             /*LOAD hazard*/
             if(ldhzd!=0){
                 if(runmode==0) printf("Load Hazard.\n");
             }
             //forwarding
-            if(runmode==0) printf("will be used:");
-            if(runmode==0) if(irs1>=0) printf("rs1 : x%d ", irs1);
-            if(runmode==0) if(irs2>=0) printf("rs2 : x%d ", irs2);
-            if(runmode==0) if(frs1>=0) printf("rs1 : f%d ", frs1);
-            if(runmode==0) if(frs2>=0) printf("rs2 : f%d ", frs2);
-            if(runmode==0) if(runmode==0) printf("\n");
-            if(runmode==0) printf("will be overwritten by previous:");
-            if(runmode==0) if(ird>=0) printf("rd : x%d ", ird);
-            if(runmode==0) if(frd>=0) printf("rd : f%d ", frd);
-            if(runmode==0) printf("\n");
-            if(runmode==0) printf("will be overwritten by ex-previous:");
-            if(runmode==0) if(o_ird>=0) printf("rd : x%d ", o_ird);
-            if(runmode==0) if(o_frd>=0) printf("rd : f%d ", o_frd);
-            if(runmode==0) printf("\n");
+            //print only runmode
+            if(runmode==0){ 
+                if(pc_flag==1){
+                    if(nextpc==new_pc_ex){
+                        if(runmode==0) printf("untaken.\n");
+                    }
+                    else{
+                        if(runmode==0) printf("taken. nextPC: %d\n", nextpc);
+                    }
+                } 
+                printf("will be used:");
+                if(irs1>=0) printf("rs1 : x%d ", irs1);
+                if(irs2>=0) printf("rs2 : x%d ", irs2);
+                if(frs1>=0) printf("rs1 : f%d ", frs1);
+                if(frs2>=0) printf("rs2 : f%d ", frs2);
+                if(runmode==0) printf("\n");
+                printf("will be overwritten by previous:");
+                if(ird>=0) printf("rd : x%d ", ird);
+                if(frd>=0) printf("rd : f%d ", frd);
+                printf("\n");
+                printf("will be overwritten by ex-previous:");
+                if(o_ird>=0) printf("rd : x%d ", o_ird);
+                if(o_frd>=0) printf("rd : f%d ", o_frd);
+                printf("\n");
+            }
+
             if(irs1==ird && irs1!=0){
                 if(runmode==0) printf("forwarding x%d=%d -> x%d\n", ird, rrd, irs1);
                 new_rrs1=rrd;
@@ -4065,11 +4075,11 @@ int main(int argc, char *argv[]){
         //printf("[#]%d %d %d %d\n", o_frd, frd, frs1, frs2);
 
         //for debug
-        printf("%x\n", pc);
+        //printf("%x\n", pc);
         if(runmode==1 && end!=1) continue;
 
         
-        printf("Main(Fetch) PC: %lld->%d/%d \t CLOCK: %lld\n", oldpc, pc, max_pc, clk);
+        printf("Main(Fetch) PC: %lld->%d/%d \t ENDED_INSTS: %lld CLOCK: %lld\n", oldpc, pc, max_pc, n_ended, clk);
         int i;
         for(i=0; i<32; i++){
             printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);

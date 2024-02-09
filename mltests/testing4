@@ -1,0 +1,7 @@
+rm src4.output.ppm
+rm src4.output
+../utilities/allmake
+time ../simulator/sim src4 -auto -ifnc
+../utilities/conv_ppm src4.output
+cat src4.output.ppm
+

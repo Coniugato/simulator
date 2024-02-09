@@ -10274,8 +10274,8 @@ min_caml_start:
 	sw	t6, 12, s6
 	sw	t6, 8, a5
 	sw	t6, 4, a1
-	li	a0, 32
-	li	a1, 32
+	li	a0, 4
+	li	a1, 4
 	li	a2, 3
 	sw	hp, 148, ra
 	addi	hp, hp, 152

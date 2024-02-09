@@ -30,7 +30,7 @@ dight_print.18:
 	addi	hp, hp, -16
 	lw	ra, hp, 12
 	lw	a1, hp, 8
-	add	a0, a0, a1
+	sub	a0, a0, a1
 	sw	hp, 12, ra
 	addi	hp, hp, 16
 	call	min_caml_float_of_int
