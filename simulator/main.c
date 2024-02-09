@@ -159,11 +159,11 @@ unsigned long long wait_MA=0;
 unsigned long long wait_WB=0;
 
 //NOTE: from >= to
-unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to){
+inline unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to){
   return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
 } 
 
-long long sext(unsigned long long input, unsigned long long n_dights){
+inline long long sext(unsigned long long input, unsigned long long n_dights){
   if(extract(input, n_dights-1, n_dights-1)==0b1){
     return -(1<<(n_dights-1))+extract(input, n_dights-2, 0);
   }
@@ -172,14 +172,14 @@ long long sext(unsigned long long input, unsigned long long n_dights){
   }
 } 
 
-unsigned long long invsext(long long input, unsigned long long n_dights){
+inline unsigned long long invsext(long long input, unsigned long long n_dights){
   if(input<0){
     return ((UL)1<<n_dights)+input;
   }
   else return input;
 } 
 
-unsigned int F2I(float input){
+inline unsigned int F2I(float input){
     union f_ui
     {
         unsigned int ui;
@@ -190,7 +190,7 @@ unsigned int F2I(float input){
     return fui.ui;
 }
 
-float I2F(unsigned int input){
+inline float I2F(unsigned int input){
     union f_ui
     {
         unsigned int ui;
@@ -229,6 +229,7 @@ void write_int(int val){
 }
 
 void write_char(int val){
+
     if((fout = fopen(outfilename, "a")) == NULL) {
         fprintf(stderr, "%s\n", "ERROR: cannot open output file.");
         exit(1);
@@ -584,74 +585,89 @@ long long int convsext(unsigned long long input, int from, int to){
 
 void handle_instruction(char* buf, int stage, int stall){
     if(stall==1 && runmode==1) return;
-    if(runmode==0) printf("\n");
 
     switch(stage){
         case IFS:
-            if(runmode==0) printf("\x1b[35m(IF stage)\x1b[0m PC: %d\n", pc);
             new_pc_rf=pc;
             break;
         case RFS:
-            if(runmode==0) printf("\x1b[35m(RF stage)\x1b[0m PC: %d\n", pc_rf);
             new_pc_ex=pc_rf;
             break;
         case EXS:
-            if(runmode==0) printf("\x1b[35m(EX stage)\x1b[0m PC: %d\n", pc_ex);
             new_pc_ma=pc_ex;
             break;
         case MAS:
-            if(runmode==0) printf("\x1b[35m(MA stage)\x1b[0m PC: %d\n", pc_ma);
             new_pc_wb=pc_ma;
             break;
         case WBS:
-            if(runmode==0) printf("\x1b[35m(WB stage)\x1b[0m PC: %d\n", pc_wb);
             break;
         default:
             break;
     }
-
-    if(stall==1){ 
-        if(runmode==0) printf("STALLED.");
-        switch(stage){
-            case IFS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_IF);
-                new_pc_rf=pc;
-                break;
-            case RFS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_RF);
-                new_pc_ex=pc_rf;
-                break;
-            case EXS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_EX);
-                new_pc_ma=pc_ex;
-                break;
-            case MAS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_MA);
-                new_pc_wb=pc_ma;
-                break;
-            case WBS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_WB);
-                break;
-            default:
-                break;
-            }
-        if(runmode==0) printf("\n");
-    }
-    if(runmode==0) printf("Binary: \t");
+    
     int* buf_int=(int*)buf;
-    int i, j;
-    for(i=31; i>=0; i-=1){
-        if(runmode==0) printf("%llx", extract(*buf_int, i,i));
-        if(i%4==0) if(runmode==0) printf(" ");
+    
+
+    if(runmode==0){
+        printf("\n");
+            switch(stage){
+                case IFS:
+                    if(runmode==0) printf("\x1b[35m(IF stage)\x1b[0m PC: %d\n", pc);
+                    break;
+                case RFS:
+                    if(runmode==0) printf("\x1b[35m(RF stage)\x1b[0m PC: %d\n", pc_rf);
+                    break;
+                case EXS:
+                    if(runmode==0) printf("\x1b[35m(EX stage)\x1b[0m PC: %d\n", pc_ex);
+                    break;
+                case MAS:
+                    if(runmode==0) printf("\x1b[35m(MA stage)\x1b[0m PC: %d\n", pc_ma);
+                    break;
+                case WBS:
+                    if(runmode==0) printf("\x1b[35m(WB stage)\x1b[0m PC: %d\n", pc_wb);
+                    break;
+                default:
+                    break;
+            }
+            if(stall==1){ 
+                if(runmode==0) printf("STALLED.");
+                switch(stage){
+                    case IFS:
+                        if(runmode==0) printf("Remained clock: %lld\n", delay_IF);
+                        break;
+                    case RFS:
+                        if(runmode==0) printf("Remained clock: %lld\n", delay_RF);
+                        break;
+                    case EXS:
+                        if(runmode==0) printf("Remained clock: %lld\n", delay_EX);
+                        break;
+                    case MAS:
+                        if(runmode==0) printf("Remained clock: %lld\n", delay_MA);
+                        break;
+                    case WBS:
+                        if(runmode==0) printf("Remained clock: %lld\n", delay_WB);
+                        break;
+                    default:
+                        break;
+                    }
+                if(runmode==0) printf("\n");
+            }
+        if(runmode==0) printf("Binary: \t");
+        
+        int i, j;
+        for(i=31; i>=0; i-=1){
+            if(runmode==0) printf("%llx", extract(*buf_int, i,i));
+            if(i%4==0) if(runmode==0) printf(" ");
+        }
+        if(runmode==0) printf("\n0x: \t\t");
+        for(i=0; i<32; i+=4){
+            if(runmode==0) printf("%0llx", extract(*buf_int, 31-i,28-i));
+            if(i%8!=0) if(runmode==0) printf(" ");
+        }
+        if(runmode==0) printf("\n");
+        if(runmode==0) printf("Instruction: ");//if(runmode==0) printf("%llx\n", extract(*buf_int, 1,0));
     }
-    if(runmode==0) printf("\n0x: \t\t");
-    for(i=0; i<32; i+=4){
-        if(runmode==0) printf("%0llx", extract(*buf_int, 31-i,28-i));
-        if(i%8!=0) if(runmode==0) printf(" ");
-    }
-    if(runmode==0) printf("\n");
-    if(runmode==0) printf("Instruction: ");
-    //if(runmode==0) printf("%llx\n", extract(*buf_int, 1,0));
+    
     if(stall==1) stage=-1;
     if(extract(*buf_int, 1,0)==0b11){
         int rd=extract(*buf_int, 11,7);
@@ -3869,7 +3885,7 @@ int main(int argc, char *argv[]){
             stall_i=*(unsigned int *)i_memory_access(pc,0);
             handle_instruction((char*)&stall_i, IFS,0);
         }
-        else handle_instruction((char*)&stall_i, IFS,1);
+        else if(runmode==0)  handle_instruction((char*)&stall_i, IFS,1);
 
         //int c_ldhzd=ldhzd;
 
@@ -3877,12 +3893,12 @@ int main(int argc, char *argv[]){
         if(delay_WB<=1){ handle_instruction((char*)&ireg_wb, WBS, 0);
             if(ireg_wb!=0) n_ended+=1;
         }
-        else handle_instruction((char*)&ireg_wb, WBS,1);
+        else if(runmode==0) handle_instruction((char*)&ireg_wb, WBS,1);
 
         //printf("%d@@\n", delay_IF);
         //Register Fetch Stage
         if(delay_RF<=1) handle_instruction((char*)&ireg_rf, RFS,0);
-        else handle_instruction((char*)&ireg_rf, RFS,1);
+        else if(runmode==0) handle_instruction((char*)&ireg_rf, RFS,1);
         //printf("%d@@\n", irs1);
         //ALU / FPU Stage
         if(delay_EX<=1){
@@ -3891,12 +3907,13 @@ int main(int argc, char *argv[]){
             
             
             /*LOAD hazard*/
-            if(ldhzd!=0){
-                if(runmode==0) printf("Load Hazard.\n");
-            }
+            
             //forwarding
             //print only runmode
             if(runmode==0){ 
+                if(ldhzd!=0){
+                    if(runmode==0) printf("Load Hazard.\n");
+                }
                 if(pc_flag==1){
                     if(nextpc==new_pc_ex){
                         if(runmode==0) printf("untaken.\n");
@@ -3954,11 +3971,11 @@ int main(int argc, char *argv[]){
                 new_rrs3=o_rrd;
             }
         }
-        else handle_instruction((char*)&ireg_ex, EXS, 1);
+        else if(runmode==0)  handle_instruction((char*)&ireg_ex, EXS, 1);
         //Memory Access Stage
          //printf("@@@%d, %d\n", delay_MA, wait_MA);
         if(delay_MA<=1) handle_instruction((char*)&ireg_ma, MAS, 0);
-        else handle_instruction((char*)&ireg_ma, MAS, 1);
+        else if(runmode==0)  handle_instruction((char*)&ireg_ma, MAS, 1);
         
 
 

@@ -1,0 +1,7 @@
+rm -rf src32.output.ppm
+rm -rf src32.output
+../utilities/allmake
+time ../simulator/sim src32 -auto -ifnc
+../utilities/conv_ppm src32.output
+code src32.output.ppm
+
