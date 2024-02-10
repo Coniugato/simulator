@@ -8,8 +8,7 @@
 #include <string.h>
 #include <errno.h>
 #include "AVL.h"
-
-#define N_BEFADD_INST 6
+#include "decoder.h"
 
 extern char globals[100000000];
 extern unsigned long long s_globals;

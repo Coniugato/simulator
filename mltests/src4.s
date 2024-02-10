@@ -9160,6 +9160,7 @@ rt.2836:
 	sw	s7, 4, a1
 	addrl	a1, l.6617
 	flw	fa0, a1, 0
+	bp 21
 	sw	hp, 0, a7
 	sw	hp, 4, s1
 	sw	hp, 8, a4
@@ -9180,13 +9181,16 @@ rt.2836:
 	addi	hp, hp, -60
 	lw	ra, hp, 56
 	flw	fa1, hp, 52
+	bp 1
 	fdiv.s	fa0, fa1, fa0
+	bp 0
 	lw	a0, hp, 48
 	fsw	a0, 0, fa0
 	lw	t6, hp, 44
 	sw	hp, 56, ra
 	addi	hp, hp, 60
 	lw	t5, t6, 0
+	bp 3
 	jalr	ra, t5, 0
 	addi	hp, hp, -60
 	lw	ra, hp, 56
@@ -9232,12 +9236,14 @@ rt.2836:
 	lw	a0, hp, 24
 	sw	hp, 68, ra
 	addi	hp, hp, 72
+	bp 23
 	call	d_vec.2466
 	addi	hp, hp, -72
 	lw	ra, hp, 68
 	lw	a1, hp, 20
 	sw	hp, 68, ra
 	addi	hp, hp, 72
+	bp 22
 	call	veccpy.2377
 	addi	hp, hp, -72
 	lw	ra, hp, 68
@@ -9712,6 +9718,7 @@ min_caml_start:
 	lw	ra, hp, 140
 	addi	sp, sp, -24
 	mv	a1, sp
+	bp 0
 	iaddrl	a2, read_screen_settings.2478
 	sw	a1, 0, a2
 	lw	a2, hp, 12
@@ -9726,6 +9733,7 @@ min_caml_start:
 	sw	a1, 4, a6
 	addi	sp, sp, -12
 	mv	a6, sp
+	bp 1
 	iaddrl	a7, read_light.2480
 	sw	a6, 0, a7
 	lw	a7, hp, 16
@@ -9734,12 +9742,14 @@ min_caml_start:
 	sw	a6, 4, s0
 	addi	sp, sp, -8
 	mv	s1, sp
+	bp 2
 	iaddrl	s2, read_nth_object.2485
 	sw	s1, 0, s2
 	lw	s2, hp, 4
 	sw	s1, 4, s2
 	addi	sp, sp, -12
 	mv	s3, sp
+	bp 3
 	iaddrl	s4, read_object.2487
 	sw	s3, 0, s4
 	sw	s3, 8, s1
@@ -9747,17 +9757,20 @@ min_caml_start:
 	sw	s3, 4, s1
 	addi	sp, sp, -8
 	mv	s4, sp
+	bp 4
 	iaddrl	s5, read_all_object.2489
 	sw	s4, 0, s5
 	sw	s4, 4, s3
 	addi	sp, sp, -8
 	mv	s3, sp
+	bp 5
 	iaddrl	s5, read_and_network.2495
 	sw	s3, 0, s5
 	lw	s5, hp, 28
 	sw	s3, 4, s5
 	addi	sp, sp, -24
 	mv	s6, sp
+	bp 6
 	iaddrl	s7, read_parameter.2497
 	sw	s6, 0, s7
 	sw	s6, 20, a1
@@ -9768,27 +9781,32 @@ min_caml_start:
 	sw	s6, 4, a1
 	addi	sp, sp, -8
 	mv	a6, sp
+	bp 7
 	iaddrl	s3, solver_rect_surface.2499
 	sw	a6, 0, s3
 	lw	s3, hp, 40
 	sw	a6, 4, s3
 	addi	sp, sp, -8
 	mv	s4, sp
+	bp 8
 	iaddrl	s7, solver_rect.2508
 	sw	s4, 0, s7
 	sw	s4, 4, a6
 	addi	sp, sp, -8
 	mv	a6, sp
+	bp 9
 	iaddrl	s7, solver_surface.2514
 	sw	a6, 0, s7
 	sw	a6, 4, s3
 	addi	sp, sp, -8
 	mv	s7, sp
+	bp 10
 	iaddrl	s8, solver_second.2533
 	sw	s7, 0, s8
 	sw	s7, 4, s3
 	addi	sp, sp, -20
 	mv	s8, sp
+	bp 11
 	iaddrl	s9, solver.2539
 	sw	s8, 0, s9
 	sw	s8, 16, a6
@@ -9797,6 +9815,7 @@ min_caml_start:
 	sw	s8, 4, s2
 	addi	sp, sp, -8
 	mv	a6, sp
+	bp 12
 	iaddrl	s4, solver_rect_fast.2543
 	sw	a6, 0, s4
 	sw	a6, 4, s3
@@ -10280,6 +10299,7 @@ min_caml_start:
 	sw	hp, 148, ra
 	addi	hp, hp, 152
 	lw	t5, t6, 0
+	bp 20
 	jalr	ra, t5, 0
 	addi	hp, hp, -152
 	lw	ra, hp, 148

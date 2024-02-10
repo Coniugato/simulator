@@ -2,6 +2,7 @@ rm -rf src4.output.ppm
 rm -rf src4.output
 ../utilities/allclean
 ../utilities/allmake
+../assembler/asm src4.s src4
 time ../simulator/sim src4 -auto -ifnc
 ../utilities/conv_ppm src4.output
 cat src4.output.ppm

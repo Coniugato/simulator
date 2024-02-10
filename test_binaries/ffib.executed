@@ -1,8 +1,8 @@
 simulator.
-INSTRUCTION section BYTES: 160
+INSTRUCTION section BYTES: 164
 DATA section BYTES: 4
-Main(Fetch) PC: 164->168/156 	 CLOCK: 1861
-	x0: 	0 	x1: 	40 	x2: 	1000 	x3: 	0
+Main(Fetch) PC: 172->172/160 	 ENDED_INSTS: 600 CLOCK: 1783
+	x0: 	0 	x1: 	44 	x2: 	1000 	x3: 	0
 	x4: 	4 	x5: 	1 	x6: 	0 	x7: 	0
 	x8: 	0 	x9: 	0 	x10: 	0 	x11: 	0
 	x12: 	0 	x13: 	0 	x14: 	0 	x15: 	0

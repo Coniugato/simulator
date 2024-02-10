@@ -1,7 +1,7 @@
 simulator.
-INSTRUCTION section BYTES: 36
+INSTRUCTION section BYTES: 40
 DATA section BYTES: 0
-Main(Fetch) PC: 40->44/32 	 CLOCK: 24
+Main(Fetch) PC: 48->48/36 	 ENDED_INSTS: 10 CLOCK: 24
 	[35mx0[0m: 	0 	[35mx1[0m: 	0 	[35mx2[0m: 	134217728 	[35mx3[0m: 	0
 	[35mx4[0m: 	0 	[35mx5[0m: 	0 	[35mx6[0m: 	0 	[35mx7[0m: 	0
 	[35mx8[0m: 	0 	[35mx9[0m: 	0 	[35mx10[0m: 	231 	[35mx11[0m: 	0

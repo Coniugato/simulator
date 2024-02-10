@@ -1,6 +1,7 @@
 __entry__:
 	j min_caml_start
 dfdx.43:
+	bp 9
 	flw	fa1, t6, 4
 	fadd.s	fa2, fa0, fa1
 	fsw	hp, 0, fa1
@@ -44,6 +45,7 @@ fl_abs.46:
 	nop
 	ret
 newton.48:
+	bp 4
 	flw	fa1, t6, 8
 	lw	a1, t6, 4
 	sw	hp, 0, t6
@@ -56,6 +58,7 @@ newton.48:
 	addi	hp, hp, 24
 	lw	t5, t6, 0
 	jalr	ra, t5, 0
+	bp 5
 	addi	hp, hp, -24
 	lw	ra, hp, 20
 	fsgnj.s	fa1, fa0, fa0
@@ -67,7 +70,9 @@ newton.48:
 	sw	hp, 24, ra
 	addi	hp, hp, 28
 	lw	t5, t6, 0
+	bp 7
 	jalr	ra, t5, 0
+	bp 6
 	addi	hp, hp, -28
 	lw	ra, hp, 24
 	fsgnj.s	fa1, fa0, fa0
@@ -81,6 +86,7 @@ newton.48:
 	sw	hp, 28, ra
 	addi	hp, hp, 32
 	call	fl_abs.46
+	bp 7
 	addi	hp, hp, -32
 	lw	ra, hp, 28
 	fsgnj.s	fa1, fa0, fa0
@@ -92,6 +98,7 @@ newton.48:
 	lw	t6, hp, 0
 	fsgnj.s	fa0, fa1, fa1
 	lw	t5, t6, 0
+	bp 8
 	jalr	zero, t5, 0
 .Beq2:
 	nop
@@ -99,6 +106,7 @@ newton.48:
 	fsgnj.s	fa0, fa1, fa1
 	ret
 f.51:
+	bp 8
 	fmul.s	fa1, fa0, fa0
 	addrl	a0, l.101
 	flw	fa2, a0, 0
@@ -190,6 +198,7 @@ min_caml_start:
 	addi	sp, sp, -12
 	mv	t6, sp
 	iaddrl	a2, newton.48
+	bp 4
 	sw	t6, 0, a2
 	fsw	t6, 8, fa1
 	sw	t6, 4, a1
@@ -202,12 +211,14 @@ min_caml_start:
 	sw	hp, 12, ra
 	addi	hp, hp, 16
 	lw	t5, t6, 0
+	bp 2
 	jalr	ra, t5, 0
 	addi	hp, hp, -16
 	lw	ra, hp, 12
 	li	a0, 10
 	sw	hp, 12, ra
 	addi	hp, hp, 16
+	bp 3
 	call	dight_print.55
 	addi	hp, hp, -16
 	lw	ra, hp, 12

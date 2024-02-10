@@ -278,12 +278,16 @@ int main(int argc, char *argv[]){
             perror("ERROR: cannot open target file"); exit(1);
     }
 
-    #define N_ADD_INST 7
+    #define N_ADD_INST (N_BEFADD_INST+1)
 
     int n_inst_bytes = addr+N_ADD_INST*4;
-    int n_data_bytes = s_globals;
+    int n_data_bytes = s_globals; 
     writeall(outd, (char*)&n_inst_bytes, 4);
     writeall(outd, (char*)&n_data_bytes, 4);
+    //nop
+    int tmpnop=0b0110011;
+    //printf("%x\n",tmpnop);
+    writeall(outd, (char*)&tmpnop,4);
     //gp initialization
     char char_inst[4];
     int* int_inst=(int*)char_inst;
