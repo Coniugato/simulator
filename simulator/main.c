@@ -10,6 +10,7 @@
 #include "fpu.h"
 #include "fpui.h"
 #include "input_handle.h"
+#include "mainvars.h"
 #include "memory.h"
 #include "handle.h"
 #include "print.h"
@@ -286,6 +287,7 @@ int main(int argc, char *argv[]){
         new_ireg_ex=0;
         new_ireg_ma=0;
         new_ireg_wb=0;
+        
 
         //Write Back Stage
         //ストールはしない
@@ -294,8 +296,8 @@ int main(int argc, char *argv[]){
             o_frd=NREG;
             handle_instruction(ireg_wb, WBS, 0);
             n_ended+=1;
-            if(n_ended/1000==14 && n_ended%10==0)
-                printf("%llu %x\n", n_ended, pc_wb);
+            //if(n_ended/100==148 && n_ended%1==0)
+            //    printf("%llu %x\n", n_ended, pc_wb);
             //if(n_ended==4394597) runmode=0; /*4394611*/
         }
         //hard wired to 0
@@ -304,7 +306,7 @@ int main(int argc, char *argv[]){
         thisinst = *((unsigned int *)i_memory_access(pc,0));
         
         int update_if=0, update_rf=0, update_ex=0;
-
+        
         //printf("%f %f\n", I2F(rrs1), I2F(rrs2));
         //Memory Access Stage
         if(delay_MA==0){ 
@@ -320,29 +322,31 @@ int main(int argc, char *argv[]){
             handle_instruction(ireg_ma, MAS, 0);
             
         }
-
-       
+        
+        //if(irs1<0 && irs1!=NREG2) printf("%d\n", irs1);
+        //if((irs1<0 || irs1>32) && irs1!=NREG2) runmode=0;
         if(runmode==0){ 
             nextinst = *((unsigned int *)i_memory_access(pc,0));
             print_instruction(nextinst, IFS, 1);
             print_instruction(ireg_rf, RFS, 1);
             print_instruction(ireg_ex, EXS, 1);
             if(runmode==0){ 
-                printf("EXrs1 : %d EXirs2 : %d EXird : %d\n", ldhzd ? "Yes" : "No", irs1, irs2, ird);
+                
+                printf("EXrs1 : %d EXirs2 : %d EXird : %d\n", irs1, irs2, ird);
                 printf("EXfrs1 : %d EXfrs2 : %d EXfrs3 : %d EXfrd : %d\n", frs1, frs2, frs3, frd);
                 printf("MAird : %d MAfrd : %d\n", o_ird, o_frd);
-                if(ldhzd==1 && (irs1==ird || irs2==ird  || frs1==frd  || frs2==frd  || irs3==frd)) printf("ldhzd.\n");
+                if(ldhzd==1 && (irs1==ird || irs2==ird  || frs1==frd  || frs2==frd  || frs3==frd)) printf("ldhzd.\n");
                 
             }
             print_instruction(ireg_ma, MAS, 1);
             print_instruction(ireg_wb, WBS, 1);
+            
         }
 
         
         if(delay_MA==0){
             ireg_wb=new_ireg_wb;
-            pc_wb=new_pc_wb; 
-            cond_wb=new_cond_wb;       
+            pc_wb=new_pc_wb;      
             wb=new_wb;
 
             //ALU / FPU Stage
@@ -477,8 +481,6 @@ int main(int argc, char *argv[]){
             pc=nextpc;
             delay_IF=ILA;
         }
-
-        
 
  
         //for display
