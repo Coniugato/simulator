@@ -2,7 +2,7 @@
 #include "mainvars.h"
 
 void print_registers(void){
-    printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld CLOCK: %lld\n", oldpc, pc, max_pc, n_ended, clk);
+    printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld CLOCK: %lld->%lld\n", oldpc, pc, max_pc, n_ended, oldclk, clk);
     int i; 
     for(i=0; i<32; i++){
         printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);

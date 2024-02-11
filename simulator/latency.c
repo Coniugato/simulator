@@ -57,7 +57,8 @@ long long latency_instruction(unsigned int inst, int stage){
                 else return WriteFloatClk;
             /* NMADD, NMSUBは廃止されました
             case 0b10010:
-                if(stage==MAS) return 1;
+                if(FPU_IN_MA==0 && stage==MAS) return 1;
+                if(FPU_IN_MA==1 && stage==EXS) return 1;
                 switch(extract(inst, 26,25)){
                     case 0b00:
                         //FNMSUB
@@ -65,7 +66,8 @@ long long latency_instruction(unsigned int inst, int stage){
                 }   
                 break;
             case 0b10011:
-                if(stage==MAS) return 1;
+                if(FPU_IN_MA==0 && stage==MAS) return 1;
+                if(FPU_IN_MA==1 && stage==EXS) return 1;
                 switch(extract(inst, 26,25)){
                     case 0b00:
                         //NMADD
@@ -73,7 +75,8 @@ long long latency_instruction(unsigned int inst, int stage){
                 }   
                 break;*/
             case 0b10100:
-                if(stage==MAS) return 1;
+                if(FPU_IN_MA==0 && stage==MAS) return 1;
+                if(FPU_IN_MA==1 && stage==EXS) return 1;
                 switch(extract(inst, 31,25)){
                     case 0b0000000:
                         //ADD

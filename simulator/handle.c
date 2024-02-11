@@ -5,6 +5,7 @@
 #include "fpu.h"
 #include "fpui.h"
 #include "mainvars.h"
+#include "print.h"
 
 
 
@@ -1319,6 +1320,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rcalc=F2I(fnmsub_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1355,6 +1357,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rcalc=F2I(fnmadd_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1390,6 +1393,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rcalc=F2I(fadd_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1415,6 +1419,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rcalc=F2I(fsub_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1442,9 +1447,12 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=inst;
+                                        //if(runmode==0) printf("%f, %f\n", I2F(rrs1),I2F(rrs2));
                                         new_rcalc=F2I(fmul_c(I2F(rrs1),I2F(rrs2),stage));
+                                        //if(runmode==0) printf("%f\n", I2F(new_rcalc));
                                         frd=rd;
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1476,6 +1484,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rcalc=F2I(fdiv_c(I2F(rrs1),I2F(rrs2),stage));
                                         frd=rd; //printf("%f\n",I2F(new_rcalc));
                                         rrd=new_rcalc;
+                                        ldhzd=FPU_IN_MA;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
@@ -1506,6 +1515,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             //printf("@@@%f\n", I2F(rrs1), I2F(new_rcalc));
                                             frd=rd;
                                             rrd=new_rcalc;
+                                            ldhzd=FPU_IN_MA;
                                             break;
                                         case MAS:
                                             new_ireg_wb=inst;
@@ -1543,6 +1553,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fsgnj_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1569,6 +1580,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fsgnjn_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1595,6 +1607,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fsgnjx_c(I2F(rrs1),I2F(rrs2), stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1625,6 +1638,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fmin_c(I2F(rrs1),I2F(rrs2),stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1651,6 +1665,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fmax_c(I2F(rrs1),I2F(rrs2),stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1680,6 +1695,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1704,6 +1720,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=fcvt_wu_c(I2F(rrs1),stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1735,6 +1752,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=invsext(floor_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1760,6 +1778,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=invsext(fround_c(I2F(rrs1),stage),32);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1848,6 +1867,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=feq_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1874,6 +1894,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=flt_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1900,6 +1921,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=fle_c(I2F(rrs1),I2F(rrs2), stage);
                                                 ird=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1928,6 +1950,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fcvt_s_w_c(rrs1,stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -1952,6 +1975,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_rcalc=F2I(fcvt_s_wu_c(rrs1,stage));
                                                 frd=rd;
                                                 rrd=new_rcalc;
+                                                ldhzd=FPU_IN_MA;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
@@ -2088,6 +2112,11 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                         //int_registers[rd]=wb;
                         break;
                 }
+                break;
+            default:
+                fprintf(stderr, "Invalid Instruction.\n");
+                print_registers();
+                exit(1);
         }
     }
     else if(extract(inst, 6,0)==0b1111110){
@@ -2116,5 +2145,10 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                     int_registers[rd]=wb;
                     break;
         }
+    }
+    else{
+        fprintf(stderr, "Invalid Instruction.\n");
+        print_registers();
+        exit(1);
     }
 }

@@ -12,6 +12,11 @@
 //データメモリの大きさ
 #define N_MEMORY 134217728
 
+//MAステージでFPUを行う
+#define FPU_IN_MA  0
+
+
+
 
 
 

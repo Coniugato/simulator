@@ -81,6 +81,10 @@ int o_ird=NREG;
 int o_frd=NREG;
 unsigned int o_rrd=0;
 
+int oo_ird=NREG;
+int oo_frd=NREG;
+unsigned int oo_rrd=0;
+
 unsigned int new_rrs1=0;
 unsigned int new_rrs2=0;
 unsigned int new_rrs3=0;
@@ -108,7 +112,7 @@ unsigned int new_m_data=0;
 unsigned int ldhzd=0;
 unsigned long long n_ended=0;
 
-unsigned long long clk=0;
+unsigned long long oldclk=0, clk=0;
 
 long long delay_IF=ILA;
 long long delay_RF=ILA;;
@@ -234,6 +238,7 @@ int main(int argc, char *argv[]){
     //simulate
     termios_t st;
     printf("simulator.\n");
+    printf("FPU in MA Stage %s\n", FPU_IN_MA ? "On" : "Off");
     printf("INSTRUCTION section BYTES: %d\n", n_insts);
     printf("DATA section BYTES: %d\n", n_data);
 
@@ -257,6 +262,7 @@ int main(int argc, char *argv[]){
             imode=0;
         }
 
+        oldclk=clk;
         pc_flag=0;
         //int_registers[0]=0;
         clk++;
@@ -288,6 +294,8 @@ int main(int argc, char *argv[]){
             if(runmode==0){ 
                 printf("load? %s EXrs1 : %d EXirs2 : %d EXird : %d\n", ldhzd ? "Yes" : "No", irs1, irs2, ird);
                 printf("EXfrs1 : %d EXfrs2 : %d EXfrs3 : %d EXfrd : %d\n", frs1, frs2, frs3, frd);
+                printf("MAird : %d MAfrd : %d\n", o_ird, o_frd);
+                printf("past MAird : %d past MAfrd : %d\n", oo_ird, oo_frd);
                 if(ldhzd==1 && (irs1==ird || irs2==ird  || frs1==frd  || frs2==frd  || irs3==frd)) printf("ldhzd.\n");
                 if(delay_EX==0){
                     //forwarding
@@ -297,12 +305,18 @@ int main(int argc, char *argv[]){
                     else if(irs1==o_ird && irs1!=0){
                         printf("forwarding %d from MA as x%d\n", o_rrd, irs1);
                     }
+                    else if(irs1==oo_ird && irs1!=0){
+                        printf("forwarding %d from past MA as x%d\n", oo_rrd, irs1);
+                    }
 
                     if(irs2==ird && irs2!=0){
                         printf("forwarding %d from EX as x%d\n", rrd, irs2);
                     }
                     else if(irs2==o_ird && irs2!=0){
                         printf("forwarding %d from MA as x%d\n", o_rrd, irs2);
+                    }
+                    else if(irs2==oo_ird && irs2!=0){
+                        printf("forwarding %d from past MA as x%d\n", oo_rrd, irs2);
                     }
 
                     if(frs1==frd){
@@ -311,6 +325,9 @@ int main(int argc, char *argv[]){
                     else if(frs1==o_frd){
                         printf("forwarding %f from MA as frs1=f%d\n", I2F(o_rrd), frs1);
                     }
+                    else if(frs1==oo_frd){
+                        printf("forwarding %f from past MA as frs1=f%d\n", I2F(oo_rrd), frs1);
+                    }
 
                     if(frs2==frd){
                         printf("forwarding %f from EX as frs2=f%d\n", I2F(frd), frs2);
@@ -318,11 +335,18 @@ int main(int argc, char *argv[]){
                     else if(frs2==o_frd){
                         printf("forwarding %f from MA as frs2=f%d\n", I2F(o_rrd), frs2);
                     }
+                    else if(frs2==oo_frd){
+                        printf("forwarding %f from past MA as frs2=f%d\n", I2F(oo_rrd), frs2);
+                    }
+
                     if(frs3==frd){
                         printf("forwarding %f from EX as frs3=f%d\n", I2F(frd), frs3);
                     }
                     else if(frs3==o_frd){
                         printf("forwarding %f from MA as frs3=f%d\n", I2F(o_rrd), frs3);
+                    }
+                    else if(frs3==oo_frd){
+                        printf("forwarding %f from past MA as frs3=f%d\n", I2F(oo_rrd), frs3);
                     }
                 }
             }
@@ -335,6 +359,9 @@ int main(int argc, char *argv[]){
         if(ireg_wb!=0){ 
             handle_instruction(ireg_wb, WBS, 0);
             n_ended+=1;
+            /*if(n_ended/100==43946 && n_ended)
+                printf("%llu %x\n", n_ended, pc_wb);*/
+            //if(n_ended==4394597) runmode=0; /*4394611*/
         }
         //hard wired to 0
         int_registers[0]=0;
@@ -355,12 +382,18 @@ int main(int argc, char *argv[]){
                 else if(irs1==o_ird && irs1!=0){
                     rrs1=o_rrd;
                 }
+                else if(irs1==oo_ird && irs1!=0){
+                    rrs1=oo_rrd;
+                }
 
                 if(irs2==ird && irs2!=0){
                     rrs2=rrd;
                 }
                 else if(irs2==o_ird && irs2!=0){
                     rrs2=o_rrd;
+                }
+                else if(irs2==oo_ird && irs2!=0){
+                    rrs2=oo_rrd;
                 }
 
                 if(frs1==frd){
@@ -369,12 +402,18 @@ int main(int argc, char *argv[]){
                 else if(frs1==o_frd){
                     rrs1=o_rrd;
                 }
+                else if(frs1==oo_frd){
+                    rrs1=oo_rrd;
+                }
 
                 if(frs2==frd){
                     rrs2=rrd;
                 }
                 else if(frs2==o_frd){
                     rrs2=o_rrd;
+                }
+                else if(frs2==oo_frd){
+                    rrs2=oo_rrd;
                 }
 
                 if(frs3==frd){
@@ -383,6 +422,13 @@ int main(int argc, char *argv[]){
                 else if(frs3==o_frd){
                     rrs3=o_rrd;
                 }
+                else if(frs3==oo_frd){
+                    rrs3=oo_rrd;
+                }
+
+                
+                oo_frd=NREG;
+                oo_ird=NREG;
 
                 ird=NREG;
                 frd=NREG;
@@ -416,6 +462,11 @@ int main(int argc, char *argv[]){
                         ireg_rf=0;
                     }
                 }
+            }
+            else if(ireg_ma!=0){
+                oo_rrd=o_rrd;
+                oo_frd=o_frd;
+                oo_ird=o_ird;
             }
 
             //Memory Access Stage
@@ -462,16 +513,21 @@ int main(int argc, char *argv[]){
                 ldhzd=0;
                 ird=NREG;
                 frd=NREG;
+                
             }
         }
         else{
             //clkを一気に進めてしまう
             if(ireg_wb==0){
                 long long offset = delay_MA - 1;
+                //printf("@%lld\n", offset);
+                delay_MA=1;
                 delay_EX=max(1,delay_EX-offset);
                 delay_RF=max(1,delay_RF-offset);
                 delay_IF=max(1,delay_IF-offset);
                 clk+=offset;
+                skip_jmp-=offset;
+                //printf("@%lld\n", clk);
             }
             ireg_wb=0;
         } 
@@ -526,7 +582,7 @@ int main(int argc, char *argv[]){
         //printf("%d\n",end);
 
 
-        if(skip!=0){
+        if(skip>0){
             if(skip>0) skip--;
             printf("\n\n\n");
             continue;

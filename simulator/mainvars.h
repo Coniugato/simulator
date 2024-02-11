@@ -43,7 +43,7 @@ extern unsigned int new_m_data;
 extern unsigned int ldhzd;
 extern unsigned long long n_ended;
 
-extern unsigned long long clk;
+extern unsigned long long oldclk, clk;
 
 extern long long delay_IF;
 extern long long delay_RF;
