@@ -1,8 +1,9 @@
 simulator.
+FPU in MA Stage Off
 INSTRUCTION section BYTES: 76
 DATA section BYTES: 8
-Main(Fetch) PC: 84->84/72 	 ENDED_INSTS: 18 CLOCK: 47
-	[35mx0[0m: 	0 	[35mx1[0m: 	36 	[35mx2[0m: 	134217728 	[35mx3[0m: 	0
+Main(Fetch) PC: 84->84/72 	 ENDED_INSTS: 18 CLOCK: 640->641
+	[35mx0[0m: 	0 	[35mx1[0m: 	36 	[35mx2[0m: 	33554432 	[35mx3[0m: 	0
 	[35mx4[0m: 	8 	[35mx5[0m: 	0 	[35mx6[0m: 	1042284544 	[35mx7[0m: 	1042281189
 	[35mx8[0m: 	0 	[35mx9[0m: 	0 	[35mx10[0m: 	0 	[35mx11[0m: 	0
 	[35mx12[0m: 	0 	[35mx13[0m: 	0 	[35mx14[0m: 	0 	[35mx15[0m: 	0
