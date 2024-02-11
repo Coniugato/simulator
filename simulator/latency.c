@@ -77,25 +77,25 @@ long long latency_instruction(unsigned int inst, int stage){
                 switch(extract(inst, 31,25)){
                     case 0b0000000:
                         //ADD
-                        return 4;
+                        return FAddClk;
                     case 0b0000100:
                         //SUB   
-                        return 4;    
+                        return FSubClk;    
                     case 0b0001000:
                         //MUL
-                        return 4;
+                        return FMulClk;
                     case 0b0001100:
                         //DIV
-                        return 5;
+                        return FDivClk;
                     case 0b0101100:
                         //SQRT
-                        return 3;
+                        return FSqrtClk;
                     case 0b0010000:
                         //SGNJ~
-                        return 1;
+                        return FSgnjClk;
                     case 0b0010100:
                         //MIN, MAX
-                        return 1;
+                        return FMinMaxClk;
                         /*switch(extract(inst, 14,12)){
                             case 0b000:
                                 //MIN
@@ -105,7 +105,7 @@ long long latency_instruction(unsigned int inst, int stage){
                                 return 1;
                         } */
                     case 0b1100000:
-                        return 3;
+                        return FCvtWSClk;
                         /*switch(extract(inst, 24,20)){
                             case 0b00000:
                                 //FCVT.W.S
@@ -115,7 +115,7 @@ long long latency_instruction(unsigned int inst, int stage){
                                 return 3;
                         } break;*/
                     case 0b1101101:
-                        return 3;
+                        return FRoundClk;
                         /*switch(extract(inst, 24,20)){
                             case 0b00000:
                                 //FLOOR
@@ -130,13 +130,13 @@ long long latency_instruction(unsigned int inst, int stage){
                             case 0b000:
                                 if(extract(inst, 24,20)==0b00000){
                                     //FMV
-                                    return 1;
+                                    return FMvClk;
                                 }
                                 break;
                         }  
                         break;
                     case 0b1010000:
-                        return 1;
+                        return FCmpClk;
                         /*switch(extract(inst, 14,12)){
                             case 0b010:
                                 //FEQ
@@ -150,7 +150,7 @@ long long latency_instruction(unsigned int inst, int stage){
                         } 
                         break;*/
                     case 0b1101000:
-                        return 3;
+                        return FCvtSWClk;
                         /*switch(extract(inst, 24,20)){
                             case 0b00000:
                                 //FCVT.S.W
@@ -164,7 +164,7 @@ long long latency_instruction(unsigned int inst, int stage){
                         switch(extract(inst, 24,20)){
                             case 0b00000:
                                 //FMV
-                                return 1;  
+                                return FMvClk;  
                         }
                         break;   
                 }   

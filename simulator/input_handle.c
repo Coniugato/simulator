@@ -77,8 +77,8 @@ void input_handle(void){
         }
         if(c=='d'){
             printf("%c\n",c);
-            if(Icache_hit+Icache_miss==0) printf("\r[cache statistics]: Not Yet Available. No I-cache access was detected.\n");
-            else printf("\r[cache statistics]:(I-cache hit) %lld \t(I-cache miss) %lld \t(I-cache hit rate) %f\n", Icache_hit, Icache_miss, (double)Icache_hit/(double)(Icache_hit+Icache_miss));
+            /*if(Icache_hit+Icache_miss==0) printf("\r[cache statistics]: Not Yet Available. No I-cache access was detected.\n");
+            else printf("\r[cache statistics]:(I-cache hit) %lld \t(I-cache miss) %lld \t(I-cache hit rate) %f\n", Icache_hit, Icache_miss, (double)Icache_hit/(double)(Icache_hit+Icache_miss));*/
             if(Dcache_hit+Dcache_miss==0) printf("\r[cache statistics]: Not Yet Available. No D-cache access was detected.\n");
             else printf("\r[cache statistics]:(D-cache hit) %lld \t(D-cache miss) %lld \t(D-cache hit rate) %f\n", Dcache_hit, Dcache_miss, (double)Dcache_hit/(double)(Dcache_hit+Dcache_miss));
             continue;
