@@ -1,4 +1,4 @@
-import sys
+""" import sys
 mode="P3"
 with open(sys.argv[1], "r") as f:
     lines=f.read().split()
@@ -11,7 +11,11 @@ with open(sys.argv[1], "w") as f:
         print(lines[index+0],lines[index+2],lines[index+4], file=f)
         #print(index, len(lines))
         #print(lines[index+1],lines[index+3],lines[index+5])
-        index+=6
+        index+=6 """
 
-
-    
+import sys
+with open(sys.argv[1], "r") as f:
+    lines=f.read().split()
+with open(sys.argv[1], "w") as f:
+    for c in lines:
+        print(chr(int(c)),end="",file=f)

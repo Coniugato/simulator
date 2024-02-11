@@ -1,5 +1,6 @@
 #include "print.h"
 #include "mainvars.h"
+#include "latency.h"
 
 void print_registers(void){
     printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld CLOCK: %lld->%lld\n", oldpc, pc, max_pc, n_ended, oldclk, clk);
@@ -42,22 +43,30 @@ void print_instruction(unsigned int inst, int stage, int stall){
     }
 
     if(stall==1){ 
-        if(runmode==0) printf("STALLED.");
         switch(stage){
             case IFS:
+                if(delay_IF>0) printf("STALLED.");
                 if(runmode==0) printf("Remained clock: %lld\n", delay_IF);
                 break;
             case RFS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_RF);
+                if(delay_RF>0) printf("STALLED.");
+                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                else printf("Remained clock: %lld\n", delay_RF);
                 break;
             case EXS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_EX);
+                if(delay_EX>0) printf("STALLED.");
+                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                else printf("Remained clock: %lld\n", delay_EX);
                 break;
             case MAS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_MA);
+                if(delay_MA>0) printf("STALLED.");
+                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                else printf("Remained clock: %lld\n", delay_MA);
                 break;
             case WBS:
-                if(runmode==0) printf("Remained clock: %lld\n", delay_WB);
+                if(delay_WB>0) printf("STALLED.");
+                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                else printf("Remained clock: %lld\n", delay_WB);
                 break;
             default:
                 break;
