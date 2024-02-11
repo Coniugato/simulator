@@ -4,6 +4,12 @@ fi
 cd ./$(git rev-parse --show-cdup)
 utilities/allclean
 rm -rf mlsrc
+git add .
+if [ $? != 0 ]; then
+    echo "Git Add failed!"
+    exit 1
+fi
+pwd
 gitupdate "$1_autopush_" package
 MAINLOC=$(cat developer_scripts/main_loc.txt)
 echo $MAINLOC

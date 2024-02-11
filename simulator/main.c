@@ -464,7 +464,17 @@ int main(int argc, char *argv[]){
                 frd=NREG;
             }
         }
-        else ireg_wb=0;
+        else{
+            //clkを一気に進めてしまう
+            if(ireg_wb==0){
+                long long offset = delay_MA - 1;
+                delay_EX=max(1,delay_EX-offset);
+                delay_RF=max(1,delay_RF-offset);
+                delay_IF=max(1,delay_IF-offset);
+                clk+=offset;
+            }
+            ireg_wb=0;
+        } 
 
         //分岐が正しいか判定
         if(nextpc==pc_ex) pc_flag=0;

@@ -7,6 +7,8 @@
 #define MAS 3
 #define WBS 4
 
+long long max(long long a, long long b);
+
 unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to);
 
 long long sext(unsigned long long input, unsigned long long n_dights);

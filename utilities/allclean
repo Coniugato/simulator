@@ -7,6 +7,8 @@ make clean
 cd ../displayer 
 make clean
 rm -rf .mid* 
+cd ../mltests 
+rm -rf .mid* 
 cd ../assembler
 make clean
 rm -rf .mid* 

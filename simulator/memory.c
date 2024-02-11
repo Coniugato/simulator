@@ -27,6 +27,90 @@ extern int immediate_break, runmode;
 
 
 char* memory_access(unsigned long long addr, int wflag){
+    if(addr<0 || addr >= N_MEMORY){
+        fprintf(stderr, "data memory leaked. addr: %lld problematic PC: %d clk: %lld\n", addr, pc_ma, clk);
+        print_registers();
+        immediate_break=1;
+        exit(1);
+    }
+
+    unsigned long long tag = extract(addr,31,31-LEN_TAG+1);
+    unsigned long long index = extract(addr,31-LEN_TAG,LEN_OFFSET);
+    unsigned long long offset = extract(addr,LEN_OFFSET-1,0);
+
+    if(runmode==0) printf("DCache Access: %llx %lld %lld %lld\n",addr, tag, index, offset);
+
+    int way=0;
+    int way_found=-1;
+
+    //wayの探索
+    for(way=0; way<N_WAYS; way++){
+        char thisflag = flag[way][index];
+        int valid=thisflag%2;
+        //flag :
+        //0' : valid
+        //1' : dirty
+        //2' : access
+
+        if(tag==ctag[way][index] && valid==1){
+            way_found=way;
+            //accessを立てる
+            flag[way][index]|=4;
+            break;
+        }
+    }
+    if(way_found==-1){
+        //Miss
+        for(way=0; way<N_WAYS; way++){
+            char thisflag=flag[way][index];
+            //valid==0 || dirty==0
+            if(thisflag%2==0 || (thisflag/2)%2==0){
+                way_found=way;
+            }
+        }
+        if(way_found==-1){
+            way_found=0;
+            //fprintf(stderr, "InternalError!: way elect failed\n");
+            //exit(1);
+        }
+        
+        int thisflag=flag[way_found][index];
+
+        int oldvalid=thisflag%2;
+        int olddirty=(thisflag/2)%2;
+        
+        //validを立てる
+        flag[way_found][index] |= 1;
+
+
+        unsigned long long base_addr=(ctag[way_found][index]<<(LEN_OFFSET+LEN_INDEX))+(index<<LEN_OFFSET);
+        
+        unsigned int i=0;
+        //write back
+        if(oldvalid==1 && olddirty==1){
+           
+            for(i=0; i<LEN_LINE; i++){
+                memory[base_addr+i]=cache[way_found][index][i];
+            }
+        }
+        
+
+        //fetch line
+        base_addr=(tag<<(LEN_OFFSET+LEN_INDEX))+(index<<(LEN_OFFSET));
+        for(i=0; i<LEN_LINE; i++){
+            cache[way_found][index][i]=memory[base_addr+i];
+        }
+
+        //tagを更新
+        ctag[way_found][index]=tag;
+    }
+    //writeならdirtyを立てる
+    if(wflag==1) flag[way_found][index]|=2;
+    return cache[way_found][index]+offset;
+}
+
+//Strict LRU Version
+char* old_memory_access(unsigned long long addr, int wflag){
     //printf("[MEMACCESS DETECTED] %lld, %d\n", addr, wflag);
     if(addr<0 || addr >= N_MEMORY){
         fprintf(stderr, "data memory leaked. addr: %lld problematic PC: %d clk: %lld\n", addr, pc_ma, clk);
@@ -133,9 +217,9 @@ char* dd_memory_access(unsigned long long addr, int wflag){
 
 
 char* i_memory_access(unsigned long long addr, int wflag){
-    unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
-    unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
-    unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
+    //unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
+    //unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);
+    //unsigned long long offset = extract(addr,I_LEN_OFFSET-1,0);
 
     if(addr<0 || addr >= N_INSTRUCTIONS){
         fprintf(stderr, "instruction memory leaked. addr: %lld problematic PC: %d  clk: %lld\n", addr, pc, clk);

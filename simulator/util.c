@@ -1,6 +1,8 @@
 #include "util.h"
 
-
+long long max(long long a, long long b){
+  if(a>=b) return a; else return b;
+}
 
 //NOTE: from >= to
 inline unsigned long long extract(unsigned long long input, unsigned long long from, unsigned long long to){
