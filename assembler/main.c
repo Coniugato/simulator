@@ -310,7 +310,7 @@ int main(int argc, char *argv[]){
     writeall(outd, char_inst, 4);
     //sp initialization
     rd = 2;
-    imm = 1<<27;
+    imm = 1<<23; //27から変更
     *int_inst = (extract(imm, 31, 12) << 12) + (rd << 7) + 0b0110111;
     writeall(outd, char_inst, 4);
     imm=0;
