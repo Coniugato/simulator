@@ -14,25 +14,25 @@ xor.2356:
 	mv	a0, a1
 	ret
 sgn.2359:
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	feq.s	a0, fa0, fa1
 	beq	a0, zero, .Beq3
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 	ret
 .Beq3:
 	nop
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	fle.s	a0, fa0, fa1
 	beq	a0, zero, .Beq4
-	addrl	a0, l.5788
+	addrl	a0, l.7058
 	flw	fa0, a0, 0
 	ret
 .Beq4:
 	nop
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa0, a0, 0
 	ret
 fneg_cond.2361:
@@ -55,19 +55,17 @@ add_mod5.2364:
 vecset.2367:
 	fsw	a0, 0, fa0
 	fsw	a0, 4, fa1
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa2
 	ret
 vecfill.2372:
 	fsw	a0, 0, fa0
 	fsw	a0, 4, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 vecbzero.2375:
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa0, a1, 0
 	j	vecfill.2372
 veccpy.2377:
@@ -76,8 +74,7 @@ veccpy.2377:
 	flw	fa0, a1, 4
 	fsw	a0, 4, fa0
 	flw	fa0, a1, 8
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 vecunit_sgn.2380:
@@ -99,24 +96,24 @@ vecunit_sgn.2380:
 	call	min_caml_sqrt
 	addi	hp, hp, -12
 	lw	ra, hp, 8
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	feq.s	a0, fa0, fa1
 	beq	a0, zero, .Beq7
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa0, a0, 0
 	j	.Cont8
 .Beq7:
 	nop
 	lw	a0, hp, 4
 	beq	a0, zero, .Beq9
-	addrl	a0, l.5788
+	addrl	a0, l.7058
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa1, fa0
 	j	.Cont10
 .Beq9:
 	nop
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa1, fa0
 .Cont10:
@@ -132,8 +129,7 @@ vecunit_sgn.2380:
 	fsw	a0, 4, fa1
 	flw	fa1, a0, 8
 	fmul.s	fa0, fa1, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 veciprod.2383:
@@ -174,8 +170,7 @@ vecaccum.2391:
 	flw	fa2, a1, 8
 	fmul.s	fa0, fa0, fa2
 	fadd.s	fa0, fa1, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 vecadd.2395:
@@ -190,8 +185,7 @@ vecadd.2395:
 	flw	fa0, a0, 8
 	flw	fa1, a1, 8
 	fadd.s	fa0, fa0, fa1
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 vecscale.2398:
@@ -203,8 +197,7 @@ vecscale.2398:
 	fsw	a0, 4, fa1
 	flw	fa1, a0, 8
 	fmul.s	fa0, fa1, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 vecaccumv.2401:
@@ -225,8 +218,7 @@ vecaccumv.2401:
 	flw	fa2, a2, 8
 	fmul.s	fa1, fa1, fa2
 	fadd.s	fa0, fa0, fa1
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 o_texturetype.2405:
@@ -311,8 +303,7 @@ o_param_a.2415:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a1, a0
+	mv	a0, a1
 	flw	fa0, a0, 0
 	ret
 o_param_b.2417:
@@ -327,8 +318,7 @@ o_param_b.2417:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 4
-	add	a0, a1, a0
+	addi	a0, a1, 4
 	flw	fa0, a0, 0
 	ret
 o_param_c.2419:
@@ -343,8 +333,7 @@ o_param_c.2419:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 8
-	add	a0, a1, a0
+	addi	a0, a1, 8
 	flw	fa0, a0, 0
 	ret
 o_param_abc.2421:
@@ -373,8 +362,7 @@ o_param_x.2423:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a1, a0
+	mv	a0, a1
 	flw	fa0, a0, 0
 	ret
 o_param_y.2425:
@@ -389,8 +377,7 @@ o_param_y.2425:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 4
-	add	a0, a1, a0
+	addi	a0, a1, 4
 	flw	fa0, a0, 0
 	ret
 o_param_z.2427:
@@ -405,8 +392,7 @@ o_param_z.2427:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 8
-	add	a0, a1, a0
+	addi	a0, a1, 8
 	flw	fa0, a0, 0
 	ret
 o_diffuse.2429:
@@ -421,8 +407,7 @@ o_diffuse.2429:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a1, a0
+	mv	a0, a1
 	flw	fa0, a0, 0
 	ret
 o_hilight.2431:
@@ -437,8 +422,7 @@ o_hilight.2431:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 4
-	add	a0, a1, a0
+	addi	a0, a1, 4
 	flw	fa0, a0, 0
 	ret
 o_color_red.2433:
@@ -453,8 +437,7 @@ o_color_red.2433:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a1, a0
+	mv	a0, a1
 	flw	fa0, a0, 0
 	ret
 o_color_green.2435:
@@ -469,8 +452,7 @@ o_color_green.2435:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 4
-	add	a0, a1, a0
+	addi	a0, a1, 4
 	flw	fa0, a0, 0
 	ret
 o_color_blue.2437:
@@ -485,8 +467,7 @@ o_color_blue.2437:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 8
-	add	a0, a1, a0
+	addi	a0, a1, 8
 	flw	fa0, a0, 0
 	ret
 o_param_r1.2439:
@@ -501,8 +482,7 @@ o_param_r1.2439:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a1, a0
+	mv	a0, a1
 	flw	fa0, a0, 0
 	ret
 o_param_r2.2441:
@@ -517,8 +497,7 @@ o_param_r2.2441:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 4
-	add	a0, a1, a0
+	addi	a0, a1, 4
 	flw	fa0, a0, 0
 	ret
 o_param_r3.2443:
@@ -533,8 +512,7 @@ o_param_r3.2443:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a0, a0, 0
-	li	a0, 8
-	add	a0, a1, a0
+	addi	a0, a1, 8
 	flw	fa0, a0, 0
 	ret
 o_param_ctbl.2445:
@@ -626,8 +604,6 @@ p_group_id.2459:
 	lw	a2, a0, 8
 	lw	a2, a0, 4
 	lw	a2, a0, 0
-	li	a2, 0
-	add	a1, a1, a2
 	lw	a0, a1, 0
 	ret
 p_set_group_id.2461:
@@ -639,8 +615,7 @@ p_set_group_id.2461:
 	lw	a3, a0, 8
 	lw	a3, a0, 4
 	lw	a0, a0, 0
-	li	a0, 0
-	add	a0, a2, a0
+	mv	a0, a2
 	sw	a0, 0, a1
 	ret
 p_nvectors.2464:
@@ -683,7 +658,7 @@ r_bright.2474:
 	fsgnj.s	fa0, fa1, fa1
 	ret
 rad.2476:
-	addrl	a0, l.5883
+	addrl	a0, l.7069
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
 	ret
@@ -770,25 +745,25 @@ read_screen_settings.2478:
 	lw	ra, hp, 40
 	flw	fa1, hp, 24
 	fmul.s	fa2, fa1, fa0
-	addrl	a0, l.5888
+	addrl	a0, l.7072
 	flw	fa3, a0, 0
 	fmul.s	fa2, fa2, fa3
 	lw	a0, hp, 12
 	fsw	a0, 0, fa2
-	addrl	a1, l.5891
+	addrl	a1, l.7074
 	flw	fa2, a1, 0
 	flw	fa3, hp, 28
 	fmul.s	fa2, fa3, fa2
 	fsw	a0, 4, fa2
 	flw	fa2, hp, 36
 	fmul.s	fa4, fa1, fa2
-	addrl	a1, l.5888
+	addrl	a1, l.7072
 	flw	fa5, a1, 0
 	fmul.s	fa4, fa4, fa5
 	fsw	a0, 8, fa4
 	lw	a1, hp, 8
 	fsw	a1, 0, fa2
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa4, a2, 0
 	fsw	a1, 4, fa4
 	fsgnjn.s	fa4, fa0, fa0
@@ -815,8 +790,7 @@ read_screen_settings.2478:
 	flw	fa0, a1, 8
 	flw	fa1, a0, 8
 	fsub.s	fa0, fa0, fa1
-	li	a0, 8
-	add	a0, a2, a0
+	addi	a0, a2, 8
 	fsw	a0, 0, fa0
 	ret
 read_light.2480:
@@ -893,9 +867,7 @@ read_light.2480:
 	call	min_caml_read_float
 	addi	hp, hp, -24
 	lw	ra, hp, 20
-	li	a0, 0
-	lw	a1, hp, 0
-	add	a0, a1, a0
+	lw	a0, hp, 0
 	fsw	a0, 0, fa0
 	ret
 rotate_quadratic_matrix.2482:
@@ -1009,7 +981,7 @@ rotate_quadratic_matrix.2482:
 	fmul.s	fs5, fs3, fs5
 	fadd.s	fs4, fs4, fs5
 	fsw	a0, 8, fs4
-	addrl	a0, l.5928
+	addrl	a0, l.7077
 	flw	fs4, a0, 0
 	fmul.s	fs5, fa5, fa6
 	fmul.s	fs5, fs5, fs0
@@ -1022,7 +994,7 @@ rotate_quadratic_matrix.2482:
 	fmul.s	fs4, fs4, fs5
 	lw	a0, hp, 4
 	fsw	a0, 0, fs4
-	addrl	a1, l.5928
+	addrl	a1, l.7077
 	flw	fs4, a1, 0
 	fmul.s	fs5, fa5, fa3
 	fmul.s	fs0, fs5, fs0
@@ -1034,7 +1006,7 @@ rotate_quadratic_matrix.2482:
 	fadd.s	fa0, fa0, fa2
 	fmul.s	fa0, fs4, fa0
 	fsw	a0, 4, fa0
-	addrl	a1, l.5928
+	addrl	a1, l.7077
 	flw	fa0, a1, 0
 	fmul.s	fa2, fa5, fa3
 	fmul.s	fa2, fa2, fa6
@@ -1045,8 +1017,7 @@ rotate_quadratic_matrix.2482:
 	fmul.s	fa1, fa1, fa4
 	fadd.s	fa1, fa2, fa1
 	fmul.s	fa0, fa0, fa1
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 read_nth_object.2485:
@@ -1083,7 +1054,7 @@ read_nth_object.2485:
 	lw	ra, hp, 20
 	mv	a1, a0
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 20, a1
 	mv	a0, a2
@@ -1116,7 +1087,7 @@ read_nth_object.2485:
 	lw	a1, hp, 24
 	fsw	a1, 8, fa0
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a2
 	sw	hp, 28, ra
@@ -1147,7 +1118,7 @@ read_nth_object.2485:
 	lw	ra, hp, 32
 	lw	a1, hp, 28
 	fsw	a1, 8, fa0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	fsw	hp, 32, fa0
 	sw	hp, 36, ra
@@ -1166,7 +1137,7 @@ read_nth_object.2485:
 .Cont13:
 	nop
 	li	a2, 2
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 36, a1
 	mv	a0, a2
@@ -1192,7 +1163,7 @@ read_nth_object.2485:
 	lw	a1, hp, 40
 	fsw	a1, 4, fa0
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a2
 	sw	hp, 44, ra
@@ -1224,7 +1195,7 @@ read_nth_object.2485:
 	lw	a1, hp, 44
 	fsw	a1, 8, fa0
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a2
 	sw	hp, 48, ra
@@ -1234,8 +1205,8 @@ read_nth_object.2485:
 	lw	ra, hp, 48
 	mv	a1, a0
 	lw	a2, hp, 20
-	sw	hp, 48, a1
 	beq	a2, zero, .Beq14
+	sw	hp, 48, a1
 	sw	hp, 52, ra
 	addi	hp, hp, 56
 	call	min_caml_read_float
@@ -1270,30 +1241,30 @@ read_nth_object.2485:
 	call	rad.2476
 	addi	hp, hp, -56
 	lw	ra, hp, 52
-	li	a1, 8
-	lw	a2, hp, 48
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	lw	a1, hp, 48
+	addi	a2, a1, 8
+	fsw	a2, 0, fa0
 	j	.Cont15
 .Beq14:
 	nop
 .Cont15:
 	nop
-	lw	a1, hp, 12
-	addi	a2, a1, -2
-	beq	a2, zero, .Beq16
-	lw	a2, hp, 36
+	lw	a2, hp, 12
+	addi	a3, a2, -2
+	beq	a3, zero, .Beq16
+	lw	a3, hp, 36
 	j	.Cont17
 .Beq16:
 	nop
-	li	a2, 1
+	li	a3, 1
 .Cont17:
 	nop
-	li	a3, 4
-	addrl	a4, l.5782
-	flw	fa0, a4, 0
-	sw	hp, 52, a2
-	mv	a0, a3
+	li	a4, 4
+	addrl	a5, l.7060
+	flw	fa0, a5, 0
+	sw	hp, 52, a3
+	sw	hp, 48, a1
+	mv	a0, a4
 	sw	hp, 56, ra
 	addi	hp, hp, 60
 	call	min_caml_create_float_array
@@ -1357,11 +1328,11 @@ read_nth_object.2485:
 .Beq18:
 	nop
 	flw	fa0, a3, 0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa1, a2, 0
 	feq.s	a2, fa0, fa1
 	beq	a2, zero, .Beq24
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	j	.Cont25
 .Beq24:
@@ -1380,11 +1351,11 @@ read_nth_object.2485:
 	lw	a1, hp, 24
 	fsw	a1, 0, fa0
 	flw	fa0, a1, 4
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa1, a2, 0
 	feq.s	a2, fa0, fa1
 	beq	a2, zero, .Beq26
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	j	.Cont27
 .Beq26:
@@ -1403,11 +1374,11 @@ read_nth_object.2485:
 	lw	a1, hp, 24
 	fsw	a1, 4, fa0
 	flw	fa0, a1, 8
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa1, a2, 0
 	feq.s	a2, fa0, fa1
 	beq	a2, zero, .Beq28
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	j	.Cont29
 .Beq28:
@@ -1423,10 +1394,9 @@ read_nth_object.2485:
 	fdiv.s	fa0, fa0, fa1
 .Cont29:
 	nop
-	li	a1, 8
-	lw	a2, hp, 24
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	lw	a1, hp, 24
+	addi	a2, a1, 8
+	fsw	a2, 0, fa0
 .Cont19:
 	nop
 	lw	a1, hp, 20
@@ -1474,9 +1444,7 @@ read_object.2487:
 	jalr	zero, t5, 0
 .Beq33:
 	nop
-	li	a0, 0
-	lw	a1, hp, 8
-	add	a0, a1, a0
+	lw	a0, hp, 8
 	lw	a1, hp, 4
 	sw	a0, 0, a1
 	ret
@@ -1631,9 +1599,7 @@ read_parameter.2497:
 	call	read_or_network.2493
 	addi	hp, hp, -20
 	lw	ra, hp, 16
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	sw	a1, 0, a0
 	ret
 solver_rect_surface.2499:
@@ -1641,7 +1607,7 @@ solver_rect_surface.2499:
 	slli	a6, a2, 2
 	add	a6, a1, a6
 	flw	fa3, a6, 0
-	addrl	a6, l.5782
+	addrl	a6, l.7060
 	flw	fa4, a6, 0
 	feq.s	a6, fa3, fa4
 	beq	a6, zero, .Beq37
@@ -1673,7 +1639,7 @@ solver_rect_surface.2499:
 	addi	hp, hp, -44
 	lw	ra, hp, 40
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	lw	a2, hp, 28
 	slli	a3, a2, 2
@@ -1866,7 +1832,7 @@ solver_surface.2514:
 	call	veciprod.2383
 	addi	hp, hp, -28
 	lw	ra, hp, 24
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq45
@@ -2116,7 +2082,7 @@ bilinear.2525:
 	fmul.s	fa1, fa2, fa1
 	flw	fa2, hp, 64
 	fadd.s	fa1, fa2, fa1
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa2, a0, 0
 	fmul.s	fa1, fa1, fa2
 	flw	fa2, hp, 48
@@ -2146,7 +2112,7 @@ solver_second.2533:
 	call	quadratic.2520
 	addi	hp, hp, -28
 	lw	ra, hp, 24
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	feq.s	a1, fa0, fa1
 	beq	a1, zero, .Beq48
@@ -2204,7 +2170,7 @@ solver_second.2533:
 	j	.Cont50
 .Beq49:
 	nop
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa0, a1, 0
 	flw	fa1, hp, 32
 	fsub.s	fa0, fa1, fa0
@@ -2215,7 +2181,7 @@ solver_second.2533:
 	flw	fa3, hp, 24
 	fmul.s	fa0, fa3, fa0
 	fsub.s	fa0, fa2, fa0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa2, a1, 0
 	fle.s	a1, fa0, fa2
 	beq	a1, zero, .Beq51
@@ -2419,7 +2385,7 @@ solver_rect_fast.2543:
 	nop
 	lw	a1, hp, 8
 	flw	fa0, a1, 4
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa1, a2, 0
 	feq.s	a2, fa0, fa1
 	beq	a2, zero, .Beq60
@@ -2505,7 +2471,7 @@ solver_rect_fast.2543:
 	nop
 	lw	a1, hp, 8
 	flw	fa0, a1, 12
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa1, a2, 0
 	feq.s	a2, fa0, fa1
 	beq	a2, zero, .Beq67
@@ -2591,7 +2557,7 @@ solver_rect_fast.2543:
 	nop
 	lw	a1, hp, 8
 	flw	fa0, a1, 20
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	feq.s	a1, fa0, fa1
 	beq	a1, zero, .Beq74
@@ -2618,7 +2584,7 @@ solver_rect_fast.2543:
 	ret
 solver_surface_fast.2550:
 	lw	a2, t6, 4
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa3, a3, 0
 	flw	fa4, a1, 0
 	fle.s	a3, fa3, fa4
@@ -2641,7 +2607,7 @@ solver_surface_fast.2550:
 solver_second_fast.2556:
 	lw	a2, t6, 4
 	flw	fa3, a1, 0
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa4, a3, 0
 	feq.s	a3, fa3, fa4
 	beq	a3, zero, .Beq78
@@ -2682,7 +2648,7 @@ solver_second_fast.2556:
 	j	.Cont80
 .Beq79:
 	nop
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa0, a1, 0
 	flw	fa1, hp, 20
 	fsub.s	fa0, fa1, fa0
@@ -2693,7 +2659,7 @@ solver_second_fast.2556:
 	flw	fa3, hp, 8
 	fmul.s	fa0, fa3, fa0
 	fsub.s	fa0, fa2, fa0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa2, a1, 0
 	fle.s	a1, fa0, fa2
 	beq	a1, zero, .Beq81
@@ -2722,9 +2688,7 @@ solver_second_fast.2556:
 	lw	a1, hp, 4
 	flw	fa1, a1, 16
 	fmul.s	fa0, fa0, fa1
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	fsw	a1, 0, fa0
 	j	.Cont83
 .Beq82:
@@ -2740,9 +2704,7 @@ solver_second_fast.2556:
 	lw	a1, hp, 4
 	flw	fa1, a1, 16
 	fmul.s	fa0, fa0, fa1
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	fsw	a1, 0, fa0
 .Cont83:
 	nop
@@ -2869,7 +2831,7 @@ solver_fast.2562:
 	jalr	zero, t5, 0
 solver_surface_fast2.2566:
 	lw	a3, t6, 4
-	addrl	a4, l.5782
+	addrl	a4, l.7060
 	flw	fa0, a4, 0
 	flw	fa1, a1, 0
 	fle.s	a4, fa0, fa1
@@ -2887,7 +2849,7 @@ solver_surface_fast2.2566:
 solver_second_fast2.2573:
 	lw	a3, t6, 4
 	flw	fa3, a1, 0
-	addrl	a4, l.5782
+	addrl	a4, l.7060
 	flw	fa4, a4, 0
 	feq.s	a4, fa3, fa4
 	beq	a4, zero, .Beq87
@@ -2907,7 +2869,7 @@ solver_second_fast2.2573:
 	fmul.s	fa2, fa0, fa0
 	fmul.s	fa1, fa3, fa1
 	fsub.s	fa1, fa2, fa1
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa2, a2, 0
 	fle.s	a2, fa1, fa2
 	beq	a2, zero, .Beq88
@@ -2937,9 +2899,7 @@ solver_second_fast2.2573:
 	lw	a1, hp, 4
 	flw	fa1, a1, 16
 	fmul.s	fa0, fa0, fa1
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	fsw	a1, 0, fa0
 	j	.Cont90
 .Beq89:
@@ -2955,9 +2915,7 @@ solver_second_fast2.2573:
 	lw	a1, hp, 4
 	flw	fa1, a1, 16
 	fmul.s	fa0, fa0, fa1
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	fsw	a1, 0, fa0
 .Cont90:
 	nop
@@ -3064,7 +3022,7 @@ solver_fast2.2580:
 	jalr	zero, t5, 0
 setup_rect_table.2583:
 	li	a2, 6
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 0, a1
 	sw	hp, 4, a0
@@ -3077,14 +3035,13 @@ setup_rect_table.2583:
 	mv	a1, a0
 	lw	a2, hp, 4
 	flw	fa0, a2, 0
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa1, a3, 0
 	feq.s	a3, fa0, fa1
 	beq	a3, zero, .Beq93
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
-	li	a3, 4
-	add	a3, a1, a3
+	addi	a3, a1, 4
 	fsw	a3, 0, fa0
 	j	.Cont94
 .Beq93:
@@ -3098,7 +3055,7 @@ setup_rect_table.2583:
 	addi	hp, hp, -16
 	lw	ra, hp, 12
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 0
@@ -3136,25 +3093,23 @@ setup_rect_table.2583:
 	lw	ra, hp, 16
 	lw	a1, hp, 8
 	fsw	a1, 0, fa0
-	addrl	a2, l.5790
+	addrl	a2, l.7056
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 0
 	fdiv.s	fa0, fa0, fa1
-	li	a3, 4
-	add	a3, a1, a3
+	addi	a3, a1, 4
 	fsw	a3, 0, fa0
 .Cont94:
 	nop
 	flw	fa0, a2, 4
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa1, a3, 0
 	feq.s	a3, fa0, fa1
 	beq	a3, zero, .Beq97
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
-	li	a3, 12
-	add	a3, a1, a3
+	addi	a3, a1, 12
 	fsw	a3, 0, fa0
 	j	.Cont98
 .Beq97:
@@ -3168,7 +3123,7 @@ setup_rect_table.2583:
 	addi	hp, hp, -20
 	lw	ra, hp, 16
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 4
@@ -3206,25 +3161,23 @@ setup_rect_table.2583:
 	lw	ra, hp, 20
 	lw	a1, hp, 8
 	fsw	a1, 8, fa0
-	addrl	a2, l.5790
+	addrl	a2, l.7056
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 4
 	fdiv.s	fa0, fa0, fa1
-	li	a3, 12
-	add	a3, a1, a3
+	addi	a3, a1, 12
 	fsw	a3, 0, fa0
 .Cont98:
 	nop
 	flw	fa0, a2, 8
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa1, a3, 0
 	feq.s	a3, fa0, fa1
 	beq	a3, zero, .Beq101
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
-	li	a2, 20
-	add	a2, a1, a2
+	addi	a2, a1, 20
 	fsw	a2, 0, fa0
 	j	.Cont102
 .Beq101:
@@ -3238,7 +3191,7 @@ setup_rect_table.2583:
 	addi	hp, hp, -24
 	lw	ra, hp, 20
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 8
@@ -3276,13 +3229,12 @@ setup_rect_table.2583:
 	lw	ra, hp, 24
 	lw	a1, hp, 8
 	fsw	a1, 16, fa0
-	addrl	a2, l.5790
+	addrl	a2, l.7056
 	flw	fa0, a2, 0
 	lw	a2, hp, 4
 	flw	fa1, a2, 8
 	fdiv.s	fa0, fa0, fa1
-	li	a2, 20
-	add	a2, a1, a2
+	addi	a2, a1, 20
 	fsw	a2, 0, fa0
 .Cont102:
 	nop
@@ -3290,7 +3242,7 @@ setup_rect_table.2583:
 	ret
 setup_surface_table.2586:
 	li	a2, 4
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 0, a1
 	sw	hp, 4, a0
@@ -3344,20 +3296,19 @@ setup_surface_table.2586:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 24
 	fadd.s	fa0, fa1, fa0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq105
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa0, a1, 0
-	li	a1, 0
-	lw	a2, hp, 8
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	lw	a1, hp, 8
+	mv	a2, a1
+	fsw	a2, 0, fa0
 	j	.Cont106
 .Beq105:
 	nop
-	addrl	a1, l.5788
+	addrl	a1, l.7058
 	flw	fa1, a1, 0
 	fdiv.s	fa1, fa1, fa0
 	lw	a1, hp, 8
@@ -3397,17 +3348,16 @@ setup_surface_table.2586:
 	flw	fa1, hp, 32
 	fdiv.s	fa0, fa0, fa1
 	fsgnjn.s	fa0, fa0, fa0
-	li	a1, 12
-	lw	a2, hp, 8
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	lw	a1, hp, 8
+	addi	a2, a1, 12
+	fsw	a2, 0, fa0
 .Cont106:
 	nop
-	mv	a0, a2
+	mv	a0, a1
 	ret
 setup_second_table.2589:
 	li	a2, 5
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 0, a1
 	sw	hp, 4, a0
@@ -3512,7 +3462,7 @@ setup_second_table.2589:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 44
 	fadd.s	fa0, fa1, fa0
-	addrl	a1, l.6010
+	addrl	a1, l.7097
 	flw	fa1, a1, 0
 	fmul.s	fa0, fa0, fa1
 	flw	fa1, hp, 20
@@ -3546,7 +3496,7 @@ setup_second_table.2589:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 56
 	fadd.s	fa0, fa1, fa0
-	addrl	a1, l.6010
+	addrl	a1, l.7097
 	flw	fa1, a1, 0
 	fmul.s	fa0, fa0, fa1
 	flw	fa1, hp, 28
@@ -3580,15 +3530,14 @@ setup_second_table.2589:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 68
 	fadd.s	fa0, fa1, fa0
-	addrl	a1, l.6010
+	addrl	a1, l.7097
 	flw	fa1, a1, 0
 	fmul.s	fa0, fa0, fa1
 	flw	fa1, hp, 36
 	fsub.s	fa0, fa1, fa0
-	li	a1, 12
-	lw	a2, hp, 8
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	lw	a1, hp, 8
+	addi	a2, a1, 12
+	fsw	a2, 0, fa0
 	j	.Cont108
 .Beq107:
 	nop
@@ -3597,30 +3546,26 @@ setup_second_table.2589:
 	fsw	a1, 4, fa0
 	flw	fa0, hp, 28
 	fsw	a1, 8, fa0
-	li	a2, 12
-	add	a2, a1, a2
+	addi	a2, a1, 12
 	flw	fa0, hp, 36
 	fsw	a2, 0, fa0
 .Cont108:
 	nop
-	addrl	a1, l.5782
-	flw	fa0, a1, 0
+	addrl	a2, l.7060
+	flw	fa0, a2, 0
 	flw	fa1, hp, 12
-	feq.s	a1, fa1, fa0
-	beq	a1, zero, .Beq109
+	feq.s	a2, fa1, fa0
+	beq	a2, zero, .Beq109
 	j	.Cont110
 .Beq109:
 	nop
-	addrl	a1, l.5790
-	flw	fa0, a1, 0
+	addrl	a2, l.7056
+	flw	fa0, a2, 0
 	fdiv.s	fa0, fa0, fa1
-	li	a1, 16
-	lw	a2, hp, 8
-	add	a1, a2, a1
-	fsw	a1, 0, fa0
+	addi	a2, a1, 16
+	fsw	a2, 0, fa0
 .Cont110:
 	nop
-	lw	a1, hp, 8
 	mv	a0, a1
 	ret
 iter_setup_dirvec_constants.2592:
@@ -3810,14 +3755,13 @@ setup_startp_constants.2597:
 	j	.Cont122
 .Beq121:
 	nop
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa1, a0, 0
 	fsub.s	fa0, fa0, fa1
 .Cont122:
 	nop
-	li	a0, 12
-	lw	a1, hp, 16
-	add	a0, a1, a0
+	lw	a0, hp, 16
+	addi	a0, a0, 12
 	fsw	a0, 0, fa0
 	j	.Cont120
 .Ble119:
@@ -3843,9 +3787,8 @@ setup_startp_constants.2597:
 	call	veciprod2.2386
 	addi	hp, hp, -40
 	lw	ra, hp, 36
-	li	a0, 12
-	lw	a1, hp, 16
-	add	a0, a1, a0
+	lw	a0, hp, 16
+	addi	a0, a0, 12
 	fsw	a0, 0, fa0
 .Cont118:
 	nop
@@ -4003,7 +3946,7 @@ is_plane_outside.2607:
 	addi	hp, hp, -24
 	lw	ra, hp, 20
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	flw	fa1, hp, 16
 	fle.s	a2, fa0, fa1
@@ -4052,7 +3995,7 @@ is_second_outside.2612:
 	j	.Cont135
 .Beq134:
 	nop
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa0, a1, 0
 	flw	fa1, hp, 4
 	fsub.s	fa0, fa1, fa0
@@ -4067,7 +4010,7 @@ is_second_outside.2612:
 	addi	hp, hp, -16
 	lw	ra, hp, 12
 	mv	a1, a0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	flw	fa1, hp, 8
 	fle.s	a2, fa0, fa1
@@ -4243,7 +4186,7 @@ shadow_check_and_group.2628:
 	lw	a2, hp, 32
 	flw	fa0, a2, 0
 	beq	a1, zero, .Beq144
-	addrl	a1, l.6219
+	addrl	a1, l.7141
 	flw	fa1, a1, 0
 	fle.s	a1, fa1, fa0
 	beq	a1, zero, .Beq146
@@ -4261,7 +4204,7 @@ shadow_check_and_group.2628:
 .Cont145:
 	nop
 	beq	a1, zero, .Beq148
-	addrl	a1, l.6222
+	addrl	a1, l.7139
 	flw	fa1, a1, 0
 	fadd.s	fa0, fa0, fa1
 	lw	a1, hp, 8
@@ -4412,7 +4355,7 @@ shadow_check_one_or_matrix.2634:
 	lw	ra, hp, 24
 	mv	a1, a0
 	beq	a1, zero, .Beq156
-	addrl	a1, l.6235
+	addrl	a1, l.7143
 	flw	fa0, a1, 0
 	lw	a1, hp, 20
 	flw	fa1, a1, 0
@@ -4537,7 +4480,7 @@ solve_each_element.2637:
 	beq	a0, zero, .Beq165
 	lw	a1, hp, 24
 	flw	fa0, a1, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq166
@@ -4551,7 +4494,7 @@ solve_each_element.2637:
 	j	.Cont169
 .Beq168:
 	nop
-	addrl	a2, l.6222
+	addrl	a2, l.7139
 	flw	fa1, a2, 0
 	fadd.s	fa0, fa0, fa1
 	lw	a2, hp, 28
@@ -4603,9 +4546,7 @@ solve_each_element.2637:
 	lw	a0, hp, 4
 	lw	a1, hp, 48
 	sw	a0, 0, a1
-	li	a0, 0
-	lw	a1, hp, 0
-	add	a0, a1, a0
+	lw	a0, hp, 0
 	lw	a1, hp, 52
 	sw	a0, 0, a1
 	j	.Cont171
@@ -4773,7 +4714,7 @@ judge_intersection.2649:
 	lw	a1, t6, 12
 	lw	a2, t6, 8
 	lw	a3, t6, 4
-	addrl	a4, l.6263
+	addrl	a4, l.7150
 	flw	fa0, a4, 0
 	fsw	a2, 0, fa0
 	li	a4, 0
@@ -4791,7 +4732,7 @@ judge_intersection.2649:
 	lw	ra, hp, 4
 	lw	a1, hp, 0
 	flw	fa0, a1, 0
-	addrl	a1, l.6235
+	addrl	a1, l.7143
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq181
@@ -4799,7 +4740,7 @@ judge_intersection.2649:
 	ret
 .Beq181:
 	nop
-	addrl	a1, l.6270
+	addrl	a1, l.7147
 	flw	fa1, a1, 0
 	fle.s	a1, fa1, fa0
 	beq	a1, zero, .Beq182
@@ -4860,7 +4801,7 @@ solve_each_element_fast.2651:
 	beq	a0, zero, .Beq184
 	lw	a1, hp, 24
 	flw	fa0, a1, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq185
@@ -4874,7 +4815,7 @@ solve_each_element_fast.2651:
 	j	.Cont188
 .Beq187:
 	nop
-	addrl	a2, l.6222
+	addrl	a2, l.7139
 	flw	fa1, a2, 0
 	fadd.s	fa0, fa0, fa1
 	lw	a2, hp, 52
@@ -4926,9 +4867,7 @@ solve_each_element_fast.2651:
 	lw	a0, hp, 4
 	lw	a1, hp, 56
 	sw	a0, 0, a1
-	li	a0, 0
-	lw	a1, hp, 0
-	add	a0, a1, a0
+	lw	a0, hp, 0
 	lw	a1, hp, 60
 	sw	a0, 0, a1
 	j	.Cont190
@@ -5094,7 +5033,7 @@ judge_intersection_fast.2663:
 	lw	a1, t6, 12
 	lw	a2, t6, 8
 	lw	a3, t6, 4
-	addrl	a4, l.6263
+	addrl	a4, l.7150
 	flw	fa0, a4, 0
 	fsw	a2, 0, fa0
 	li	a4, 0
@@ -5112,7 +5051,7 @@ judge_intersection_fast.2663:
 	lw	ra, hp, 4
 	lw	a1, hp, 0
 	flw	fa0, a1, 0
-	addrl	a1, l.6235
+	addrl	a1, l.7143
 	flw	fa1, a1, 0
 	fle.s	a1, fa0, fa1
 	beq	a1, zero, .Beq200
@@ -5120,7 +5059,7 @@ judge_intersection_fast.2663:
 	ret
 .Beq200:
 	nop
-	addrl	a1, l.6270
+	addrl	a1, l.7147
 	flw	fa1, a1, 0
 	fle.s	a1, fa1, fa0
 	beq	a1, zero, .Beq201
@@ -5193,9 +5132,8 @@ get_nvector_plane.2667:
 	addi	hp, hp, -12
 	lw	ra, hp, 8
 	fsgnjn.s	fa0, fa0, fa0
-	li	a0, 8
-	lw	a1, hp, 4
-	add	a0, a1, a0
+	lw	a0, hp, 4
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 get_nvector_second.2669:
@@ -5292,7 +5230,7 @@ get_nvector_second.2669:
 	fmul.s	fa0, fa1, fa0
 	flw	fa2, hp, 48
 	fadd.s	fa0, fa2, fa0
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa2, a0, 0
 	fmul.s	fa0, fa0, fa2
 	flw	fa2, hp, 36
@@ -5319,7 +5257,7 @@ get_nvector_second.2669:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 52
 	fadd.s	fa0, fa1, fa0
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
 	flw	fa1, hp, 40
@@ -5346,15 +5284,14 @@ get_nvector_second.2669:
 	fmul.s	fa0, fa1, fa0
 	flw	fa1, hp, 56
 	fadd.s	fa0, fa1, fa0
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
 	flw	fa1, hp, 44
 	fadd.s	fa0, fa1, fa0
-	li	a0, 8
-	lw	a1, hp, 0
-	add	a0, a1, a0
-	fsw	a0, 0, fa0
+	lw	a0, hp, 0
+	addi	a1, a0, 8
+	fsw	a1, 0, fa0
 	j	.Cont203
 .Beq202:
 	nop
@@ -5363,13 +5300,13 @@ get_nvector_second.2669:
 	fsw	a0, 0, fa0
 	flw	fa0, hp, 40
 	fsw	a0, 4, fa0
-	li	a1, 8
-	add	a1, a0, a1
+	addi	a1, a0, 8
 	flw	fa0, hp, 44
 	fsw	a1, 0, fa0
 .Cont203:
 	nop
-	lw	a0, hp, 4
+	lw	a1, hp, 4
+	mv	a0, a1
 	sw	hp, 60, ra
 	addi	hp, hp, 64
 	call	o_isinvert.2411
@@ -5519,7 +5456,7 @@ utexture.2674:
 	fmul.s	fa2, fa1, fa1
 	fmul.s	fa3, fa0, fa0
 	fadd.s	fa2, fa2, fa3
-	addrl	a0, l.6328
+	addrl	a0, l.7202
 	flw	fa3, a0, 0
 	fsw	hp, 36, fa2
 	fsw	hp, 40, fa0
@@ -5546,16 +5483,16 @@ utexture.2674:
 	call	min_caml_atan
 	addi	hp, hp, -52
 	lw	ra, hp, 48
-	addrl	a0, l.6331
+	addrl	a0, l.7200
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6333
+	addrl	a0, l.7183
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa0, fa1
 	j	.Cont211
 .Beq210:
 	nop
-	addrl	a0, l.6335
+	addrl	a0, l.7197
 	flw	fa0, a0, 0
 .Cont211:
 	nop
@@ -5593,7 +5530,7 @@ utexture.2674:
 	lw	ra, hp, 64
 	flw	fa1, hp, 60
 	fmul.s	fa0, fa1, fa0
-	addrl	a0, l.6328
+	addrl	a0, l.7202
 	flw	fa1, a0, 0
 	flw	fa2, hp, 36
 	fsw	hp, 64, fa0
@@ -5620,16 +5557,16 @@ utexture.2674:
 	call	min_caml_atan
 	addi	hp, hp, -76
 	lw	ra, hp, 72
-	addrl	a0, l.6331
+	addrl	a0, l.7200
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6333
+	addrl	a0, l.7183
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa0, fa1
 	j	.Cont213
 .Beq212:
 	nop
-	addrl	a0, l.6335
+	addrl	a0, l.7197
 	flw	fa0, a0, 0
 .Cont213:
 	nop
@@ -5641,45 +5578,44 @@ utexture.2674:
 	lw	ra, hp, 76
 	flw	fa1, hp, 72
 	fsub.s	fa0, fa1, fa0
-	addrl	a0, l.6343
+	addrl	a0, l.7195
 	flw	fa1, a0, 0
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa2, a0, 0
 	flw	fa3, hp, 52
 	fsub.s	fa2, fa2, fa3
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa4, a0, 0
 	fsub.s	fa3, fa4, fa3
 	fmul.s	fa2, fa2, fa3
 	fsub.s	fa1, fa1, fa2
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa2, a0, 0
 	fsub.s	fa2, fa2, fa0
-	addrl	a0, l.6010
+	addrl	a0, l.7097
 	flw	fa3, a0, 0
 	fsub.s	fa0, fa3, fa0
 	fmul.s	fa0, fa2, fa0
 	fsub.s	fa0, fa1, fa0
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	fle.s	a0, fa1, fa0
 	beq	a0, zero, .Beq214
 	j	.Cont215
 .Beq214:
 	nop
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 .Cont215:
 	nop
-	addrl	a0, l.6352
+	addrl	a0, l.7160
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa1, fa0
-	addrl	a0, l.6354
+	addrl	a0, l.7186
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa0, fa1
-	li	a0, 8
-	lw	a1, hp, 4
-	add	a0, a1, a0
+	lw	a0, hp, 4
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 .Beq208:
@@ -5717,7 +5653,7 @@ utexture.2674:
 	call	min_caml_sqrt
 	addi	hp, hp, -92
 	lw	ra, hp, 88
-	addrl	a0, l.6359
+	addrl	a0, l.7165
 	flw	fa1, a0, 0
 	fdiv.s	fa0, fa0, fa1
 	fsw	hp, 88, fa0
@@ -5728,7 +5664,7 @@ utexture.2674:
 	lw	ra, hp, 92
 	flw	fa1, hp, 88
 	fsub.s	fa0, fa1, fa0
-	addrl	a0, l.6333
+	addrl	a0, l.7183
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
 	fsw	hp, 92, fa0
@@ -5747,26 +5683,25 @@ utexture.2674:
 	lw	ra, hp, 100
 	flw	fa1, hp, 96
 	fmul.s	fa0, fa1, fa0
-	addrl	a0, l.6352
+	addrl	a0, l.7160
 	flw	fa1, a0, 0
 	fmul.s	fa1, fa0, fa1
 	lw	a0, hp, 4
 	fsw	a0, 4, fa1
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa1, a1, 0
 	fsub.s	fa0, fa1, fa0
-	addrl	a1, l.6352
+	addrl	a1, l.7160
 	flw	fa1, a1, 0
 	fmul.s	fa0, fa0, fa1
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 .Beq207:
 	nop
 	lw	a1, hp, 0
 	flw	fa0, a1, 4
-	addrl	a2, l.6368
+	addrl	a2, l.7177
 	flw	fa1, a2, 0
 	fmul.s	fa0, fa0, fa1
 	sw	hp, 100, ra
@@ -5776,7 +5711,7 @@ utexture.2674:
 	lw	ra, hp, 100
 	lw	a0, hp, 0
 	flw	fa1, a0, 4
-	addrl	a0, l.6368
+	addrl	a0, l.7177
 	flw	fa2, a0, 0
 	fmul.s	fa1, fa1, fa2
 	fsw	hp, 100, fa0
@@ -5788,19 +5723,18 @@ utexture.2674:
 	lw	ra, hp, 104
 	flw	fa1, hp, 100
 	fmul.s	fa0, fa1, fa0
-	addrl	a0, l.6352
+	addrl	a0, l.7160
 	flw	fa1, a0, 0
 	fmul.s	fa1, fa1, fa0
 	lw	a0, hp, 4
 	fsw	a0, 0, fa1
-	addrl	a1, l.6352
+	addrl	a1, l.7160
 	flw	fa1, a1, 0
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa2, a1, 0
 	fsub.s	fa0, fa2, fa0
 	fmul.s	fa0, fa1, fa0
-	li	a1, 4
-	add	a0, a0, a1
+	addi	a0, a0, 4
 	fsw	a0, 0, fa0
 	ret
 .Beq206:
@@ -5817,7 +5751,7 @@ utexture.2674:
 	lw	ra, hp, 108
 	flw	fa1, hp, 104
 	fsub.s	fa0, fa1, fa0
-	addrl	a0, l.6378
+	addrl	a0, l.7169
 	flw	fa1, a0, 0
 	fmul.s	fa1, fa0, fa1
 	fsw	hp, 108, fa0
@@ -5827,10 +5761,10 @@ utexture.2674:
 	call	min_caml_floor
 	addi	hp, hp, -116
 	lw	ra, hp, 112
-	addrl	a0, l.6380
+	addrl	a0, l.7167
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6359
+	addrl	a0, l.7165
 	flw	fa1, a0, 0
 	flw	fa2, hp, 108
 	fsub.s	fa0, fa2, fa0
@@ -5856,7 +5790,7 @@ utexture.2674:
 	lw	ra, hp, 120
 	flw	fa1, hp, 116
 	fsub.s	fa0, fa1, fa0
-	addrl	a0, l.6378
+	addrl	a0, l.7169
 	flw	fa1, a0, 0
 	fmul.s	fa1, fa0, fa1
 	fsw	hp, 120, fa0
@@ -5866,10 +5800,10 @@ utexture.2674:
 	call	min_caml_floor
 	addi	hp, hp, -128
 	lw	ra, hp, 124
-	addrl	a0, l.6380
+	addrl	a0, l.7167
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6359
+	addrl	a0, l.7165
 	flw	fa1, a0, 0
 	flw	fa2, hp, 120
 	fsub.s	fa0, fa2, fa0
@@ -5885,12 +5819,12 @@ utexture.2674:
 	lw	a1, hp, 112
 	beq	a1, zero, .Beq220
 	beq	a0, zero, .Beq222
-	addrl	a0, l.6352
+	addrl	a0, l.7160
 	flw	fa0, a0, 0
 	j	.Cont223
 .Beq222:
 	nop
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 .Cont223:
 	nop
@@ -5898,26 +5832,25 @@ utexture.2674:
 .Beq220:
 	nop
 	beq	a0, zero, .Beq224
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 	j	.Cont225
 .Beq224:
 	nop
-	addrl	a0, l.6352
+	addrl	a0, l.7160
 	flw	fa0, a0, 0
 .Cont225:
 	nop
 .Cont221:
 	nop
-	li	a0, 4
-	lw	a1, hp, 4
-	add	a0, a1, a0
+	lw	a0, hp, 4
+	addi	a0, a0, 4
 	fsw	a0, 0, fa0
 	ret
 add_light.2677:
 	lw	a1, t6, 8
 	lw	a0, t6, 4
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa3, a2, 0
 	fle.s	a2, fa0, fa3
 	sw	hp, 0, a0
@@ -5934,7 +5867,7 @@ add_light.2677:
 	lw	ra, hp, 12
 .Cont227:
 	nop
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 	flw	fa1, hp, 8
 	fle.s	a0, fa1, fa0
@@ -5956,8 +5889,7 @@ add_light.2677:
 	fsw	a0, 4, fa1
 	flw	fa1, a0, 8
 	fadd.s	fa0, fa1, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 trace_reflections.2681:
@@ -6256,7 +6188,7 @@ trace_ray.2686:
 	call	p_calc_diffuse.2453
 	addi	hp, hp, -128
 	lw	ra, hp, 124
-	addrl	a1, l.6010
+	addrl	a1, l.7097
 	flw	fa0, a1, 0
 	lw	a1, hp, 112
 	sw	hp, 124, a0
@@ -6300,7 +6232,7 @@ trace_ray.2686:
 	lw	a2, hp, 132
 	add	a1, a2, a1
 	lw	a1, a1, 0
-	addrl	a2, l.6418
+	addrl	a2, l.7216
 	flw	fa0, a2, 0
 	flw	fa1, hp, 120
 	fmul.s	fa0, fa0, fa1
@@ -6338,7 +6270,7 @@ trace_ray.2686:
 	sw	a2, 0, a0
 .Cont239:
 	nop
-	addrl	a0, l.6422
+	addrl	a0, l.7214
 	flw	fa0, a0, 0
 	lw	a0, hp, 96
 	lw	a1, hp, 36
@@ -6431,7 +6363,7 @@ trace_ray.2686:
 	jalr	ra, t5, 0
 	addi	hp, hp, -152
 	lw	ra, hp, 148
-	addrl	a0, l.6426
+	addrl	a0, l.7212
 	flw	fa0, a0, 0
 	flw	fa1, hp, 84
 	fle.s	a0, fa1, fa0
@@ -6459,7 +6391,7 @@ trace_ray.2686:
 	ret
 .Beq245:
 	nop
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa0, a1, 0
 	lw	a1, hp, 112
 	fsw	hp, 148, fa0
@@ -6501,7 +6433,7 @@ trace_ray.2686:
 	addi	hp, hp, -156
 	lw	ra, hp, 152
 	fsgnjn.s	fa0, fa0, fa0
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	fle.s	a0, fa0, fa1
 	beq	a0, zero, .Beq247
@@ -6524,8 +6456,7 @@ trace_ray.2686:
 	fsw	a0, 4, fa1
 	flw	fa1, a0, 8
 	fadd.s	fa0, fa1, fa0
-	li	a1, 8
-	add	a0, a0, a1
+	addi	a0, a0, 8
 	fsw	a0, 0, fa0
 	ret
 .Beq246:
@@ -6619,11 +6550,11 @@ trace_diffuse_ray.2692:
 	addi	hp, hp, -60
 	lw	ra, hp, 56
 	fsgnjn.s	fa0, fa0, fa0
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	fle.s	a0, fa0, fa1
 	beq	a0, zero, .Beq250
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa0, a0, 0
 	j	.Cont251
 .Beq250:
@@ -6674,7 +6605,7 @@ iter_trace_diffuse_rays.2695:
 	call	veciprod.2383
 	addi	hp, hp, -28
 	lw	ra, hp, 24
-	addrl	a0, l.5782
+	addrl	a0, l.7060
 	flw	fa1, a0, 0
 	fle.s	a0, fa1, fa0
 	beq	a0, zero, .Beq253
@@ -6683,7 +6614,7 @@ iter_trace_diffuse_rays.2695:
 	lw	a2, hp, 12
 	add	a1, a2, a1
 	lw	a1, a1, 0
-	addrl	a3, l.6452
+	addrl	a3, l.7223
 	flw	fa1, a3, 0
 	fdiv.s	fa0, fa0, fa1
 	lw	t6, hp, 8
@@ -6703,7 +6634,7 @@ iter_trace_diffuse_rays.2695:
 	lw	a2, hp, 12
 	add	a1, a2, a1
 	lw	a1, a1, 0
-	addrl	a3, l.6455
+	addrl	a3, l.7221
 	flw	fa1, a3, 0
 	fdiv.s	fa0, fa0, fa1
 	lw	t6, hp, 8
@@ -7722,14 +7653,14 @@ pretrace_pixels.2751:
 	addi	hp, hp, -64
 	lw	ra, hp, 60
 	li	a0, 0
-	addrl	a1, l.5790
+	addrl	a1, l.7056
 	flw	fa0, a1, 0
 	lw	a1, hp, 20
 	slli	a2, a1, 2
 	lw	a3, hp, 16
 	add	a2, a3, a2
 	lw	a2, a2, 0
-	addrl	a4, l.5782
+	addrl	a4, l.7060
 	flw	fa1, a4, 0
 	lw	a4, hp, 44
 	lw	t6, hp, 12
@@ -8029,7 +7960,7 @@ scan_line.2769:
 	ret
 create_float5x3array.2776:
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	mv	a0, a1
 	sw	hp, 0, ra
@@ -8047,7 +7978,7 @@ create_float5x3array.2776:
 	lw	ra, hp, 0
 	mv	a1, a0
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 0, a1
 	mv	a0, a2
@@ -8060,7 +7991,7 @@ create_float5x3array.2776:
 	lw	a2, hp, 0
 	sw	a2, 4, a1
 	li	a1, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a1
 	sw	hp, 4, ra
@@ -8072,7 +8003,7 @@ create_float5x3array.2776:
 	lw	a2, hp, 0
 	sw	a2, 8, a1
 	li	a1, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a1
 	sw	hp, 4, ra
@@ -8084,7 +8015,7 @@ create_float5x3array.2776:
 	lw	a2, hp, 0
 	sw	a2, 12, a1
 	li	a1, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	mv	a0, a1
 	sw	hp, 4, ra
@@ -8099,7 +8030,7 @@ create_float5x3array.2776:
 	ret
 create_pixel.2778:
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	mv	a0, a1
 	sw	hp, 0, ra
@@ -8256,7 +8187,7 @@ tan.2785:
 	ret
 adjust_position.2787:
 	fmul.s	fa2, fa0, fa0
-	addrl	a0, l.6426
+	addrl	a0, l.7212
 	flw	fa3, a0, 0
 	fadd.s	fa2, fa2, fa3
 	fsw	hp, 0, fa1
@@ -8267,7 +8198,7 @@ adjust_position.2787:
 	addi	hp, hp, -8
 	lw	ra, hp, 4
 	fsgnj.s	fa1, fa0, fa0
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa2, a0, 0
 	fdiv.s	fa2, fa2, fa1
 	fsw	hp, 4, fa1
@@ -8332,7 +8263,7 @@ calc_dirvec.2790:
 	fmul.s	fa2, fa0, fa0
 	fmul.s	fa3, fa1, fa1
 	fadd.s	fa2, fa2, fa3
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa3, a0, 0
 	fadd.s	fa2, fa2, fa3
 	sw	hp, 4, a2
@@ -8350,7 +8281,7 @@ calc_dirvec.2790:
 	fdiv.s	fa1, fa1, fa0
 	flw	fa2, hp, 36
 	fdiv.s	fa2, fa2, fa0
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa3, a0, 0
 	fdiv.s	fa0, fa3, fa0
 	lw	a0, hp, 8
@@ -8511,16 +8442,16 @@ calc_dirvecs.2798:
 	call	min_caml_float_of_int
 	addi	hp, hp, -28
 	lw	ra, hp, 24
-	addrl	a0, l.6565
+	addrl	a0, l.7241
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6567
+	addrl	a0, l.7245
 	flw	fa1, a0, 0
 	fsub.s	fa2, fa0, fa1
 	li	a0, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa0, a1, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	lw	a1, hp, 16
 	lw	a2, hp, 12
@@ -8538,16 +8469,16 @@ calc_dirvecs.2798:
 	call	min_caml_float_of_int
 	addi	hp, hp, -28
 	lw	ra, hp, 24
-	addrl	a0, l.6565
+	addrl	a0, l.7241
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6426
+	addrl	a0, l.7212
 	flw	fa1, a0, 0
 	fadd.s	fa2, fa0, fa1
 	li	a0, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa0, a1, 0
-	addrl	a1, l.5782
+	addrl	a1, l.7060
 	flw	fa1, a1, 0
 	lw	a1, hp, 12
 	addi	a2, a1, 2
@@ -8595,10 +8526,10 @@ calc_dirvec_rows.2803:
 	call	min_caml_float_of_int
 	addi	hp, hp, -24
 	lw	ra, hp, 20
-	addrl	a0, l.6565
+	addrl	a0, l.7241
 	flw	fa1, a0, 0
 	fmul.s	fa0, fa0, fa1
-	addrl	a0, l.6567
+	addrl	a0, l.7245
 	flw	fa1, a0, 0
 	fsub.s	fa0, fa0, fa1
 	li	a0, 4
@@ -8632,7 +8563,7 @@ calc_dirvec_rows.2803:
 create_dirvec.2807:
 	lw	a1, t6, 4
 	li	a2, 3
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	sw	hp, 0, a1
 	mv	a0, a2
@@ -8877,7 +8808,7 @@ setup_rect_reflection.2828:
 	lw	a4, t6, 4
 	slli	a0, a0, 2
 	lw	a5, a2, 0
-	addrl	a6, l.5790
+	addrl	a6, l.7056
 	flw	fa0, a6, 0
 	sw	hp, 0, a2
 	sw	hp, 4, a5
@@ -8956,9 +8887,7 @@ setup_rect_reflection.2828:
 	lw	ra, hp, 40
 	lw	a0, hp, 4
 	addi	a0, a0, 3
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	sw	a1, 0, a0
 	ret
 setup_surface_reflection.2831:
@@ -8968,7 +8897,7 @@ setup_surface_reflection.2831:
 	slli	a0, a0, 2
 	addi	a0, a0, 1
 	lw	a5, a2, 0
-	addrl	a6, l.5790
+	addrl	a6, l.7056
 	flw	fa0, a6, 0
 	sw	hp, 0, a2
 	sw	hp, 4, a0
@@ -8999,7 +8928,7 @@ setup_surface_reflection.2831:
 	call	veciprod.2383
 	addi	hp, hp, -36
 	lw	ra, hp, 32
-	addrl	a0, l.5928
+	addrl	a0, l.7077
 	flw	fa1, a0, 0
 	lw	a0, hp, 20
 	fsw	hp, 32, fa0
@@ -9016,7 +8945,7 @@ setup_surface_reflection.2831:
 	lw	a0, hp, 16
 	flw	fa2, a0, 0
 	fsub.s	fa0, fa0, fa2
-	addrl	a1, l.5928
+	addrl	a1, l.7077
 	flw	fa2, a1, 0
 	lw	a1, hp, 20
 	fsw	hp, 40, fa0
@@ -9034,7 +8963,7 @@ setup_surface_reflection.2831:
 	lw	a0, hp, 16
 	flw	fa2, a0, 4
 	fsub.s	fa0, fa0, fa2
-	addrl	a1, l.5928
+	addrl	a1, l.7077
 	flw	fa2, a1, 0
 	lw	a1, hp, 20
 	fsw	hp, 48, fa0
@@ -9066,9 +8995,7 @@ setup_surface_reflection.2831:
 	lw	ra, hp, 56
 	lw	a0, hp, 8
 	addi	a0, a0, 1
-	li	a1, 0
-	lw	a2, hp, 0
-	add	a1, a2, a1
+	lw	a1, hp, 0
 	sw	a1, 0, a0
 	ret
 setup_reflections.2834:
@@ -9097,7 +9024,7 @@ setup_reflections.2834:
 	ret
 .Beq310:
 	nop
-	addrl	a0, l.5790
+	addrl	a0, l.7056
 	flw	fa0, a0, 0
 	lw	a0, hp, 12
 	fsw	hp, 16, fa0
@@ -9158,7 +9085,7 @@ rt.2836:
 	sw	s7, 0, s6
 	srli	a1, a1, 1
 	sw	s7, 4, a1
-	addrl	a1, l.6617
+	addrl	a1, l.7257
 	flw	fa0, a1, 0
 	sw	hp, 0, a7
 	sw	hp, 4, s1
@@ -9287,7 +9214,7 @@ min_caml_start:
 	addi	hp, hp, -4
 	lw	ra, hp, 0
 	li	a1, 0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 0, a0
 	mv	a0, a1
@@ -9325,7 +9252,7 @@ min_caml_start:
 	addi	hp, hp, -8
 	lw	ra, hp, 4
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 4, a0
 	mv	a0, a1
@@ -9335,7 +9262,7 @@ min_caml_start:
 	addi	hp, hp, -12
 	lw	ra, hp, 8
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 8, a0
 	mv	a0, a1
@@ -9345,7 +9272,7 @@ min_caml_start:
 	addi	hp, hp, -16
 	lw	ra, hp, 12
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 12, a0
 	mv	a0, a1
@@ -9355,7 +9282,7 @@ min_caml_start:
 	addi	hp, hp, -20
 	lw	ra, hp, 16
 	li	a1, 1
-	addrl	a2, l.6352
+	addrl	a2, l.7160
 	flw	fa0, a2, 0
 	sw	hp, 16, a0
 	mv	a0, a1
@@ -9403,7 +9330,7 @@ min_caml_start:
 	addi	hp, hp, -40
 	lw	ra, hp, 36
 	li	a1, 1
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 36, a0
 	mv	a0, a1
@@ -9423,7 +9350,7 @@ min_caml_start:
 	addi	hp, hp, -48
 	lw	ra, hp, 44
 	li	a1, 1
-	addrl	a2, l.6263
+	addrl	a2, l.7150
 	flw	fa0, a2, 0
 	sw	hp, 44, a0
 	mv	a0, a1
@@ -9433,7 +9360,7 @@ min_caml_start:
 	addi	hp, hp, -52
 	lw	ra, hp, 48
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 48, a0
 	mv	a0, a1
@@ -9453,7 +9380,7 @@ min_caml_start:
 	addi	hp, hp, -60
 	lw	ra, hp, 56
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 56, a0
 	mv	a0, a1
@@ -9463,7 +9390,7 @@ min_caml_start:
 	addi	hp, hp, -64
 	lw	ra, hp, 60
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 60, a0
 	mv	a0, a1
@@ -9473,7 +9400,7 @@ min_caml_start:
 	addi	hp, hp, -68
 	lw	ra, hp, 64
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 64, a0
 	mv	a0, a1
@@ -9483,7 +9410,7 @@ min_caml_start:
 	addi	hp, hp, -72
 	lw	ra, hp, 68
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 68, a0
 	mv	a0, a1
@@ -9513,7 +9440,7 @@ min_caml_start:
 	addi	hp, hp, -84
 	lw	ra, hp, 80
 	li	a1, 1
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 80, a0
 	mv	a0, a1
@@ -9523,7 +9450,7 @@ min_caml_start:
 	addi	hp, hp, -88
 	lw	ra, hp, 84
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 84, a0
 	mv	a0, a1
@@ -9533,7 +9460,7 @@ min_caml_start:
 	addi	hp, hp, -92
 	lw	ra, hp, 88
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 88, a0
 	mv	a0, a1
@@ -9543,7 +9470,7 @@ min_caml_start:
 	addi	hp, hp, -96
 	lw	ra, hp, 92
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 92, a0
 	mv	a0, a1
@@ -9553,7 +9480,7 @@ min_caml_start:
 	addi	hp, hp, -100
 	lw	ra, hp, 96
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 96, a0
 	mv	a0, a1
@@ -9563,7 +9490,7 @@ min_caml_start:
 	addi	hp, hp, -104
 	lw	ra, hp, 100
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 100, a0
 	mv	a0, a1
@@ -9573,7 +9500,7 @@ min_caml_start:
 	addi	hp, hp, -108
 	lw	ra, hp, 104
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 104, a0
 	mv	a0, a1
@@ -9583,7 +9510,7 @@ min_caml_start:
 	addi	hp, hp, -112
 	lw	ra, hp, 108
 	li	a1, 0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 108, a0
 	mv	a0, a1
@@ -9623,7 +9550,7 @@ min_caml_start:
 	addi	hp, hp, -120
 	lw	ra, hp, 116
 	li	a1, 0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 116, a0
 	mv	a0, a1
@@ -9633,7 +9560,7 @@ min_caml_start:
 	addi	hp, hp, -124
 	lw	ra, hp, 120
 	li	a1, 3
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 120, a0
 	mv	a0, a1
@@ -9659,7 +9586,7 @@ min_caml_start:
 	sw	a1, 0, a0
 	mv	a0, a1
 	li	a1, 0
-	addrl	a2, l.5782
+	addrl	a2, l.7060
 	flw	fa0, a2, 0
 	sw	hp, 128, a0
 	mv	a0, a1
@@ -9684,7 +9611,7 @@ min_caml_start:
 	mv	a0, a1
 	li	a1, 180
 	li	a2, 0
-	addrl	a3, l.5782
+	addrl	a3, l.7060
 	flw	fa0, a3, 0
 	addi	sp, sp, -12
 	mv	a3, sp
@@ -10334,96 +10261,100 @@ min_caml_atan_cont:
     fdiv.s  fa0, fa0, fa2
     ret
 min_caml_cos:
-    addrl    a0, __etainvc__
+    addrl    a0, __piinvc__
     flw fa1, a0, 0
-    addrl a1, __etac__
+    addrl a1, __pic__
     flw fa2, a1, 0
-    addrl    a2, __pic__
+    addrl    a2, __piover2c__
     flw fa3, a2, 0
     fmul.s  fa1, fa0, fa1
-    fcvt.w.s    a0, fa1
-    fcvt.s.w    fa1, a0
+    fround    a4, fa1
+    fcvt.s.w    fa1, a4
     fmul.s  fa1, fa1, fa2
     fsub.s  fa1, fa0, fa1
     fle.s   a0, fa3, fa1
     beq a0, zero, min_caml_cos_label1
     fsub.s  fa1, fa1, fa2
+    addi    a4, a4, -1
     j   min_caml_cos_label2
 min_caml_cos_label1:
     fsgnjn.s    fa3, fa3, fa3
     fle.s   a0, fa1, fa3
     beq a0, zero, min_caml_cos_label2
     fadd.s  fa1, fa1, fa2
+    addi    a4, a4, 1
 min_caml_cos_label2:
-    fmul.s	fa2, fa1, fa1
-	fmul.s	fa3, fa2, fa2
-	fmul.s	fa4, fa3, fa3
-    addrl    a0, __a0__
+    fmul.s  fa3, fa1, fa1
+    addrl   a0, __a8__
     flw fa0, a0, 0
-	addrl	a1, __a2__
-	flw	fa5, a1, 0
-	fmul.s	fa5, fa5, fa2
-	fsub.s	fa0, fa0, fa5
-	addrl	a2, __a4__
-	flw	fa6, a2, 0
-	fmul.s	fa6, fa6, fa3
-	fadd.s	fa0, fa0, fa6
-	addrl	a3, __a6__
-	flw	fa7, a3, 0
-	fmul.s	fa7, fa7, fa2
-	fmul.s	fa7, fa7, fa3
-	fsub.s	fa0, fa0, fa7
-	addrl	a0, __a8__
-	flw	fa5, a0, 0
-	fmul.s	fa5, fa5, fa4
-	fadd.s	fa0, fa0, fa5
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a6__
+    flw fa2, a0, 0
+    fsub.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a4__
+    flw fa2, a0, 0
+    fadd.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a2__
+    flw fa2, a0, 0
+    fsub.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+    li  a1, 1
+    fcvt.s.w    fa1, a1
+    fadd.s  fa0, fa0, fa1
+    and a1, a1, a4
+    beq a1, zero, min_caml_cos_label3
+    fsgnjn.s    fa0, fa0, fa0
+min_caml_cos_label3:
     ret
 min_caml_sin:
-    addrl    a0, __etainv__
+    addrl    a0, __piinv__
     flw fa1, a0, 0
-    addrl a1, __eta__
+    addrl a1, __pi__
     flw fa2, a1, 0
-    addrl    a2, __pi__
+    addrl    a2, __piover2__
     flw fa3, a2, 0
     fmul.s  fa1, fa0, fa1
-    fcvt.w.s    a0, fa1
-    fcvt.s.w    fa1, a0
+    fround    a4, fa1
+    fcvt.s.w    fa1, a4
     fmul.s  fa1, fa1, fa2
     fsub.s  fa1, fa0, fa1
     fle.s   a0, fa3, fa1
     beq a0, zero, min_caml_sin_label1
     fsub.s  fa1, fa1, fa2
+    addi    a4, a4, -1
     j   min_caml_sin_label2
 min_caml_sin_label1:
     fsgnjn.s    fa3, fa3, fa3
     fle.s   a0, fa1, fa3
     beq a0, zero, min_caml_sin_label2
     fadd.s  fa1, fa1, fa2
+    addi    a4, a4, 1
 min_caml_sin_label2:
-    fmul.s	fa2, fa1, fa1
-	fmul.s	fa3, fa2, fa2
-	fmul.s	fa4, fa3, fa3
-	addrl	a0, __a3__
-	flw	fa5, a0, 0
-	fmul.s	fa5, fa5, fa1
-	fmul.s	fa5, fa5, fa2
-	fsub.s	fa5, fa1, fa5
-	addrl	a0, __a5__
-	flw	fa6, a0, 0
-	fmul.s	fa6, fa6, fa1
-	fmul.s	fa6, fa6, fa3
-	fadd.s	fa5, fa5, fa6
-	addrl	a0, __a7__
-	flw	fa6, a0, 0
-	fmul.s	fa6, fa6, fa1
-	fmul.s	fa6, fa6, fa2
-	fmul.s	fa3, fa6, fa3
-	fsub.s	fa3, fa5, fa3
-	addrl	a0, __a9__
-	flw	fa5, a0, 0
-	fmul.s	fa5, fa5, fa1
-	fmul.s	fa5, fa5, fa4
-	fadd.s	fa0, fa3, fa5
+    fmul.s  fa3, fa1, fa1
+    addrl   a0, __a9__
+    flw fa0, a0, 0
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a7__
+    flw fa2, a0, 0
+    fsub.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a5__
+    flw fa2, a0, 0
+    fadd.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+    addrl   a0, __a3__
+    flw fa2, a0, 0
+    fsub.s  fa0, fa0, fa2
+    fmul.s  fa0, fa0, fa3
+	fmul.s	fa0, fa0, fa1
+    fadd.s  fa0, fa0, fa1
+    li  a1, 1
+    and a1, a1, a4
+    beq a1, zero, min_caml_sin_label3
+    fsgnjn.s    fa0, fa0, fa0
+min_caml_sin_label3:
     ret
 min_caml_print_char:
     out a0
@@ -10432,22 +10363,156 @@ min_caml_int_of_float:
     fcvt.w.s    a0, fa0
     ret
 min_caml_print_int:
-    out a0
+    li  a1, 200
+    bge a0, a1, min_caml_print_int_100_2
+    li  a1, 100
+    bge a0, a1, min_caml_print_int_100_1
+    j   min_caml_print_int_100_0
+min_caml_print_int_100_2:
+    li  a2, 50
+    out a2
+    sub a0, a0, a1
+    j   min_caml_print_int_10
+min_caml_print_int_100_1:
+    li  a2, 49
+    out a2
+    sub a0, a0, a1
+    j   min_caml_print_int_10
+min_caml_print_int_100_0:
+    li  a2, 48
+    out a2
+min_caml_print_int_10:
+    li a1, 90
+    bge a0, a1, min_caml_print_int_10_9
+    li a1, 80
+    bge a0, a1, min_caml_print_int_10_8
+    li a1, 70
+    bge a0, a1, min_caml_print_int_10_7
+    li a1, 60
+    bge a0, a1, min_caml_print_int_10_6
+    li a1, 50
+    bge a0, a1, min_caml_print_int_10_5
+    li a1, 40
+    bge a0, a1, min_caml_print_int_10_4
+    li a1, 30
+    bge a0, a1, min_caml_print_int_10_3
+    li a1, 20
+    bge a0, a1, min_caml_print_int_10_2
+    li a1, 10
+    bge a0, a1, min_caml_print_int_10_1
+    j min_caml_print_int_10_0
+min_caml_print_int_10_9:
+    li  a2, 57
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_8:
+    li  a2, 56
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_7:
+    li  a2, 55
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_6:
+    li  a2, 54
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_5:
+    li  a2, 53
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_4:
+    li  a2, 52
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_3:
+    li  a2, 51
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_2:
+    li  a2, 50
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_1:
+    li  a2, 49
+    out a2
+    sub a0, a0, a1
+    j min_caml_print_int_1
+min_caml_print_int_10_0:
+    li  a2, 48
+    out a2
+min_caml_print_int_1:
+    li a1, 9
+    bge a0, a1, min_caml_print_int_1_9
+    li a1, 8
+    bge a0, a1, min_caml_print_int_1_8
+    li a1, 7
+    bge a0, a1, min_caml_print_int_1_7
+    li a1, 6
+    bge a0, a1, min_caml_print_int_1_6
+    li a1, 5
+    bge a0, a1, min_caml_print_int_1_5
+    li a1, 4
+    bge a0, a1, min_caml_print_int_1_4
+    li a1, 3
+    bge a0, a1, min_caml_print_int_1_3
+    li a1, 2
+    bge a0, a1, min_caml_print_int_1_2
+    li a1, 1
+    bge a0, a1, min_caml_print_int_1_1
+    li a1, 0
+    bge a0, a1, min_caml_print_int_1_0
+min_caml_print_int_1_9:
+    li  a2, 57
+    out a2
+    ret
+min_caml_print_int_1_8:
+    li  a2, 56
+    out a2
+    ret
+min_caml_print_int_1_7:
+    li  a2, 55
+    out a2
+    ret
+min_caml_print_int_1_6:
+    li  a2, 54
+    out a2
+    ret
+min_caml_print_int_1_5:
+    li  a2, 53
+    out a2
+    ret
+min_caml_print_int_1_4:
+    li  a2, 52
+    out a2
+    ret
+min_caml_print_int_1_3:
+    li  a2, 51
+    out a2
+    ret
+min_caml_print_int_1_2:
+    li  a2, 50
+    out a2
+    ret
+min_caml_print_int_1_1:
+    li  a2, 49
+    out a2
+    ret
+min_caml_print_int_1_0:
+    li  a2, 48
+    out a2
     ret
 min_caml_floor:
-    fcvt.w.s    a0, fa0
-    fcvt.s.w    fa1, a0
-    fsub.s  fa0, fa0, fa1
-    addrl    a0, __floor0__
-    flw fa2, a0, 0
-    fle.s   a1, fa2, fa0
-    beq a1, zero, min_caml_floor_branch
-    fsgnj.s fa0, fa1, fa1
-    ret
-min_caml_floor_branch:
-    addrl    a1, __floor1__
-    flw fa0, a1, 0
-    fsub.s  fa0, fa1, fa0
+    floor   a0, fa0
+    fcvt.s.w    fa0, a0
     ret
 min_caml_fabs:
     fsgnjx.s    fa0, fa0, fa0
@@ -10460,82 +10525,82 @@ min_caml_read_float:
     ret
 __end__:
 	nop
-l.6617:
+l.7257:
 	.data float, 128.000000
-l.6567:
+l.7245:
 	.data float, 0.900000
-l.6565:
+l.7241:
 	.data float, 0.200000
-l.6455:
-	.data float, -150.000000
-l.6452:
+l.7223:
 	.data float, 150.000000
-l.6426:
-	.data float, 0.100000
-l.6422:
-	.data float, -2.000000
-l.6418:
+l.7221:
+	.data float, -150.000000
+l.7216:
 	.data float, 0.003906
-l.6380:
-	.data float, 20.000000
-l.6378:
-	.data float, 0.050000
-l.6368:
-	.data float, 0.250000
-l.6359:
-	.data float, 10.000000
-l.6354:
-	.data float, 0.300000
-l.6352:
-	.data float, 255.000000
-l.6343:
-	.data float, 0.150000
-l.6335:
-	.data float, 15.000000
-l.6333:
-	.data float, 3.141593
-l.6331:
-	.data float, 30.000000
-l.6328:
+l.7214:
+	.data float, -2.000000
+l.7212:
+	.data float, 0.100000
+l.7202:
 	.data float, 0.000100
-l.6270:
-	.data float, 100000000.000000
-l.6263:
+l.7200:
+	.data float, 30.000000
+l.7197:
+	.data float, 15.000000
+l.7195:
+	.data float, 0.150000
+l.7186:
+	.data float, 0.300000
+l.7183:
+	.data float, 3.141593
+l.7177:
+	.data float, 0.250000
+l.7169:
+	.data float, 0.050000
+l.7167:
+	.data float, 20.000000
+l.7165:
+	.data float, 10.000000
+l.7160:
+	.data float, 255.000000
+l.7150:
 	.data float, 1000000000.000000
-l.6235:
+l.7147:
+	.data float, 100000000.000000
+l.7143:
 	.data float, -0.100000
-l.6222:
-	.data float, 0.010000
-l.6219:
+l.7141:
 	.data float, -0.200000
-l.6010:
+l.7139:
+	.data float, 0.010000
+l.7097:
 	.data float, 0.500000
-l.5928:
+l.7077:
 	.data float, 2.000000
-l.5891:
+l.7074:
 	.data float, -200.000000
-l.5888:
+l.7072:
 	.data float, 200.000000
-l.5883:
+l.7069:
 	.data float, 0.017453
-l.5790:
-	.data float, 1.000000
-l.5788:
-	.data float, -1.000000
-l.5782:
+l.7060:
 	.data float, 0.000000
+l.7058:
+	.data float, -1.000000
+l.7056:
+	.data float, 1.000000
 __atan1__:
 	.data float, 1.000000
 __atan2__:
 	.data float, 2.000000
 __atan_err__:
     .data float, 0.000010
-__etac__:
-    .data float, 6.283185
 __pic__:
-    .data float, 3.141593
-__etainvc__:
-    .data float, 0.159155
+    .data float, 3.1415927
+__piinvc__:
+    .data float, 0.31830987
+__piover2c__:
+    .data float, 1.5707964
 __a0__:
 	.data float, 1.000000
 __a2__:
@@ -10546,12 +10611,12 @@ __a6__:
 	.data float, 0.001389
 __a8__:
 	.data float, 0.000025
-__eta__:
-    .data float, 6.283185
 __pi__:
-    .data float, 3.141593
-__etainv__:
-    .data float, 0.159155
+    .data float, 3.1415927
+__piinv__:
+    .data float, 0.31830987
+__piover2__:
+    .data float, 1.5707964
 __a3__:
     .data float, 0.166667
 __a5__:

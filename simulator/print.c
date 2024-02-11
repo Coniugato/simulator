@@ -55,17 +55,17 @@ void print_instruction(unsigned int inst, int stage, int stall){
                 break;
             case EXS:
                 if(delay_EX>0) printf("STALLED.");
-                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                if(delay_EX==ILA)  printf("Remained clock: under calculation.\n");
                 else printf("Remained clock: %lld\n", delay_EX);
                 break;
             case MAS:
                 if(delay_MA>0) printf("STALLED.");
-                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                if(delay_MA==ILA)  printf("Remained clock: under calculation.\n");
                 else printf("Remained clock: %lld\n", delay_MA);
                 break;
             case WBS:
                 if(delay_WB>0) printf("STALLED.");
-                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
+                if(delay_WB==ILA)  printf("Remained clock: under calculation.\n");
                 else printf("Remained clock: %lld\n", delay_WB);
                 break;
             default:

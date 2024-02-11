@@ -478,20 +478,23 @@ int main(int argc, char *argv[]){
             cond_wb=new_cond_wb;       
             wb=new_wb;
 
+
+            delay_MA=ILA;
             if(update_ex==1){
                 ireg_ma=new_ireg_ma;
                 pc_ma=new_pc_ma;
                 rcalc=new_rcalc; 
                 m_data=new_m_data;
-                delay_MA=ILA;
-
+                
+                delay_EX=ILA;
                 if(update_rf){
                     ireg_ex=new_ireg_ex;
                     pc_ex=new_pc_ex;
                     rrs1=new_rrs1;
                     rrs2=new_rrs2;
                     rrs3=new_rrs3;
-                    delay_EX=ILA;
+                    
+
                     if(update_if==1){
                         ireg_rf=new_ireg_rf;
                         pc_rf=new_pc_rf;
@@ -520,13 +523,12 @@ int main(int argc, char *argv[]){
             //clkを一気に進めてしまう
             if(ireg_wb==0){
                 long long offset = delay_MA - 1;
-                //printf("@%lld\n", offset);
                 delay_MA=1;
                 delay_EX=max(1,delay_EX-offset);
                 delay_RF=max(1,delay_RF-offset);
                 delay_IF=max(1,delay_IF-offset);
                 clk+=offset;
-                skip_jmp-=offset;
+                if(skip_jmp>0) skip_jmp-=offset;
                 //printf("@%lld\n", clk);
             }
             ireg_wb=0;
@@ -550,8 +552,10 @@ int main(int argc, char *argv[]){
  
         //for display
         if(skip_jmp>0){
+
             skip_jmp--;
             if(skip_jmp==0){
+                //printf("@%d\n", skip_jmp);
                 runmode=0;
             }
         }
