@@ -13,7 +13,7 @@ unsigned long long WriteFloatClk=1;
 //Dcache　Hit時のReadにかかるクロック数
 unsigned long long DcacheReadClk=3;
 //Dcache　Hit時のWriteにかかるクロック数
-unsigned long long DcacheWriteClk=101;
+unsigned long long DcacheWriteClk=3;
 //Dcache Miss時のReadにかかるクロック数
 unsigned long long Dcache_DRAMReadClk=101;
 //Dcache Miss時のWriteにかかるクロック数
