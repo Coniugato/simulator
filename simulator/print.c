@@ -331,8 +331,8 @@ void print_instruction(unsigned int inst, int stage, int stall){
                 printf("FIN file->f%d\n", rd);
                 break;
             case 0b10001:
-                rs1=extract(inst, 19,15);
-                printf("FOUT file<-f%d\n", rs1);
+                rs2=extract(inst, 24,20);
+                printf("FOUT file<-f%d\n", rs2);
                 break;
             case 0b10010:
                 switch(extract(inst, 26,25)){
@@ -495,10 +495,10 @@ void print_instruction(unsigned int inst, int stage, int stall){
                 break;
             case 0b11111:
                 //rd=extract(inst, 11,7);
-                rs1=extract(inst, 19,15);
+                rs2=extract(inst, 24,20);
                 //rs2=extract(inst, 24,20);
                 //offset=(extract(inst, 31,25)<<5)+extract(inst, 11,7);;
-                printf("OUT file<-x%d\n", rd);
+                printf("OUT file<-x%d\n", rs2);
         }
     }
     else if(extract(inst, 6,0)==0b1111110){

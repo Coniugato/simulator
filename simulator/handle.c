@@ -1275,18 +1275,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                 break;
             case 0b10001:
                 rs1=extract(inst, 19,15);
+                rs2=extract(inst, 24,20);
                 switch(stage){
                     case RFS:
                         new_ireg_ex=inst;
-                        new_rrs1=F2I(float_registers[rs1]);
+                        new_rrs2=F2I(float_registers[rs2]);
                         //new_rrs2=F2I(float_registers[rs2]);
-                        frs1=rs1;
+                        frs2=rs2;
                         //frs2=rs2;
                         break;
                     case EXS:
                         new_ireg_ma=inst;
                         //ird = rd;
-                        new_rcalc=rrs1;
+                        new_rcalc=rrs2;
                         //new_m_data=rrs2;
                         break;
                     case MAS:
@@ -2086,21 +2087,21 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                 break;
             case 0b11111:
                 //rd=extract(inst, 11,7);
-                rs1=extract(inst, 19,15);
-                //rs2=extract(inst, 24,20);
+                //rs1=extract(inst, 19,15);
+                rs2=extract(inst, 24,20);
                 //offset=(extract(inst, 31,25)<<5)+extract(inst, 11,7);;
                 switch(stage){
                     case RFS:
                         new_ireg_ex=inst;
-                        new_rrs1=invsext(int_registers[rs1],32);
+                        new_rrs2=invsext(int_registers[rs2],32);
                         //new_rrs2=F2I(float_registers[rs2]);
-                        irs1=rs1;
+                        irs2=rs2;
                         //frs2=rs2;
                         break;
                     case EXS:
                         new_ireg_ma=inst;
                         //ird = rd;
-                        new_rcalc=rrs1;
+                        new_rcalc=rrs2;
                         //new_m_data=rrs2;
                         break;
                     case MAS:

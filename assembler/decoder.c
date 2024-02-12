@@ -1565,8 +1565,8 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
                 error_toofew(opc);
             }
         }
-        int rs1 = reg_convert(opr[0]);
-        *int_inst = (rs1 << 15) + 0b1000111;
+        int rs2 = reg_convert(opr[0]);
+        *int_inst = (rs2 << 20) + 0b1000111;
         writeall(outd, char_inst, 4);
     }
     else if (strcmp(opc, "in") == 0)
@@ -1599,8 +1599,8 @@ int assemble(FILE *inf, int outd, int pc, Node *labels)
                 error_toofew(opc);
             }
         }
-        int rs1 = reg_convert(opr[0]);
-        *int_inst = (rs1 << 15) + 0b1111111;
+        int rs2 = reg_convert(opr[0]);
+        *int_inst = (rs2 << 20) + 0b1111111;
         writeall(outd, char_inst, 4);
     }
     /*

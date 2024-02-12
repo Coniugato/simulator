@@ -345,7 +345,8 @@ void handle_instruction(char* buf){
                 break;
             case 0b10001:
                 rs1=extract(*buf_int, 19,15);
-                printf("\t\t  FOUT file <-  f%d\n", rs1);
+                rs2=extract(*buf_int, 24,20);
+                printf("\t\t  FOUT file <-  f%d\n", rs2);
                 /*switch(extract(*buf_int, 26,25)){
                     case 0b00:
                         int rd=extract(*buf_int, 11,7);
@@ -509,7 +510,8 @@ void handle_instruction(char* buf){
                 break;
             case 0b11111:
                 rs1=extract(*buf_int, 19,15);
-                printf("\t\t  OUT file <-  x%d\n", rs1);
+                rs2=extract(*buf_int, 24,20);
+                printf("\t\t  OUT file <-  x%d\n", rs2);
                 break;
         }
     }
