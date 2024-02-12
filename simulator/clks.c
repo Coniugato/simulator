@@ -1,21 +1,23 @@
+//周波数
+unsigned long long Hz=60000000;
 
 //inにかかるクロック数
-unsigned long long ReadIntClk=100;
+unsigned long long ReadIntClk=2;
 //outにかかるクロック数
-unsigned long long WriteIntClk=100;
+unsigned long long WriteIntClk=1;
 //finにかかるクロック数
-unsigned long long ReadFloatClk=100;
+unsigned long long ReadFloatClk=2;
 //foutにかかるクロック数
-unsigned long long WriteFloatClk=100;
+unsigned long long WriteFloatClk=1;
 
 //Dcache　Hit時のReadにかかるクロック数
-unsigned long long DcacheReadClk=2;
+unsigned long long DcacheReadClk=3;
 //Dcache　Hit時のWriteにかかるクロック数
-unsigned long long DcacheWriteClk=5;
+unsigned long long DcacheWriteClk=101;
 //Dcache Miss時のReadにかかるクロック数
-unsigned long long Dcache_DRAMReadClk=600;
+unsigned long long Dcache_DRAMReadClk=101;
 //Dcache Miss時のWriteにかかるクロック数
-unsigned long long Dcache_DRAMWriteClk=600;
+unsigned long long Dcache_DRAMWriteClk=3;
 //Instruction Fetchにかかるクロック数
 unsigned long long IcacheReadClk=2;
 
@@ -50,4 +52,3 @@ unsigned long long IcacheWriteClk=5;
 unsigned long long Icache_DRAMReadClk=6;
 unsigned long long Icache_DRAMWriteClk=6;
 
-//float演算に関してはlatency.c

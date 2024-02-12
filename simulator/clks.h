@@ -8,12 +8,12 @@
 #define LEN_TAG 16
 
 //命令メモリの大きさ
-#define N_INSTRUCTIONS 80004
+#define N_INSTRUCTIONS 120000
 //データメモリの大きさ
 #define N_MEMORY 134217728
 
 //MAステージでFPUを行う
-#define FPU_IN_MA  0
+#define FPU_IN_MA  1
 
 
 
@@ -38,7 +38,10 @@
 #define I_LEN_LINE (1<<I_LEN_OFFSET)
 
 
+extern unsigned long long Hz;
+
 extern unsigned long long DcacheReadClk, DcacheWriteClk, IcacheReadClk, Dcache_DRAMReadClk, Dcache_DRAMWriteClk;
 
 
 extern unsigned long long ReadFloatClk, WriteIntClk, ReadIntClk, WriteFloatClk, IcacheWriteClk, Icache_DRAMReadClk, Icache_DRAMWriteClk, FAddClk, FSubClk, FMulClk, FDivClk, FSqrtClk, FSgnjClk, FMinMaxClk, FCvtSWClk, FCvtWSClk, FRoundClk, FMvClk, FCmpClk;
+
