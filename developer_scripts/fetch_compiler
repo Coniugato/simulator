@@ -4,7 +4,8 @@ mkdir mlsrc 2>/dev/null
 COMPLOC=$(cat developer_scripts/comp_loc.txt)
 cd $COMPLOC
 git stash -a
-git pull origin mycompiler
+git pull origin mycompiler_opted
+git checkout mycompiler_opted
 dune build
 TARGETPATH="$SIMPATH/mlsrc/mcc.exe"
 if [ $(ls $TARGETPATH) = $TARGETPATH ]; then
@@ -13,8 +14,9 @@ else
     echo "exec file $TARGETPATH will be created."
 fi
 cp _build/default/main.exe "$SIMPATH/mlsrc/mcc.exe"
-cp rt/src.ml "$SIMPATH/mltests/src.ml"
+cp  rt/src.ml "$SIMPATH/mltests/src.ml"
 chmod u+xrw $TARGETPATH
-cp -r lib "$SIMPATH/mlsrc/lib"
+rm -rf "$SIMPATH/mlsrc/lib"
+cp -rf lib "$SIMPATH/mlsrc/lib"
 echo $(date)": ""Version "$(git show --format='%H' --no-patch)" fetched. "
 echo $(date)": ""Version "$(git show --format='%H' --no-patch)" fetched. " >> $SIMPATH/developer_scripts/fetch_history

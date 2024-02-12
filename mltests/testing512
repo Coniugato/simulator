@@ -1,6 +1,7 @@
 rm -rf src512.output.ppm
 rm -rf src512.output
 ../utilities/allmake
+../assembler/asm src512.s src512
 time ../simulator/sim src512 -auto -ifnc
 ../utilities/conv_ppm src512.output
 code src512.output.ppm

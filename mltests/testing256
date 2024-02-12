@@ -1,6 +1,7 @@
 rm -rf src256.output.ppm
 rm -rf src256.output
 ../utilities/allmake
+../assembler/asm src256.s src256
 time ../simulator/sim src256 -auto -ifnc
 ../utilities/conv_ppm src256.output
 code src256.output.ppm

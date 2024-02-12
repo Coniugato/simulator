@@ -17,7 +17,7 @@ unsigned long long DcacheWriteClk=101;
 //Dcache Miss時のReadにかかるクロック数
 unsigned long long Dcache_DRAMReadClk=101;
 //Dcache Miss時のWriteにかかるクロック数
-unsigned long long Dcache_DRAMWriteClk=3;
+unsigned long long Dcache_DRAMWriteClk=101;
 //Instruction Fetchにかかるクロック数
 unsigned long long IcacheReadClk=2;
 
