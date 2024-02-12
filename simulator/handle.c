@@ -37,8 +37,8 @@ void handle_instruction(unsigned int inst, int stage, int stall){
     
     if(inst==0) return;
     if(extract(inst, 1,0)==0b11){
-        int rd=extract(inst, 11,7);
-        int imm, shamt, rs2,rs3, offset, rm;
+        unsigned int rd=extract(inst, 11,7);
+        unsigned int imm, shamt, rs2,rs3, offset, rm;
         switch(extract(inst,6,2)){
             case 0b01101:
                 imm=extract(inst, 31,12);
@@ -295,7 +295,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         o_ird=rd; o_rrd=new_wb;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=wb;
+                                        int_registers[rd]=sext(wb,32);
                                         break;
                                 }
                              //int_registers[rd]=(unsigned int)(((unsigned int)int_registers[rs1])>>shamt);
@@ -926,7 +926,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         o_ird=rd; o_rrd=new_wb;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=wb;
+                                        int_registers[rd]=sext(wb,32);
                                         break;
                                 }
                         break;
@@ -949,7 +949,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         o_ird=rd; o_rrd=new_wb;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=wb;
+                                        int_registers[rd]=sext(wb,32);
                                         break;
                                 }
                         //int_registers[rd]=(unsigned int)extract(*(unsigned long long *) memory_access(int_registers[rs1]+sext(offset,12),0), 15,0);
@@ -1055,7 +1055,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 o_ird=rd; o_rrd=new_wb;
                                 break;
                             case WBS:
-                                int_registers[rd]=wb;
+                                int_registers[rd]=sext(wb,32);
                                 if(rd==0 && offset==0) end=1;
                                 break;
                 }
@@ -1092,7 +1092,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         o_ird=rd; o_rrd=new_wb;
                                         break;
                                     case WBS:
-                                        int_registers[rd]=wb;
+                                        int_registers[rd]=sext(wb,32);
                                         break;
                         }
                         //int t=pc+4;
@@ -1729,7 +1729,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 o_ird=rd; o_rrd=new_wb;
                                                 break;
                                             case WBS:
-                                                int_registers[rd]=wb;
+                                                int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
                                 //int_registers[rd]=fcvt_wu_c(float_registers[rs1],stage);
@@ -1876,7 +1876,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 o_ird=rd; o_rrd=new_wb;
                                                 break;
                                             case WBS:
-                                                int_registers[rd]=wb;
+                                                int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
                                 //int_registers[rd]= feq_c(float_registers[rs1],float_registers[rs2],stage);
@@ -1903,7 +1903,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 o_ird=rd; o_rrd=new_wb;
                                                 break;
                                             case WBS:
-                                                int_registers[rd]=wb;
+                                                int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
                                 //int_registers[rd]= flt_c(float_registers[rs1],float_registers[rs2],stage);
@@ -1930,7 +1930,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 o_ird=rd; o_rrd=new_wb;
                                                 break;
                                             case WBS:
-                                                int_registers[rd]=wb;
+                                                int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
                                 //int_registers[rd]= fle_c(float_registers[rs1],float_registers[rs2],stage);
@@ -2143,7 +2143,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                     o_ird=rd; o_rrd=new_wb;
                     break;
                 case WBS:
-                    int_registers[rd]=wb;
+                    int_registers[rd]=sext(wb,32);
                     break;
         }
     }

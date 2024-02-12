@@ -113,7 +113,7 @@ UI mul23(UI m1, UI m2, int status){
   UI hl = f_extract(((1<<12)+m1h) * m2l,23, 0);
   UI lh = f_extract(m1l * ((1<<12)+m2h),23, 0);
 
-  return hh + f_extract(hl,23,11) + f_extract(lh,23,11) + 1;
+  return hh + f_extract(hl,23,11) + f_extract(lh,23,11) + 2;
 }
 
 float fmul_c(float f1, float f2, int status){
@@ -227,9 +227,8 @@ float fsqrt_c(float f, int status){
     UI index = EX((in_2_4<<23)+m, 23,14);
     UI d = EX((in_2_4<<23)+m, 13,0);
 
-    UL data=fsqrt_ar[index];
-    UI a = EX((((UL)1)<<36)+data, 36,23);
-    UI b = EX((((UL)1)<<36)+data, 22,0);
+    UI a = EX(((UL)1<<36)+fsqrt_ar[index], 36,23);
+    UI b = EX(((UL)1<<36)+fsqrt_ar[index], 22,0);
 
     UI ad1 = a* d;
     UI ad2 = (in_2_4==1) ? EX(ad1, 27, 14) : EX(ad1, 27, 15);
@@ -247,7 +246,7 @@ float fsqrt_c(float f, int status){
     UI ey = (is_zero==1) ? 0 : ((is_inf==1) ? 255 : ey3);
     UI my = (is_zero==1) ? 0 : ((is_inf==1) ? 0 : my1);
 
-    r.ui = ((sy<<31)+(ey<<23)+my);
+    r.ui = (s==1) ? ((1<<31)+(255<<23)+(1<<22)) : ((sy<<31)+(ey<<23)+my);
 
     return r.f;
 }
@@ -345,11 +344,10 @@ float fmax_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-
     UI s1 = EX(x1, 31,31);
     UI em1 = EX(x1, 30,0);
     UI s2 = EX(x2, 31,31);
-    UI em2 = EX(x2, 30,0);
+    UI em2 = EX(x1, 30,0);
 
     return (~s1) ? ((~s2) ? ((em1 > em2) ? f1 : f2) : f1) : ((~s2) ? f2 : ((em1 < em2) ? f1 : f2));
 }
@@ -394,7 +392,7 @@ float fmin_c(float f1, float f2, int status){
     UI s1 = EX(x1, 31,31);
     UI em1 = EX(x1, 30,0);
     UI s2 = EX(x2, 31,31);
-    UI em2 = EX(x2, 30,0);
+    UI em2 = EX(x1, 30,0);
 
     return (~s1) ? ((~s2) ? ((em1 > em2) ? f2 : f1) : f2) : ((~s2) ? f1 : ((em1 < em2) ? f2 : f1));
 
@@ -564,27 +562,28 @@ UI floor_c(float f, int status){
     UI y = (s==0) ? (
       (e==0) ? 1:
       ((e<=23) ? (1<<e)+EX(m,22,23-e)
-        : ( (e<32) ? 
+        : ( (ep<32) ? 
           (1<<e)+(m<<(e-23)) :
           ((e==32) ? m<<9 : 0)
           )
       )
     ) :
     (
-      (e==0) ? ~0:   
+      (e==0) ? ~1+1:
+      
       ((e<=23) ? 
-        ~((1<<e)+EX(m,22,23-e))
-        :  (e<32) ? 
-          ~((1<<e)+(m<<(e-23))) :
-          ((e==32) ? (~(m<<9)) : 0)  
+        ~((1<<e)+EX(m,22,23-e))+1
+        : ~( (e<32) ? 
+          (1<<e)+(m<<(e-23)) :
+          ((e==32) ? m<<9 : 0)
+          )+1
       )
     );
     return y;
 }
 
-
 UI fround_c(float f, int status){
-    union f_ui{
+      union f_ui{
         unsigned int ui;
         float f;
     };
@@ -613,8 +612,8 @@ UI fround_c(float f, int status){
       ((e<=23) ? 
         (
           EX(m,23-e, 23-e)==1 ?
-          (1<<(e-1))+EX(m,22,24-e)+1 :
-          (1<<(e-1))+EX(m,22,24-e)
+          (1<<(e-1))+EX(m,e-1,24-e)+1 :
+          (1<<(e-1))+EX(m,e-1,24-e)
         )
         : ( (e<33) ? 
           (1<<(e-1))+(m<<(e-24)) :
@@ -623,21 +622,21 @@ UI fround_c(float f, int status){
       ))
     ) :
     (
-      (e==0) ? ~0 :
-      ((e==1) ? (EX(m,22,22)==0 ? 0xc0000000 : ~0) :
+      (e==0) ? ~0:
+      (e==1) ? (EX(m,22,22)==0 ? 0 : ~0) :
       ((e<=23) ? 
         (
           EX(m,23-e, 23-e)==0 ?
-          ~((1<<(e-1))+EX(m,22,24-e))+1 :
-          ~((1<<(e-1))+EX(m,22,24-e))
+          ~((1<<(e-1))+EX(m,e-1,24-e))+1 :
+          ~((1<<(e-1))+EX(m,e-1,24-e))
         )
-        :  (e<33) ? 
-          (~((1<<(e-1))+(m<<(e-24)))+1) :
-          ((e==33) ? (~(m<<9)+1) : 0)
-      )));
+        : ~( (e<33) ? 
+          (1<<(e-1))+(m<<(e-24)) :
+          ((e==33) ? m<<9 : 0)
+          )+1
+      ));
     return y;
 }
-
 
 
 //fcvt_s_wuでは？
@@ -678,7 +677,7 @@ float fcvt_s_wu_c(UI x, int status){
     return r.f;
 }
 
-float fcvt_s_w_c(unsigned int xi, int status){
+float fcvt_s_w_c(int xi, int status){
     union f_ui{
         unsigned int ui;
         float f;

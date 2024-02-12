@@ -1,4 +1,4 @@
-OPT = -O3
+OPT = -O3 -Wall -Wextra
 
 all: main input_handle fpu fpui handle inout latency memory print util clks
 	gcc main input_handle fpu fpui handle inout latency memory print util clks $(OPT) -o sim -lm

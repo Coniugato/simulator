@@ -15,37 +15,37 @@ unsigned long long DcacheReadClk=3;
 //Dcache　Hit時のWriteにかかるクロック数
 unsigned long long DcacheWriteClk=3;
 //Dcache Miss時のReadにかかるクロック数
-unsigned long long Dcache_DRAMReadClk=101;
+unsigned long long Dcache_DRAMReadClk=102;
 //Dcache Miss時のWriteにかかるクロック数
-unsigned long long Dcache_DRAMWriteClk=101;
+unsigned long long Dcache_DRAMWriteClk=102;
 //Instruction Fetchにかかるクロック数
-unsigned long long IcacheReadClk=2;
+unsigned long long IcacheReadClk=3;
 
 
 //FADDにかかるクロック数
-unsigned long long FAddClk=4;
+unsigned long long FAddClk=5;
 //FSUBにかかるクロック数
-unsigned long long FSubClk=4;
+unsigned long long FSubClk=5;
 //FMULにかかるクロック数
-unsigned long long FMulClk=4;
+unsigned long long FMulClk=5;
 //FDIVにかかるクロック数
-unsigned long long FDivClk=5;
+unsigned long long FDivClk=6;
 //FSQRTにかかるクロック数
-unsigned long long FSqrtClk=3;
+unsigned long long FSqrtClk=4;
 //FSGNJ系にかかるクロック数
-unsigned long long FSgnjClk=1;
+unsigned long long FSgnjClk=2;
 //FMIN/FMAXにかかるクロック数
-unsigned long long FMinMaxClk=1;
+unsigned long long FMinMaxClk=2;
 //FCVT.W.S系にかかるクロック数
-unsigned long long FCvtSWClk=3;
+unsigned long long FCvtSWClk=4;
 //FCVT.S.W系にかかるクロック数
-unsigned long long FCvtWSClk=3;
+unsigned long long FCvtWSClk=4;
 //FLOOR/FROUNDにかかるクロック数
-unsigned long long FRoundClk=3;
+unsigned long long FRoundClk=4;
 //FMVにかかるクロック数
-unsigned long long FMvClk=1;
+unsigned long long FMvClk=2;
 //F比較演算にかかるクロック数
-unsigned long long FCmpClk=1;
+unsigned long long FCmpClk=2;
 
 //以下は使わない
 unsigned long long IcacheWriteClk=5;
