@@ -1,8 +1,9 @@
 simulator.
-FPU in MA Stage Off
+FPU in MA Stage On
 INSTRUCTION section BYTES: 112
 DATA section BYTES: 16
-Main(Fetch) PC: 120->120/108 	 ENDED_INSTS: 28 CLOCK: 671->672
+Main(Fetch) PC: 120->120/108 	 ENDED_INSTS: 28 CLOCK: 171->172
+estimated time so far: 0.000003 s
 	[35mx0[0m: 	0 	[35mx1[0m: 	40 	[35mx2[0m: 	33554432 	[35mx3[0m: 	0
 	[35mx4[0m: 	16 	[35mx5[0m: 	8 	[35mx6[0m: 	20 	[35mx7[0m: 	7
 	[35mx8[0m: 	0 	[35mx9[0m: 	0 	[35mx10[0m: 	0 	[35mx11[0m: 	0
@@ -10,7 +11,7 @@ Main(Fetch) PC: 120->120/108 	 ENDED_INSTS: 28 CLOCK: 671->672
 	[35mx16[0m: 	0 	[35mx17[0m: 	0 	[35mx18[0m: 	0 	[35mx19[0m: 	0
 	[35mx20[0m: 	0 	[35mx21[0m: 	0 	[35mx22[0m: 	0 	[35mx23[0m: 	0
 	[35mx24[0m: 	0 	[35mx25[0m: 	0 	[35mx26[0m: 	0 	[35mx27[0m: 	0
-	[35mx28[0m: 	6 	[35mx29[0m: 	4 	[35mx30[0m: 	23 	[35mx31[0m: 	19
+	[35mx28[0m: 	6 	[35mx29[0m: 	6 	[35mx30[0m: 	23 	[35mx31[0m: 	19
 	[36mf0[0m: 	0.000000 	[36mf1[0m: 	4.900000 	[36mf2[0m: 	1.600000 	[36mf3[0m: 	1.600000
 	[36mf4[0m: 	4.900000 	[36mf5[0m: 	2.213594 	[36mf6[0m: 	0.000000 	[36mf7[0m: 	0.000000
 	[36mf8[0m: 	0.000000 	[36mf9[0m: 	0.000000 	[36mf10[0m: 	0.000000 	[36mf11[0m: 	0.000000

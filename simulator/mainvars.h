@@ -18,6 +18,7 @@ extern unsigned int rrs1, rrs2, rrs3;
 extern int irs1, irs2, irs3, frs1, frs2, frs3;
 extern int ird, frd;
 extern int o_ird, o_frd;
+extern int pird, pfrd;
 extern unsigned int o_rrd, rrd;
 
 extern unsigned int new_rrs1, new_rrs2, new_rrs3;
