@@ -7,7 +7,8 @@
 #include "mainvars.h"
 #include "print.h"
 
-
+//long long print_count=0;
+int for_debug=662;
 
 void handle_instruction(unsigned int inst, int stage, int stall){
     if(stall==1) return;
@@ -103,6 +104,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 ird=rd;
                                 rrd=new_rcalc;
                                 //handling breakpoint
+                                if(rrs1==0 && rd==0 && imm==0) for_debug--;
                                 if(rrs1==0 && rd==0 && breakpoint==1){
                                     printf("Breakpoint %d.\n", imm);
                                     breakpoint=0;
@@ -2108,6 +2110,8 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                         new_ireg_wb=inst;
                         //あとでwrite_charにもどすこと->もどした
                         write_char(rcalc);
+                        //print_count++;
+                        //if(print_count==7950) runmode=0;
                         break;
                     case WBS:
                         //int_registers[rd]=wb;

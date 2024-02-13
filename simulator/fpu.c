@@ -351,7 +351,7 @@ float fmax_c(float f1, float f2, int status){
     UI s2 = EX(x2, 31,31);
     UI em2 = EX(x2, 30,0);
 
-    return (~s1) ? ((~s2) ? ((em1 > em2) ? f1 : f2) : f1) : ((~s2) ? f2 : ((em1 < em2) ? f1 : f2));
+    return (s1==0) ? ((s2==0) ? ((em1 > em2) ? f1 : f2) : f1) : ((s2==0) ? f2 : ((em1 < em2) ? f1 : f2));
 }
 
 /*float fmax_c(float f1, float f2, int status){
@@ -396,7 +396,7 @@ float fmin_c(float f1, float f2, int status){
     UI s2 = EX(x2, 31,31);
     UI em2 = EX(x2, 30,0);
 
-    return (~s1) ? ((~s2) ? ((em1 > em2) ? f2 : f1) : f2) : ((~s2) ? f1 : ((em1 < em2) ? f2 : f1));
+    return (s1==0) ? ((s2==0) ? ((em1 > em2) ? f2 : f1) : f2) : ((s2==0) ? f1 : ((em1 < em2) ? f2 : f1));
 
 }
 
@@ -609,7 +609,7 @@ UI fround_c(float f, int status){
 
     UI y = (s==0) ? (
       (e==0) ? 1 :
-      (e==1 ? (EX(m,22,22) ? 2 : 1) :
+      (e==1 ? (EX(m,22,22)==1 ? 2 : 1) :
       ((e<=23) ? 
         (
           EX(m,23-e, 23-e)==1 ?
@@ -650,14 +650,14 @@ float fcvt_s_wu_c(UI x, int status){
     //UL x = x_in;
     //x = EX(x, 32,0);
     
-    UL xs = EX(x,31,31) ? (EX(x,7,7) ? ((UL)x + (1<<8)) : x) :
-        EX(x,30,30) ? (EX(x,6,6) ? (x + (1<<7)) : x) :
-        EX(x,29,29) ? (EX(x,5,5) ? (x + (1<<6)) : x) :
-        EX(x,28,28) ? (EX(x,4,4) ? (x + (1<<5)) : x) :
-        EX(x,27,27) ? (EX(x,3,3) ? (x + (1<<4)) : x) :
-        EX(x,26,26) ? (EX(x,2,2) ? (x + (1<<3)) : x) :
-        EX(x,25,25) ? (EX(x,1,1) ? (x + (1<<2)) : x) :
-        EX(x,24,24) ? (EX(x,0,0) ? (x + (1<<1)) : x) :
+    UL xs = EX(x,31,31)==1 ? (EX(x,7,7)==1 ? ((UL)x + (1<<8)) : x) :
+        EX(x,30,30)==1 ? (EX(x,6,6)==1 ? (x + (1<<7)) : x) :
+        EX(x,29,29)==1 ? (EX(x,5,5)==1 ? (x + (1<<6)) : x) :
+        EX(x,28,28)==1 ? (EX(x,4,4)==1 ? (x + (1<<5)) : x) :
+        EX(x,27,27)==1 ? (EX(x,3,3)==1 ? (x + (1<<4)) : x) :
+        EX(x,26,26)==1 ? (EX(x,2,2)==1 ? (x + (1<<3)) : x) :
+        EX(x,25,25)==1 ? (EX(x,1,1)==1 ? (x + (1<<2)) : x) :
+        EX(x,24,24)==1 ? (EX(x,0,0)==1 ? (x + (1<<1)) : x) :
         x;
     xs = EX(xs,32,0);
 
@@ -688,14 +688,14 @@ float fcvt_s_w_c(unsigned int xi, int status){
 
     UI xss = (EX(x, 31, 31)==1) ? (~x + 1) : x;
 
-    UI xs = EX(xss,31,31) ? (EX(xss,7,7) ? (xss + (1<<8)) : xss) :
-        EX(xss,30,30) ? (EX(xss,6,6) ? (xss + (1<<7)) : xss) :
-        EX(xss,29,29) ? (EX(xss,5,5) ? (xss + (1<<6)) : xss) :
-        EX(xss,28,28) ? (EX(xss,4,4) ? (xss + (1<<5)) : xss) :
-        EX(xss,27,27) ? (EX(xss,3,3) ? (xss + (1<<4)) : xss) :
-        EX(xss,26,26) ? (EX(xss,2,2) ? (xss + (1<<3)) : xss) :
-        EX(xss,25,25) ? (EX(xss,1,1) ? (xss + (1<<2)) : xss) :
-        EX(xss,24,24) ? (EX(xss,0,0) ? (xss + (1<<1)) : xss) :
+    UI xs = EX(xss,31,31)==1 ? (EX(xss,7,7)==1 ? (xss + (1<<8)) : xss) :
+        EX(xss,30,30)==1 ? (EX(xss,6,6)==1 ? (xss + (1<<7)) : xss) :
+        EX(xss,29,29)==1 ? (EX(xss,5,5)==1 ? (xss + (1<<6)) : xss) :
+        EX(xss,28,28)==1 ? (EX(xss,4,4)==1 ? (xss + (1<<5)) : xss) :
+        EX(xss,27,27)==1 ? (EX(xss,3,3)==1 ? (xss + (1<<4)) : xss) :
+        EX(xss,26,26)==1 ? (EX(xss,2,2)==1 ? (xss + (1<<3)) : xss) :
+        EX(xss,25,25)==1 ? (EX(xss,1,1)==1 ? (xss + (1<<2)) : xss) :
+        EX(xss,24,24)==1 ? (EX(xss,0,0)==1 ? (xss + (1<<1)) : xss) :
         xss;
 
     UI y = 0;

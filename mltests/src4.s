@@ -7791,6 +7791,7 @@ scan_pixel.2762:
 	sw	hp, 36, ra
 	addi	hp, hp, 40
 	call	p_rgb.2447
+	bp 23
 	addi	hp, hp, -40
 	lw	ra, hp, 36
 	mv	a1, a0

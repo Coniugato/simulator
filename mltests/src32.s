@@ -7768,6 +7768,7 @@ pretrace_line.2758:
 	lw	t5, t6, 0
 	jalr	zero, t5, 0
 scan_pixel.2762:
+	bp 0
 	lw	a6, t6, 8
 	lw	a7, t6, 4
 	li	s0, 0

@@ -472,12 +472,14 @@ int main(int argc, char *argv[]){
             //Memory Access Stage
             //MAとEXのhandleはforwardよりあと
             //更新の順番は逆順になる様に注意
+            //if((int)I2F(wb)==145 && for_debug==0) runmode=0;
+            //if(clk>=1400893800) runmode=0;
+
             handle_instruction(ireg_ma, MAS, 0);
             ireg_wb=new_ireg_wb;
             pc_wb=new_pc_wb; 
             cond_wb=new_cond_wb;       
             wb=new_wb;
-
 
             delay_MA=ILA;
             if(update_ex==1){
