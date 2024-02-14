@@ -697,27 +697,6 @@ float fcvt_s_w_c(unsigned int xi, int status){
 
 #define NONDEBUG
 #ifndef NONDEBUG
-unsigned int F2I(float input){
-    union f_ui
-    {
-        unsigned int ui;
-        float f;
-    };
-    union f_ui fui;
-    fui.f=input;
-    return fui.ui;
-}
-
-float I2F(unsigned int input){
-    union f_ui
-    {
-        unsigned int ui;
-        float f;
-    };
-    union f_ui fui;
-    fui.ui=input;
-    return fui.f;
-}
 
 int main(void){
     printf("%f %d\n", 3.6, fround_c(3.6, 0));
@@ -727,7 +706,7 @@ int main(void){
     printf("%f %d\n", 1.75, fround_c(1.75, 0));
     printf("%f %d\n", 1.55, fround_c(1.55, 0));
     printf("%f %d\n", 1.3, fround_c(1.3, 0));
-    printf("%f %d\n", 0.6, fround_c(0.6, 0));
+    printf("%f %d\n", 0.697514, fround_c(0.697514, 0));
     printf("%f %d\n", 0.3, fround_c(0.3, 0));
     printf("%f %d\n", -0.3, fround_c(-0.3, 0));
     printf("%f %d\n", -0.6, fround_c(-0.6, 0));
@@ -749,7 +728,7 @@ int main(void){
     printf("%f %d\n", 1.55, floor_c(1.55, 0));
     printf("%f %d\n", 1.3, floor_c(1.3, 0)); 
     printf("%f %d\n", 1.0, floor_c(1.0, 0));
-    printf("%f %d\n", 0.6,floor_c(0.6, 0));
+    printf("%f %d\n", 0.697514,floor_c(0.697514, 0));
     printf("%f %d\n", 0.3,  floor_c(0.3, 0));
     printf("%f %d\n", 0.0, floor_c(0.0, 0));
     printf("%f %d\n", -0.0, floor_c(-0.0, 0));

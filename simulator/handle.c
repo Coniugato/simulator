@@ -518,7 +518,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_ireg_ex=inst;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
-                                        irs1=rs2;
+                                        irs1=rs1;
                                         irs2=rs2;
                                         break;
                                     case EXS:
@@ -538,6 +538,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         o_ird=rd; 
                                         o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
+                                        break;
                                 }
                                 break;
                             case 0b0000001:

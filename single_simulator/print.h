@@ -10,8 +10,6 @@
 #include "util.h"
 #include "mainvars.h"
 
-
-void print_registers(void);
-
 void print_registers_for_debug(void);
-void print_instruction(unsigned int inst, int stage, int stall);
+void print_registers(void);
+void print_instruction(unsigned int inst);

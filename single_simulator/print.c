@@ -1,23 +1,6 @@
 #include "print.h"
 #include "mainvars.h"
-#include "latency.h"
 #include "clks.h"
-
-void print_registers(void){
-    printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld CLOCK: %lld->%lld\n", oldpc, pc, max_pc, n_ended, oldclk, clk);
-    printf("estimated time so far: %f s\n", (float)clk/(float)Hz);
-    int i; 
-    for(i=0; i<32; i++){
-        printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);
-        if((i+1)%4==0) printf("\n");
-        else printf(" "); 
-    }
-    for(i=0; i<32; i++){
-        printf("\t\x1b[36mf%d\x1b[0m: \t%f", i, float_registers[i]);
-        if((i+1)%4==0) printf("\n");
-        else printf(" "); 
-    }
-}
 
 
 void print_registers_for_debug(void){
@@ -40,62 +23,25 @@ void print_registers_for_debug(void){
 }
 
 
-
-void print_instruction(unsigned int inst, int stage, int stall){
-    printf("\n");
-
-    switch(stage){
-        case IFS:
-            if(runmode==0) printf("\x1b[35m(IF stage)\x1b[0m PC: %d\n", pc);
-            break;
-        case RFS:
-            if(runmode==0) printf("\x1b[35m(RF stage)\x1b[0m PC: %d\n", pc_rf);
-            break;
-        case EXS:
-            if(runmode==0) printf("\x1b[35m(EX stage)\x1b[0m PC: %d\n", pc_ex);
-            break;
-        case MAS:
-            if(runmode==0) printf("\x1b[35m(MA stage)\x1b[0m PC: %d\n", pc_ma);
-            break;
-        case WBS:
-            if(runmode==0) printf("\x1b[35m(WB stage)\x1b[0m PC: %d\n", pc_wb);
-            break;
-        default:
-            break;
+void print_registers(void){
+    printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld \n", oldpc, pc, max_pc, n_ended);
+    //printf("estimated time so far: %f s\n", (float)clk/(float)Hz);
+    int i; 
+    for(i=0; i<32; i++){
+        printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);
+        if((i+1)%4==0) printf("\n");
+        else printf(" "); 
     }
-
-    if(stall==1){ 
-        switch(stage){
-            case IFS:
-                if(delay_IF>0) printf("STALLED.");
-                if(runmode==0) printf("Remained clock: %lld\n", delay_IF);
-                break;
-            case RFS:
-                if(delay_RF>0) printf("STALLED.");
-                if(delay_RF==ILA)  printf("Remained clock: under calculation.\n");
-                else printf("Remained clock: %lld\n", delay_RF);
-                break;
-            case EXS:
-                if(delay_EX>0) printf("STALLED.");
-                if(delay_EX==ILA)  printf("Remained clock: under calculation.\n");
-                else printf("Remained clock: %lld\n", delay_EX);
-                break;
-            case MAS:
-                if(delay_MA>0) printf("STALLED.");
-                if(delay_MA==ILA)  printf("Remained clock: under calculation.\n");
-                else printf("Remained clock: %lld\n", delay_MA);
-                break;
-            case WBS:
-                if(delay_WB>0) printf("STALLED.");
-                if(delay_WB==ILA)  printf("Remained clock: under calculation.\n");
-                else printf("Remained clock: %lld\n", delay_WB);
-                break;
-            default:
-                break;
-            }
-        if(runmode==0) printf("\n");
+    for(i=0; i<32; i++){
+        printf("\t\x1b[36mf%d\x1b[0m: \t%f", i, float_registers[i]);
+        if((i+1)%4==0) printf("\n");
+        else printf(" "); 
     }
+}
 
+
+
+void print_instruction(unsigned int inst){
     printf("Binary: \t");
     
     int i, j;
@@ -122,11 +68,11 @@ void print_instruction(unsigned int inst, int stage, int stall){
         switch(extract(inst,6,2)){
             case 0b01101:
                 imm=extract(inst, 31,12);
-                if(runmode==0) printf("LUI x%d<-%d (literal value: %d)\n", rd, imm<<12, imm);
+                 printf("LUI x%d<-%d (literal value: %d)\n", rd, imm<<12, imm);
                 break;
             case 0b00101:
                 imm=extract(inst, 31,12);
-                if(runmode==0) printf("AUIPC x%d<-pc(=%d)+%d\n", rd, pc, imm);
+                 printf("AUIPC x%d<-pc(=%d)+%d\n", rd, pc, imm);
                 break;
             case 0b00100:
                 imm=extract(inst, 31,20);
@@ -270,7 +216,7 @@ void print_instruction(unsigned int inst, int stage, int stall){
                 offset=extract(inst, 31,20);
                 rd=extract(inst, 11,7);
                 rs1=extract(inst, 19,15);
-                //if(runmode==0) printf("%d %d\n", rd, rs1);
+                 printf("%d %d\n", rd, rs1);
                 switch(extract(inst, 14,12)){
                     case 0b000:
                         printf("LB x%d <- (MEM[x%d+%lld])[7:0]\n", rd, rs1, sext(offset,12));
@@ -298,7 +244,7 @@ void print_instruction(unsigned int inst, int stage, int stall){
                         printf("SB (MEM[x%d+%d])[7:0] <- x%d\n", rs1, offset, rs2);
                         break;
                     case 0b001:
-                        //if(runmode==0) printf("SH\n");
+                        // printf("SH\n");
                         printf("SB (MEM[x%d+%d])[15:0] <- x%d\n", rs1, offset, rs2);
                         break;
                     case 0b010:
@@ -525,6 +471,6 @@ void print_instruction(unsigned int inst, int stage, int stall){
     }
     else if(extract(inst, 6,0)==0b1111110){
         int rd=extract(inst, 11,7);
-        if(runmode==0) printf("IN file->x%d\n", rd);
+         printf("IN file->x%d\n", rd);
     }
 }

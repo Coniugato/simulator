@@ -15,7 +15,6 @@
 #include "handle.h"
 #include "print.h"
 #include "util.h"
-#include "latency.h"
 #include "clks.h"
 
 #define NREG -200
@@ -118,11 +117,7 @@ unsigned long long n_ended=0;
 
 unsigned long long oldclk=0, clk=0;
 
-long long delay_IF=ILA;
-long long delay_RF=ILA;;
-long long delay_EX=ILA;;
-long long delay_MA=ILA;;
-long long delay_WB=ILA;;
+
 
 
 extern char i_cache[I_N_WAYS][I_N_LINE][I_LEN_LINE];
@@ -266,228 +261,25 @@ int main(int argc, char *argv[]){
             imode=0;
         }
 
-        oldclk=clk;
+        oldpc=pc;
         pc_flag=0;
-        //int_registers[0]=0;
-        clk++;
-        if(delay_IF==ILA) delay_IF=IcacheReadClk;
-        //if(delay_RF==ILA) delay_RF=1;
-        if(delay_EX==ILA) delay_EX=latency_instruction(ireg_ex, EXS);
-        if(delay_MA==ILA) delay_MA=latency_instruction(ireg_ma, MAS);
-        //if(delay_WB==ILA) delay_WB=1;
-
-        if(delay_IF>0) delay_IF--;
-        //delay_RF--;
-        if(delay_EX>0) delay_EX--;
-        /*if(delay_MA>0)*/ delay_MA--;
-        //delay_WB--;
-
-
-        new_ireg_rf=0;
-        new_ireg_ex=0;
-        new_ireg_ma=0;
-        new_ireg_wb=0;
-        
-
-        //Write Back Stage
-        //ストールはしない
-        if(ireg_wb!=0){ 
-            o_ird=NREG;
-            o_frd=NREG;
-            handle_instruction(ireg_wb, WBS, 0);
-            n_ended+=1;
-            
-            int_registers[0]=0;
-            /*if(n_ended%100000==1){
-            FILE* f=fopen("disped","w");
-            fclose(f);
-            }
-            print_registers_for_debug();
-            if(n_ended%100000==0) runmode=0;*/
-            //if(n_ended==4394597) runmode=0; /*4394611*/
-        }
-        //hard wired to 0
+        thisinst = *((unsigned int *)i_memory_access(pc,0));
+        if(runmode==0) print_instruction(thisinst);
+        handle_instruction(thisinst);
         int_registers[0]=0;
 
-        thisinst = *((unsigned int *)i_memory_access(pc,0));
+        n_ended+=1;
         
-        int update_if=0, update_rf=0, update_ex=0;
+        /*if(n_ended%100000==1){
+            FILE* f=fopen("disped","w");
+            fclose(f);
+        }
+        print_registers_for_debug();
+        if(n_ended%100000==0) runmode=0;*/
         
-        //printf("%f %f\n", I2F(rrs1), I2F(rrs2));
-        //Memory Access Stage
-        if(delay_MA==0){ 
 
-            //Memory Access Stage
-            //MAとEXのhandleはforwardよりあと
-            //更新の順番は逆順になる様に注意
-            //if((int)I2F(wb)==145 && for_debug==0) runmode=0;
-            //if(clk>=1400893800) runmode=0;
-
-            ird=NREG;
-            frd=NREG;
-            handle_instruction(ireg_ma, MAS, 0);
-            
-        }
-        
-        //if(irs1<0 && irs1!=NREG2) printf("%d\n", irs1);
-        //if((irs1<0 || irs1>32) && irs1!=NREG2) runmode=0;
-        if(runmode==0){ 
-            nextinst = *((unsigned int *)i_memory_access(pc,0));
-            print_instruction(nextinst, IFS, 1);
-            print_instruction(ireg_rf, RFS, 1);
-            print_instruction(ireg_ex, EXS, 1);
-            if(runmode==0){ 
-                
-                printf("EXrs1 : %d EXirs2 : %d EXird : %d\n", irs1, irs2, ird);
-                printf("EXfrs1 : %d EXfrs2 : %d EXfrs3 : %d EXfrd : %d\n", frs1, frs2, frs3, frd);
-                printf("MAird : %d MAfrd : %d\n", o_ird, o_frd);
-                if(ldhzd==1 && (irs1==ird || irs2==ird  || frs1==frd  || frs2==frd  || frs3==frd)) printf("ldhzd.\n");
-                
-            }
-            print_instruction(ireg_ma, MAS, 1);
-            print_instruction(ireg_wb, WBS, 1);
-            
-        }
-
-        
-        if(delay_MA==0){
-            ireg_wb=new_ireg_wb;
-            pc_wb=new_pc_wb;      
-            wb=new_wb;
-
-            //ALU / FPU Stage
-            if(delay_EX==0){
-                //forwarding
-                if(irs1==ird && irs1!=0){
-                    rrs1=rrd;
-                }
-                else if(irs1==o_ird && irs1!=0){
-                    rrs1=o_rrd;
-                }
-
-
-                if(irs2==ird && irs2!=0){
-                    rrs2=rrd;
-                }
-                else if(irs2==o_ird && irs2!=0){
-                    rrs2=o_rrd;
-                }
-
-
-                if(frs1==frd){
-                    rrs1=rrd;
-                }
-                else if(frs1==o_frd){
-                    rrs1=o_rrd;
-                }
-
-
-                if(frs2==frd){
-                    rrs2=rrd;
-                }
-                else if(frs2==o_frd){
-                    rrs2=o_rrd;
-                }
-
-
-                if(frs3==frd){
-                    rrs3=rrd;
-                }
-                else if(frs3==o_frd){
-                    rrs3=o_rrd;
-                }
-
-                pfrd=NREG;
-                pird=NREG;
-                handle_instruction(ireg_ex, EXS, 0);
-                
-                
-                //printf("frd was changed to %d\n", frd);
-                ireg_ma=new_ireg_ma;
-                pc_ma=new_pc_ma;
-                rcalc=new_rcalc; 
-                m_data=new_m_data;
-                
-                delay_MA=ILA;
-
-
-            
-                //Register Fetch Stage 
-                irs1=NREG2;
-                irs2=NREG2;
-                irs3=NREG2;
-                frs1=NREG2;
-                frs2=NREG2;
-                frs3=NREG2;
-
-                handle_instruction(ireg_rf, RFS,0);
-                if(ldhzd==0 || (irs1!=pird && irs2!=pird  && frs1!=pfrd  && frs2!=pfrd  && frs3!=pfrd)){
-                    //update_rf=1;
-                    delay_EX=ILA;
-                    ireg_ex=new_ireg_ex;
-                    pc_ex=new_pc_ex;
-                    rrs1=new_rrs1;
-                    rrs2=new_rrs2;
-                    rrs3=new_rrs3;
-                    //Instruction Fetch Stage
-                    if(delay_IF==0){
-                        handle_instruction(thisinst, IFS, 0);
-                        ireg_rf=new_ireg_rf;
-                        pc_rf=new_pc_rf;
-                        delay_IF=ILA;
-                        pc+=4;
-                    }
-                    else{
-                        ireg_rf=0;
-                    }
-
-                    
-                }
-                else{
-                    ireg_ex=0;
-                    delay_EX=ILA;
-                }
-            }
-            else{
-                ireg_ma=0;
-                delay_MA=ILA;
-            }
-            
-        }
-        else{
-            //clkを一気に進めてしまう
-            if(ireg_wb==0){
-                long long offset = delay_MA - 1;
-                delay_MA=1;
-                delay_EX=max(1,delay_EX-offset);
-                delay_RF=max(1,delay_RF-offset);
-                delay_IF=max(1,delay_IF-offset);
-                clk+=offset;
-                if(skip_jmp>0){
-                    skip_jmp-=offset;
-                    if(skip_jmp<=0){
-                        //printf("@%d\n", skip_jmp);
-                        runmode=0;
-                    }
-                } 
-                //printf("@%lld\n", clk);
-            }
-            ireg_wb=0;
-        } 
-
-        //分岐が正しいか判定
-        if(nextpc==pc_ex) pc_flag=0;
-        if(ireg_ex==0 && nextpc==pc_rf) pc_flag=0;
-
-        oldpc=pc;
-        //分岐失敗の時
-        if(pc_flag==1){
-            ireg_ex=0;
-            ireg_rf=0;
-            pc=nextpc;
-            delay_IF=ILA;
-        }
-
+        if(pc_flag==1)   pc=nextpc;
+        else pc+=4;
  
         //for display
         if(skip_jmp>0){
@@ -506,14 +298,6 @@ int main(int argc, char *argv[]){
         //printf("%x\n", pc);
         if(runmode==1 && end!=1) continue;
 
-        //just printing
-        if(runmode==0){ 
-            //分岐失敗の時
-            if(pc_flag==1){
-                printf("taken. nextpc=%d\n", nextpc);
-            }
-            else printf("untaken.\n");
-        }
 
 
         print_registers();
@@ -522,6 +306,7 @@ int main(int argc, char *argv[]){
             printf("\rexit detected.\n");
             break;
         }
+
         //printf("%d\n",end);
 
 
