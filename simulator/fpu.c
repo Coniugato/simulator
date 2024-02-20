@@ -39,6 +39,7 @@ float fadd_c(float f1, float f2, int status){
 
     UI m_small_shift = e_big - e_small;
     UI m_small = m_small_prev >> m_small_shift;  
+    if(m_small_shift>=32) m_small=0;
     
     UI my1 = extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
 
@@ -55,7 +56,7 @@ float fadd_c(float f1, float f2, int status){
 
     UI e_small_is_zero = (e_small == 0) ? 1 : 0;
     UI underflow = (extract(ey2,9,9)==1 || e_big==0 || ey2==0 || my1_shift==26) ? 1 : 0;
-    UI overflow = (extract(ey2,8,8)==1 || e_big==2255 || ey2==255 ) ? 1 : 0;
+    UI overflow = (extract(ey2,8,8)==1 || e_big==255 || ey2==255 ) ? 1 : 0;
 
     UI sy = (x1_is_bigger) ? s1 : s2;
     UI ey = (e_small_is_zero==1) ? e_big : ((underflow ?  0 : (((overflow ? 255 : extract(ey2, 7,0))))));
@@ -485,12 +486,11 @@ UI fcvt_w_c(float f, int status){
     ) :
     (
       (ep==0) ? 0xffffffff:
-      ~((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+      (ep<=23) ? (~((1<<ep)+EX(m,22,23-ep))+1)
         : ( (ep<32) ? 
-          (1<<ep)+(m<<(ep-23)) :
-          ((ep==32) ? m<<9 : 0)
+          (~((1<<ep)+(m<<(ep-23)))+1) :
+          ((ep==32) ? (~(m<<9)+1) : 0)
           )
-      )+1
     );
     return y;
 }
