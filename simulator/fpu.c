@@ -2,27 +2,8 @@
 #include "fpu_finv.c"
 #include "fpu_fsqrt.c"
 #include "fpu.h"
-#define EX f_extract
-
-unsigned long long f_extract(unsigned long long input, unsigned long long from, unsigned long long to){
-  return (input & ((((unsigned long long) 1)<<(from+1))-1))>>(to);
-} 
-
-unsigned long long f_sext(unsigned long long input, unsigned long long n_dights){
-  if(f_extract(input, n_dights-1, n_dights-1)==0b1){
-    return -(1<<(n_dights-1))+f_extract(input, n_dights-2, 0);
-  }
-  else{
-    return f_extract(input, n_dights-2, 0);
-  }
-} 
-
-unsigned long long f_invsext(long long input, unsigned long long n_dights){
-  if(input<0){
-    return ((UL)1<<n_dights)+input;
-  }
-  else return input;
-} 
+#include "util.h"
+#define EX extract
 
 void print_binary(UI a, int i){
   for(; i>=1; i--){
@@ -43,14 +24,14 @@ float fadd_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI e1 = f_extract(x1, 30, 23);
-    UI m1 = f_extract(x1, 22, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI e2 = f_extract(x2, 30, 23);
-    UI m2 = f_extract(x2, 22, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI e1 = extract(x1, 30, 23);
+    UI m1 = extract(x1, 22, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI e2 = extract(x2, 30, 23);
+    UI m2 = extract(x2, 22, 0);
     
-    UI x1_is_bigger = (f_extract(x1, 30, 0) > f_extract(x2, 30, 0)) ? 1: 0;
+    UI x1_is_bigger = (extract(x1, 30, 0) > extract(x2, 30, 0)) ? 1: 0;
     UI e_big = (x1_is_bigger==1) ?  e1 : e2;
     UI e_small = (x1_is_bigger==1) ?  e2 : e1;
     UI m_big = (1<<24)+(((x1_is_bigger==1) ?  m1 : m2)<<1);
@@ -58,27 +39,28 @@ float fadd_c(float f1, float f2, int status){
 
     UI m_small_shift = e_big - e_small;
     UI m_small = m_small_prev >> m_small_shift;  
+    if(m_small_shift>=32) m_small=0;
     
-    UI my1 = f_extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
+    UI my1 = extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
 
     UL my1_shift=0;
     for(my1_shift=0; my1_shift<26; my1_shift++){
-        if(f_extract(my1, 25-my1_shift, 25-my1_shift)==1) break;
+        if(extract(my1, 25-my1_shift, 25-my1_shift)==1) break;
     }
 
     UI my2_tmp=my1<<my1_shift;
-    UI my2=f_extract(my2_tmp, 24, 2);
+    UI my2=extract(my2_tmp, 24, 2);
 
     UI ey1 = e_big+1;
     UI ey2 = ey1 - my1_shift;
 
     UI e_small_is_zero = (e_small == 0) ? 1 : 0;
-    UI underflow = (f_extract(ey2,9,9)==1 || e_big==0 || ey2==0 || my1_shift==26) ? 1 : 0;
-    UI overflow = (f_extract(ey2,8,8)==1 || e_big==2255 || ey2==255 ) ? 1 : 0;
+    UI underflow = (extract(ey2,9,9)==1 || e_big==0 || ey2==0 || my1_shift==26) ? 1 : 0;
+    UI overflow = (extract(ey2,8,8)==1 || e_big==255 || ey2==255 ) ? 1 : 0;
 
     UI sy = (x1_is_bigger) ? s1 : s2;
-    UI ey = (e_small_is_zero==1) ? e_big : ((underflow ?  0 : (((overflow ? 255 : f_extract(ey2, 7,0))))));
-    UI my = (e_small_is_zero==1) ? f_extract(m_big,23,1) : ((underflow ?  0 : (((overflow ? 0 : my2)))));
+    UI ey = (e_small_is_zero==1) ? e_big : ((underflow ?  0 : (((overflow ? 255 : extract(ey2, 7,0))))));
+    UI my = (e_small_is_zero==1) ? extract(m_big,23,1) : ((underflow ?  0 : (((overflow ? 0 : my2)))));
 
     r.ui = (sy<<31) + (ey<<23) + my;
     return r.f;
@@ -104,16 +86,16 @@ float fsub_c(float f1, float f2, int status){
 }
 
 UI mul23(UI m1, UI m2, int status){
-  UI m1h = f_extract(m1, 22, 11);
-  UI m1l = f_extract(m1, 10, 0);
-  UI m2h = f_extract(m2, 22, 11);
-  UI m2l = f_extract(m2, 10, 0);
+  UI m1h = extract(m1, 22, 11);
+  UI m1l = extract(m1, 10, 0);
+  UI m2h = extract(m2, 22, 11);
+  UI m2l = extract(m2, 10, 0);
 
-  UI hh = f_extract(((1<<12)+m1h) * ((1<<12)+m2h),25,0);
-  UI hl = f_extract(((1<<12)+m1h) * m2l,23, 0);
-  UI lh = f_extract(m1l * ((1<<12)+m2h),23, 0);
+  UI hh = extract(((1<<12)+m1h) * ((1<<12)+m2h),25,0);
+  UI hl = extract(((1<<12)+m1h) * m2l,23, 0);
+  UI lh = extract(m1l * ((1<<12)+m2h),23, 0);
 
-  return hh + f_extract(hl,23,11) + f_extract(lh,23,11) + 1;
+  return hh + extract(hl,23,11) + extract(lh,23,11) + 1;
 }
 
 float fmul_c(float f1, float f2, int status){
@@ -128,28 +110,28 @@ float fmul_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI e1 = f_extract(x1, 30, 23);
-    UI m1 = f_extract(x1, 22, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI e2 = f_extract(x2, 30, 23);
-    UI m2 = f_extract(x2, 22, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI e1 = extract(x1, 30, 23);
+    UI m1 = extract(x1, 22, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI e2 = extract(x2, 30, 23);
+    UI m2 = extract(x2, 22, 0);
 
     UI my1 = mul23(m1, m2, status);
 
-    UI carry = f_extract(my1, 25, 25);
+    UI carry = extract(my1, 25, 25);
 
-    UI my2 = (carry==1) ? f_extract(my1, 24,2) : f_extract(my1, 23, 1);
+    UI my2 = (carry==1) ? extract(my1, 24,2) : extract(my1, 23, 1);
 
     UI ey1 = e1 + e2 - 127;
     UI ey2 = ey1 + 1;
     UI ey3 = (carry==1) ? ey2 : ey1;
 
-    UI underflow = (e1 == 0 || e2 == 0 || f_extract(ey3,9,9)==1 || ey3==0) ? 1 : 0;
-    UI overflow = (e1 == 255 || e2 == 255 || f_extract(ey3,8,8)==1 || ey3==255) ? 1 : 0;
+    UI underflow = (e1 == 0 || e2 == 0 || extract(ey3,9,9)==1 || ey3==0) ? 1 : 0;
+    UI overflow = (e1 == 255 || e2 == 255 || extract(ey3,8,8)==1 || ey3==255) ? 1 : 0;
 
     UI sy = s1 ^ s2;
-    UI ey = (underflow == 1) ? 0 : ((overflow==1) ? 255 : f_extract(ey3, 7, 0));
+    UI ey = (underflow == 1) ? 0 : ((overflow==1) ? 255 : extract(ey3, 7, 0));
     UI my = (underflow == 1) ? 0 : ((overflow==1) ? 0 : my2);
     
     r.ui=(sy<<31)+(ey<<23)+my;
@@ -181,12 +163,12 @@ float fdiv_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI e1 = f_extract(x1, 30, 23);
-    UI m1 = f_extract(x1, 22, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI e2 = f_extract(x2, 30, 23);
-    UI m2 = f_extract(x2, 22, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI e1 = extract(x1, 30, 23);
+    UI m1 = extract(x1, 22, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI e2 = extract(x2, 30, 23);
+    UI m2 = extract(x2, 22, 0);
 
     UI m3 = finv(m2);
     UI my1 = mul23(m1, m3,status);
@@ -218,9 +200,9 @@ float fsqrt_c(float f, int status){
 
     UI x=u.ui;
 
-    UI s = f_extract(x, 31, 31);
-    UI e = f_extract(x, 30, 23);
-    UI m = f_extract(x, 22, 0);
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
 
     UI in_2_4 = (EX(e,0,0)==0) ? 1 : 0;
 
@@ -278,8 +260,8 @@ int feq_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI is_zero1 = (f_extract(x1, 30, 0)==0) ? 1 : 0;
-    UI is_zero2 = (f_extract(x1, 30, 0)==0) ? 1 : 0;
+    UI is_zero1 = (extract(x1, 30, 0)==0) ? 1 : 0;
+    UI is_zero2 = (extract(x1, 30, 0)==0) ? 1 : 0;
 
     return (is_zero1==1 && is_zero2==1) ? 1 : ((x1==x2) ? 1 : 0);
 }
@@ -296,10 +278,10 @@ int fle_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI em1 = f_extract(x1, 30, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI em2 = f_extract(x2, 30, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
 
     UI res = (s1==1) ?  ((s2==1) ? ((em1>=em2) ? 1: 0) : 1) : ((s2==1) ? 0: ((em1<=em2) ? 1: 0));
 
@@ -320,10 +302,10 @@ int flt_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI em1 = f_extract(x1, 30, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI em2 = f_extract(x2, 30, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
 
     UI res = (s1==1) ?  ((s2==1) ? ((em1>em2) ? 1: 0) : 1) : ((s2==1) ? 0 : ((em1 < em2) ? 1 : 0));
 
@@ -366,10 +348,10 @@ float fmax_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    UI s1 = f_extract(x1, 31, 31);
-    UI em1 = f_extract(x1, 30, 0);
-    UI s2 = f_extract(x2, 31, 31);
-    UI em2 = f_extract(x2, 30, 0);
+    UI s1 = extract(x1, 31, 31);
+    UI em1 = extract(x1, 30, 0);
+    UI s2 = extract(x2, 31, 31);
+    UI em2 = extract(x2, 30, 0);
 
     UI res = (s1) ? ((s2) ? ((em1 >= em2) ? x1 : x2)) : ((s2) ? x2 : ((em1 <= em2) ? x1 : x2));
 
@@ -412,7 +394,7 @@ float fsgnj_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    r.ui = (f_extract(x2, 31, 31)<<31)+(EX(x1,30,0));
+    r.ui = (extract(x2, 31, 31)<<31)+(EX(x1,30,0));
     
     return r.f;
 }
@@ -429,7 +411,7 @@ float fsgnjn_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    r.ui = ((1-f_extract(x2, 31, 31))<<31)+(EX(x1,30,0));
+    r.ui = ((1-extract(x2, 31, 31))<<31)+(EX(x1,30,0));
     
     return r.f;
 }
@@ -446,7 +428,7 @@ float fsgnjx_c(float f1, float f2, int status){
     UI x1=u_1.ui;
     UI x2=u_2.ui;
 
-    r.ui = ((f_extract(x1,31,31)^f_extract(x2, 31, 31))<<31)+(EX(x1,30,0));
+    r.ui = ((extract(x1,31,31)^extract(x2, 31, 31))<<31)+(EX(x1,30,0));
     
     return r.f;
 }
@@ -486,11 +468,11 @@ UI fcvt_w_c(float f, int status){
 
     UI x=u.ui;
 
-    UI s = f_extract(x, 31, 31);
-    UI e = f_extract(x, 30, 23);
-    UI m = f_extract(x, 22, 0);
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
 
-    UI ep = f_invsext(e - 127,8);
+    UI ep = invsext(e - 127,8);
     UI mp = (1<<23)+m;
 
     UI y = (s==0) ? (
@@ -504,12 +486,11 @@ UI fcvt_w_c(float f, int status){
     ) :
     (
       (ep==0) ? 0xffffffff:
-      ~((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+      (ep<=23) ? (~((1<<ep)+EX(m,22,23-ep))+1)
         : ( (ep<32) ? 
-          (1<<ep)+(m<<(ep-23)) :
-          ((ep==32) ? m<<9 : 0)
+          (~((1<<ep)+(m<<(ep-23)))+1) :
+          ((ep==32) ? (~(m<<9)+1) : 0)
           )
-      )+1
     );
     return y;
 }
@@ -524,11 +505,11 @@ UI fcvt_wu_c(float f, int status){
 
     UI x=u.ui;
 
-    UI s = f_extract(x, 31, 31);
-    UI e = f_extract(x, 30, 23);
-    UI m = f_extract(x, 22, 0);
+    UI s = extract(x, 31, 31);
+    UI e = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
 
-    UI ep = f_invsext(e - 127,8);
+    UI ep = invsext(e - 127,8);
     UI mp = (1<<23)+m;
 
     UI y =
@@ -552,16 +533,16 @@ UI floor_c(float f, int status){
 
     UI x=u.ui;
 
-    UI s = f_extract(x, 31, 31);
-    UI ep = f_extract(x, 30, 23);
-    UI m = f_extract(x, 22, 0);
+    UI s = extract(x, 31, 31);
+    UI ep = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
 
-    UI e = f_invsext(ep - 127,8);
+    UI e = invsext(ep - 127,8);
     UI mp = (1<<23)+m;
 
     //printf("%0x %0x %0x\n",s,e,m);
 
-    UI y = (s==0) ? (
+    UI y = (ep==0 && m==0) ?  0 : ((s==0) ? (
       (e==0) ? 1:
       ((e<=23) ? (1<<e)+EX(m,22,23-e)
         : ( (e<32) ? 
@@ -571,14 +552,14 @@ UI floor_c(float f, int status){
       )
     ) :
     (
-      (e==0) ? ~0:   
+      (e==0) ? 0xfffffffe :   
       ((e<=23) ? 
         ~((1<<e)+EX(m,22,23-e))
         :  (e<32) ? 
           ~((1<<e)+(m<<(e-23))) :
-          ((e==32) ? (~(m<<9)) : 0)  
+          ((e==32) ? (~(m<<9)) : ~0)  
       )
-    );
+    ));
     return y;
 }
 
@@ -595,16 +576,16 @@ UI fround_c(float f, int status){
 
     //printf("\n%d\n", x);
 
-    UI s = f_extract(x, 31, 31);
-    UI ep = f_extract(x, 30, 23);
-    UI m = f_extract(x, 22, 0);
+    UI s = extract(x, 31, 31);
+    UI ep = extract(x, 30, 23);
+    UI m = extract(x, 22, 0);
 
     //print_binary(s,1);
     //printf("%d %d\n",e, m);
     //print_binary(m,23);
     //printf("%lld\n", EX(m,22,22));
 
-    UI e = f_invsext(ep - 126,8);
+    UI e = invsext(ep - 126,8);
     UI mp = (1<<23)+m;
 
     UI y = (s==0) ? (
@@ -683,7 +664,7 @@ float fcvt_s_w_c(unsigned int xi, int status){
         unsigned int ui;
         float f;
     };
-    UI x = f_invsext(xi, 32);
+    UI x = invsext(xi, 32);
     union f_ui r;
 
     UI xss = (EX(x, 31, 31)==1) ? (~x + 1) : x;

@@ -35,11 +35,11 @@ void handle_instruction(unsigned int inst, int stage, int stall){
         default:
             break;
     }
-    
+    unsigned int rd=extract(inst, 11,7);
+    unsigned int imm, shamt, rs1=extract(inst, 19,15), rs2=extract(inst, 24,20),rs3, offset, rm;
     if(inst==0) return;
     if(extract(inst, 1,0)==0b11){
-        unsigned int rd=extract(inst, 11,7);
-        unsigned int imm, shamt, rs2,rs3, offset, rm;
+       
         switch(extract(inst,6,2)){
             case 0b01101:
                 imm=extract(inst, 31,12);
@@ -50,15 +50,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                     case EXS:
                         new_ireg_ma=inst;
                         new_rcalc=imm<<12;
-                        ird=rd;
-                        rrd=new_rcalc;
+                        pird=rd;
                         break;
                     case MAS:
                         new_ireg_wb=inst;
                         new_wb=rcalc;
-                        o_ird=rd; o_rrd=new_wb;
+                        ird=rd;
+                        rrd=rcalc;
                         break;
                     case WBS:
+                        o_ird=rd; 
+                        o_rrd=wb;
                         int_registers[rd]=invsext(wb,32);
                         break;
                 }
@@ -72,15 +74,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                     case EXS:
                         new_ireg_ma=inst;
                         new_rcalc=invsext(pc_ex,32)+(imm<<12);
-                        ird=rd;
-                        rrd=new_rcalc;
+                        pird=rd;
                         break;
                     case MAS:
                         new_ireg_wb=inst;
                         new_wb=rcalc;
-                        o_ird=rd; o_rrd=new_wb;
+                        ird=rd;
+                        rrd=rcalc;
                         break;
                     case WBS:
+                        o_ird=rd; 
+                        o_rrd=wb;
                         int_registers[rd]=sext(wb,32);
                         break;
                 }
@@ -88,7 +92,6 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                 break;
             case 0b00100:
                 imm=extract(inst, 31,20);
-                int rs1=extract(inst, 19,15);
                 switch(extract(inst, 14,12)){
                     case 0b000:
                         switch(stage){
@@ -101,8 +104,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                             case EXS:
                                 new_ireg_ma=inst;
                                 new_rcalc=invsext(sext(rrs1,32)+sext(imm,12),32);
-                                ird=rd;
-                                rrd=new_rcalc;
+                                
                                 //handling breakpoint
                                 if(rrs1==0 && rd==0 && imm==0) for_debug--;
                                 if(rrs1==0 && rd==0 && breakpoint==1){
@@ -110,13 +112,18 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     breakpoint=0;
                                     runmode=0;
                                 }
+                                pird=rd;
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
+                                //printf("@@@@@@@@ird -> %d\n",o_ird);
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -134,15 +141,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 if(sext(rrs1,32)<sext(imm,12)) new_cond=1;
                                 else new_cond=0;
                                 new_rcalc= (new_cond) ? rrs1 : 0;
-                                ird=rd;
-                                rrd=new_rcalc;
+                                pird=rd;
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -161,15 +170,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 if(rrs1<imm) new_cond=1;
                                 else new_cond=0;
                                 new_rcalc=(new_cond) ? rrs1 : 0;
-                                ird=rd;
-                                rrd=new_rcalc;
+                                pird=rd;
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -183,16 +194,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 break;
                             case EXS:
                                 new_ireg_ma=inst;
-                                new_rcalc=invsext(sext(rrs1,32)^sext(imm,12),32);
-                                ird=rd;
-                                rrd=new_rcalc;
+                                new_rcalc=rrs1^imm;
+                                pird=rd;
+
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -207,16 +221,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 break;
                             case EXS:
                                 new_ireg_ma=inst;
-                                new_rcalc=invsext(sext(rrs1,32)|sext(imm,12),32);
-                                ird=rd;
-                                rrd=new_rcalc;
+                                new_rcalc=rrs1|imm;
+                                pird=rd;
+
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -231,16 +248,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 break;
                             case EXS:
                                 new_ireg_ma=inst;
-                                new_rcalc=invsext(sext(rrs1,32)&sext(imm,12),32);
-                                ird=rd;
-                                rrd=new_rcalc;
+                                new_rcalc=rrs1&imm;
+                                pird=rd;
+
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 break;
                         }
@@ -259,15 +279,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1<<shamt;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -288,15 +310,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1>>shamt;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -312,15 +336,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)>>shamt,32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -349,15 +375,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+rrs2;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -375,15 +403,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)-sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -401,15 +431,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -431,15 +463,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1<<rrs2;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -458,15 +492,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)*sext(rrs2,32),64)>>32;
                                         //printf("%d %d %lx %x \n",sext(rrs1,32), sext(rrs2,32), sext(rrs1,32)*sext(rrs2,32), new_rcalc);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -482,7 +518,7 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_ireg_ex=inst;
                                         new_rrs1=invsext(int_registers[rs1],32);
                                         new_rrs2=invsext(int_registers[rs2],32);
-                                        irs1=rs2;
+                                        irs1=rs1;
                                         irs2=rs2;
                                         break;
                                     case EXS:
@@ -490,16 +526,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         if(sext(rrs1,32)<sext(rrs2,32)) new_cond=1;
                                         else new_cond=0;
                                         new_rcalc=(new_cond) ? rrs1 : 0;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
+                                        break;
                                 }
                                 break;
                             case 0b0000001:
@@ -514,17 +553,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=(sext(rrs1,32)*rrs2)>>32;
+                                        pird=rd;
 
                                         //printf("%d %u %lx %x \n",sext(rrs1,32), rrs2, sext(rrs1,32)*rrs2, new_rcalc);
-                                        ird=rd;
-                                        rrd=new_rcalc;  
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -548,15 +589,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         if(rrs1<rrs2) new_cond=1;
                                         else new_cond=0;
                                         new_rcalc=(new_cond) ? rrs1 : 0;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -573,15 +616,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=((unsigned long long)rrs1*rrs2)>>32;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -601,16 +646,18 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=inst;
-                                        new_rcalc=invsext(sext(rrs1,32)^sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        new_rcalc=rrs1^rrs2;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -627,15 +674,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)/sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -656,15 +705,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1>>extract(rrs2,4,0);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -681,15 +732,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)>>extract(rrs2,4,0),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -706,15 +759,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1/rrs2;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -734,16 +789,18 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=inst;
-                                        new_rcalc=invsext(sext(rrs1,32)|sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        new_rcalc=rrs1|rrs2;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -760,15 +817,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=invsext(sext(rrs1,32)%sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -785,19 +844,25 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_rrs2=invsext(int_registers[rs2],32);
                                         irs1=rs1;
                                         irs2=rs2;
+                                        //printf("@@@%d %d\n", new_rrs1, new_rrs2);
                                         break;
                                     case EXS:
                                         new_ireg_ma=inst;
-                                        new_rcalc=invsext(sext(rrs1,32)&sext(rrs2,32),32);
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        //printf("@@@@@%d %d %d\n", rrs1, rrs2, rrs1&rrs2);
+                                        new_rcalc=rrs1&rrs2;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        //printf("@@@@%d\n", rcalc);
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
+                                        //printf("@@@@%d\n", wb);
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -814,15 +879,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1%rrs2;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -848,15 +915,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        ird=rd;
+                                        pird=rd;
                                         ldhzd=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,8);
                                         
                                         break;
@@ -872,15 +943,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        ird=rd;
+                                        pird=rd;
                                         ldhzd=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),16);
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,16);
                                         break;
                                 }
@@ -895,15 +970,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        ird=rd;
+                                        pird=rd;
                                         ldhzd=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 31,0),32);
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
 
                                         break;
@@ -919,15 +998,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        ird=rd;
+                                        pird=rd;
                                         ldhzd=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 7,0),8);
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -942,15 +1025,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        ird=rd;
+                                        pird=rd;
                                         ldhzd=1;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=sext(extract(*(unsigned long long *) memory_access(rcalc, 0), 15,0),8);
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                                 }
@@ -1048,15 +1135,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                 nextpc=pc_ex+sext(offset, 21);
                                 pc_flag=1;
                                 new_rcalc=pc_ex+4;
-                                ird=rd;
-                                rrd=rcalc;
+                                pird=rd;
                                 break;
                             case MAS:
                                 new_ireg_wb=inst;
                                 new_wb=rcalc;
-                                o_ird=rd; o_rrd=new_wb;
+                                ird=rd;
+                                rrd=rcalc;
                                 break;
                             case WBS:
+                                o_ird=rd; 
+                                o_rrd=wb;
                                 int_registers[rd]=sext(wb,32);
                                 if(rd==0 && offset==0) end=1;
                                 break;
@@ -1082,18 +1171,20 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         break;
                                     case EXS:
                                         new_ireg_ma=inst;
-                                        nextpc=(rrs1+sext(offset, 21))&(~1);
+                                        nextpc=invsext(rrs1+sext(offset, 21),32)&(~1);
                                         pc_flag=1;
                                         new_rcalc=pc_ex+4;
-                                        ird=rd;
-                                        rrd=new_rcalc;
+                                        pird=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_ird=rd; o_rrd=new_wb;
+                                        ird=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_ird=rd; 
+                                        o_rrd=wb;
                                         int_registers[rd]=sext(wb,32);
                                         break;
                         }
@@ -1259,18 +1350,22 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                         break;
                     case EXS:
                         new_ireg_ma=inst;
-                        frd = rd;
                         ldhzd=1;
                         //new_rcalc=rrs1+sext(offset,12);
                         //new_m_data=rrs2;
+                        pfrd=rd;
                         break;
                     case MAS:
                         new_ireg_wb=inst; float fval=read_float();
                         //printf("@%f\n", fval);
                         new_wb=F2I(fval);
-                        o_frd=rd; o_rrd=new_wb;
+                        ldhzd=0;
+                        frd=rd;
+                        rrd=rcalc;
                         break;
                     case WBS:
+                        o_frd=rd; 
+                        o_rrd=wb;
                         float_registers[rd]=I2F(wb);
                         break;
                 }
@@ -1321,16 +1416,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=F2I(fnmsub_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
-                                        frd=rd;
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1358,16 +1456,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=F2I(fnmadd_c(I2F(rrs1),I2F(rrs2),I2F(rrs3),stage));
-                                        frd=rd;
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1394,16 +1495,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_ireg_ma=inst;
                                         //printf("@@@@@@@@@@%lx%lx %lx %lx\n", F2I(float_registers[1]), F2I(float_registers[2]), rrs1, rrs2);
                                         new_rcalc=F2I(fadd_c(I2F(rrs1),I2F(rrs2),stage));
-                                        frd=rd;
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1420,16 +1524,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=F2I(fsub_c(I2F(rrs1),I2F(rrs2),stage));
-                                        frd=rd;
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1453,16 +1560,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         //if(runmode==0) printf("%f, %f\n", I2F(rrs1),I2F(rrs2));
                                         new_rcalc=F2I(fmul_c(I2F(rrs1),I2F(rrs2),stage));
                                         //if(runmode==0) printf("%f\n", I2F(new_rcalc));
-                                        frd=rd;
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1485,16 +1595,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                         new_ireg_ma=inst;
                                         //printf("%f %f\n",I2F(rrs1),I2F(rrs2));
                                         new_rcalc=F2I(fdiv_c(I2F(rrs1),I2F(rrs2),stage));
-                                        frd=rd; //printf("%f\n",I2F(new_rcalc));
-                                        rrd=new_rcalc;
                                         ldhzd=FPU_IN_MA;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=rcalc;
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                         }
@@ -1516,16 +1629,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             new_ireg_ma=inst;
                                             new_rcalc=F2I(fsqrt_c(I2F(rrs1),stage));
                                             //printf("@@@%f\n", I2F(rrs1), I2F(new_rcalc));
-                                            frd=rd;
-                                            rrd=new_rcalc;
                                             ldhzd=FPU_IN_MA;
+                                            pfrd=rd;
                                             break;
                                         case MAS:
                                             new_ireg_wb=inst;
                                             new_wb=rcalc;
-                                            o_frd=rd; o_rrd=new_wb;
+                                            ldhzd=0;
+                                            frd=rd;
+                                            rrd=rcalc;
                                             break;
                                         case WBS:
+                                            o_frd=rd; 
+                                            o_rrd=wb;
                                             float_registers[rd]=I2F(wb);
                                             break;
                             }
@@ -1554,16 +1670,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fsgnj_c(I2F(rrs1),I2F(rrs2), stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1581,16 +1700,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fsgnjn_c(I2F(rrs1),I2F(rrs2), stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1608,16 +1730,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fsgnjx_c(I2F(rrs1),I2F(rrs2), stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1639,16 +1764,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fmin_c(I2F(rrs1),I2F(rrs2),stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1666,16 +1794,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fmax_c(I2F(rrs1),I2F(rrs2),stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1696,16 +1827,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=invsext(fcvt_w_c(I2F(rrs1),stage),32);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1721,16 +1855,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=fcvt_wu_c(I2F(rrs1),stage);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1753,16 +1890,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_ireg_ma=inst;
                                                 //一旦fcvt_w_cで代用->なおした
                                                 new_rcalc=invsext(floor_c(I2F(rrs1),stage),32);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1779,16 +1919,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 new_ireg_ma=inst;
                                                 //一旦fcvt_w_cで代用->なおした
                                                 new_rcalc=invsext(fround_c(I2F(rrs1),stage),32);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1810,15 +1953,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                                 case EXS:
                                                     new_ireg_ma=inst;
                                                     new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
-                                                    ird=rd;
-                                                    rrd=new_rcalc;
+                                                    pird=rd;
                                                     break;
                                                 case MAS:
                                                     new_ireg_wb=inst;
                                                     new_wb=rcalc;
-                                                    o_ird=rd; o_rrd=new_wb;
+                                                    ird=rd;
+                                                    rrd=rcalc;
                                                     break;
                                                 case WBS:
+                                                    o_ird=rd; 
+                                                    o_rrd=wb;
                                                     int_registers[rd]=sext(wb,32);
                                                     break;
                                     }
@@ -1868,16 +2013,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=feq_c(I2F(rrs1),I2F(rrs2), stage);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1895,16 +2043,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=flt_c(I2F(rrs1),I2F(rrs2), stage);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1922,16 +2073,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=fle_c(I2F(rrs1),I2F(rrs2), stage);
-                                                ird=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pird=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_ird=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                ird=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_ird=rd; 
+                                                o_rrd=wb;
                                                 int_registers[rd]=sext(wb,32);
                                                 break;
                                 }
@@ -1951,16 +2105,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fcvt_s_w_c(rrs1,stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -1976,16 +2133,19 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=F2I(fcvt_s_wu_c(rrs1,stage));
-                                                frd=rd;
-                                                rrd=new_rcalc;
                                                 ldhzd=FPU_IN_MA;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                ldhzd=0;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -2005,15 +2165,17 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                             case EXS:
                                                 new_ireg_ma=inst;
                                                 new_rcalc=extract(rrs1,31,0); //単精度の時はrcalcそのもの
-                                                frd=rd;
-                                                rrd=new_rcalc;
+                                                pfrd=rd;
                                                 break;
                                             case MAS:
                                                 new_ireg_wb=inst;
                                                 new_wb=rcalc;
-                                                o_frd=rd; o_rrd=new_wb;
+                                                frd=rd;
+                                                rrd=rcalc;
                                                 break;
                                             case WBS:
+                                                o_frd=rd; 
+                                                o_rrd=wb;
                                                 float_registers[rd]=I2F(wb);
                                                 break;
                                 }
@@ -2038,16 +2200,20 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                                     case EXS:
                                         new_ireg_ma=inst;
                                         new_rcalc=rrs1+sext(offset,12);
-                                        frd=rd;
                                         ldhzd=1;
+                                        pfrd=rd;
                                         break;
                                     case MAS:
                                         new_ireg_wb=inst;
                                         new_wb=F2I(*(float *) memory_access(rcalc, 0));
                                         //printf("%d %d %f\n", rcalc, rd, I2F(new_wb));
-                                        o_frd=rd; o_rrd=new_wb;
+                                        ldhzd=0;
+                                        frd=rd;
+                                        rrd=rcalc;
                                         break;
                                     case WBS:
+                                        o_frd=rd; 
+                                        o_rrd=wb;
                                         float_registers[rd]=I2F(wb);
                                         break;
                                 }
@@ -2136,17 +2302,21 @@ void handle_instruction(unsigned int inst, int stage, int stall){
                     break;
                 case EXS:
                     new_ireg_ma=inst;
-                    ird = rd;
                     ldhzd=1;
                     //new_rcalc=rrs1+sext(offset,12);
                     //new_m_data=rrs2;
+                    pird=rd;
                     break;
                 case MAS:
                     new_ireg_wb=inst;
                     new_wb=read_int();
-                    o_ird=rd; o_rrd=new_wb;
+                    ldhzd=0;
+                    ird=rd;
+                    rrd=rcalc;
                     break;
                 case WBS:
+                    o_ird=rd; 
+                    o_rrd=wb;
                     int_registers[rd]=sext(wb,32);
                     break;
         }

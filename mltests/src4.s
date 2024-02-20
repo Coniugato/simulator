@@ -7791,7 +7791,6 @@ scan_pixel.2762:
 	sw	hp, 36, ra
 	addi	hp, hp, 40
 	call	p_rgb.2447
-	bp 23
 	addi	hp, hp, -40
 	lw	ra, hp, 36
 	mv	a1, a0
@@ -8972,7 +8971,6 @@ setup_reflections.2834:
 	lw	a1, hp, 4
 	j	setup_rect_reflection.2828
 rt.2836:
-	bp 0
 	lw	a3, t6, 12
 	lw	a4, t6, 8
 	lw	a5, t6, 4
@@ -9787,6 +9785,8 @@ min_caml_int_of_float:
     fcvt.w.s    a0, fa0
     ret
 min_caml_print_int:
+    li  a1, 512
+    beq a0, a1, min_caml_print_int_512
     li  a1, 200
     bge a0, a1, min_caml_print_int_100_2
     li  a1, 100
@@ -9932,6 +9932,14 @@ min_caml_print_int_1_1:
     ret
 min_caml_print_int_1_0:
     li  a2, 48
+    out a2
+    ret
+min_caml_print_int_512:
+    li  a2, 53
+    out a2
+    li  a2, 49
+    out a2
+    li  a2, 50
     out a2
     ret
 min_caml_floor:

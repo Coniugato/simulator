@@ -202,7 +202,7 @@ char* old_memory_access(unsigned long long addr, int wflag){
 }
 
 //version not using cache
-char* dd_memory_access(unsigned long long addr, int wflag){
+char* d_memory_access(unsigned long long addr, int wflag){
     //printf("@@@%d\n", ctag[1][6]);
     unsigned long long tag = extract(addr,31,31-I_LEN_TAG+1);
     unsigned long long index = extract(addr,31-I_LEN_TAG,I_LEN_OFFSET);

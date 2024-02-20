@@ -1,8 +1,9 @@
 simulator.
-FPU in MA Stage Off
+FPU in MA Stage On
 INSTRUCTION section BYTES: 156
 DATA section BYTES: 4
-Main(Fetch) PC: 164->164/152 	 ENDED_INSTS: 578 CLOCK: 4545->4546
+Main(Fetch) PC: 164->164/152 	 ENDED_INSTS: 578 CLOCK: 1877->1878
+estimated time so far: 0.000031 s
 	x0: 	0 	x1: 	40 	x2: 	1000 	x3: 	0
 	x4: 	4 	x5: 	21 	x6: 	8 	x7: 	13
 	x8: 	0 	x9: 	0 	x10: 	0 	x11: 	0

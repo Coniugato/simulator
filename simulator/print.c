@@ -20,6 +20,26 @@ void print_registers(void){
 }
 
 
+void print_registers_for_debug(void){
+    FILE* f=fopen("disped","a");
+    
+    fprintf(f,"ENDED_INSTS: %lld\n",n_ended);
+    //printf("estimated time so far: %f s\n", (float)clk/(float)Hz);
+    int i; 
+    for(i=0; i<32; i++){
+        fprintf(f,"\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);
+        if((i+1)%4==0) fprintf(f,"\n");
+        else fprintf(f," "); 
+    }
+    for(i=0; i<32; i++){
+        fprintf(f,"\t\x1b[36mf%d\x1b[0m: \t%f", i, float_registers[i]);
+        if((i+1)%4==0) fprintf(f,"\n");
+        else fprintf(f," "); 
+    }
+    fclose(f);
+}
+
+
 
 void print_instruction(unsigned int inst, int stage, int stall){
     printf("\n");

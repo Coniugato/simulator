@@ -12,4 +12,6 @@
 
 
 void print_registers(void);
+
+void print_registers_for_debug(void);
 void print_instruction(unsigned int inst, int stage, int stall);

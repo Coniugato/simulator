@@ -1,11 +1,12 @@
 simulator.
-FPU in MA Stage Off
+FPU in MA Stage On
 INSTRUCTION section BYTES: 100
 DATA section BYTES: 16
-Main(Fetch) PC: 108->108/96 	 ENDED_INSTS: 24 CLOCK: 668->669
+Main(Fetch) PC: 108->108/96 	 ENDED_INSTS: 24 CLOCK: 165->166
+estimated time so far: 0.000003 s
 	[35mx0[0m: 	0 	[35mx1[0m: 	36 	[35mx2[0m: 	33554432 	[35mx3[0m: 	0
 	[35mx4[0m: 	16 	[35mx5[0m: 	0 	[35mx6[0m: 	0 	[35mx7[0m: 	0
-	[35mx8[0m: 	0 	[35mx9[0m: 	0 	[35mx10[0m: 	-4 	[35mx11[0m: 	-4
+	[35mx8[0m: 	0 	[35mx9[0m: 	0 	[35mx10[0m: 	-5 	[35mx11[0m: 	-4
 	[35mx12[0m: 	2 	[35mx13[0m: 	3 	[35mx14[0m: 	0 	[35mx15[0m: 	0
 	[35mx16[0m: 	0 	[35mx17[0m: 	0 	[35mx18[0m: 	0 	[35mx19[0m: 	0
 	[35mx20[0m: 	0 	[35mx21[0m: 	0 	[35mx22[0m: 	0 	[35mx23[0m: 	0
