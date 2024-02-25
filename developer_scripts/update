@@ -10,10 +10,10 @@ if [ $? != 0 ]; then
     exit 1
 fi
 pwd
-gitupdate "$1_autopush_" package_unstable
+gitupdate "$1_autopush_" package
 MAINLOC=$(cat developer_scripts/main_loc.txt)
 echo $MAINLOC
-git checkout package_unstable
+git checkout package
 cd $MAINLOC
 ./submodupdate "$1_autopush_"
 
