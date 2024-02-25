@@ -1,0 +1,8 @@
+rm -rf src256_sgl.output.ppm
+rm -rf src256_sgl.output
+../utilities/allclean
+../utilities/allmake
+time ../single_simulator/sim src256_sgl -auto -ifnc
+../utilities/conv_ppm src256_sgl.output
+code src256_sgl.output.ppm
+

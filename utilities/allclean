@@ -4,6 +4,9 @@ echo -n  "" > input
 cd simulator
 rm -rf .mid* 
 make clean
+cd ../single_simulator
+rm -rf .mid*
+make clean
 cd ../displayer 
 make clean
 rm -rf .mid* 

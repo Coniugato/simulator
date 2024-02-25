@@ -5,4 +5,6 @@ cd ../simulator
 make
 cd ../displayer
 make
+cd ../single_simulator
+make
 cd ..
