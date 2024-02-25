@@ -37,12 +37,12 @@ long long latency_instruction(unsigned int inst, int stage){
                 return 1;
             case 0b00000: 
                 if(stage==EXS) return 1; 
-                else if(on_cache(rcalc)!=-1){Dcache_hit++; return DcacheReadClk;} //Hit
-                else{Dcache_miss++; return Dcache_DRAMReadClk;} //Miss
+                else if(on_cache(rcalc)!=-1){Dcache_hit++; return DcacheReadClk/*+mem_accessed*/;} //Hit
+                else{Dcache_miss++; return Dcache_DRAMReadClk/*+mem_accessed*/;} //Miss
             case 0b01000: 
                 if(stage==EXS) return 1; 
-                else if(on_cache(rcalc)!=-1){Dcache_hit++;  return DcacheWriteClk;} //Hit
-                else{Dcache_miss++;  return Dcache_DRAMWriteClk;} //Miss
+                else if(on_cache(rcalc)!=-1){Dcache_hit++;  return DcacheWriteClk/*+mem_accessed*/;} //Hit
+                else{Dcache_miss++;  return Dcache_DRAMWriteClk/*+mem_accessed*/;} //Miss
             case 0b11011: 
                 return 1;
             case 0b11001: 
@@ -174,12 +174,12 @@ long long latency_instruction(unsigned int inst, int stage){
                 break;
             case 0b00001:
                 if(stage==EXS) return 1; 
-                else if(on_cache(rcalc)!=-1){Dcache_hit++;  return DcacheReadClk;} //Hit
-                else{Dcache_miss++; return Dcache_DRAMReadClk;} //Miss
+                else if(on_cache(rcalc)!=-1){Dcache_hit++;  return DcacheReadClk/*+mem_accessed*/;} //Hit
+                else{Dcache_miss++; return Dcache_DRAMReadClk/*+mem_accessed*/;} //Miss
             case 0b01001:
                 if(stage==EXS) return 1; 
-                else if(on_cache(rcalc)!=-1){Dcache_hit++; return DcacheWriteClk;} //Hit
-                else{Dcache_miss++;   return Dcache_DRAMWriteClk;} //Miss
+                else if(on_cache(rcalc)!=-1){Dcache_hit++; return DcacheWriteClk/*+mem_accessed*/;} //Hit
+                else{Dcache_miss++;   return Dcache_DRAMWriteClk/*+mem_accessed*/;} //Miss
             case 0b11111:
                 if(stage==EXS) return 1; 
                 else return WriteIntClk;

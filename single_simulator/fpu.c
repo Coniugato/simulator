@@ -39,6 +39,7 @@ float fadd_c(float f1, float f2, int status){
 
     UI m_small_shift = e_big - e_small;
     UI m_small = m_small_prev >> m_small_shift;  
+    if(m_small_shift>=32) m_small=0;
     
     UI my1 = extract((s1 == s2) ? m_big + m_small : m_big - m_small, 25, 0);
 
@@ -55,7 +56,7 @@ float fadd_c(float f1, float f2, int status){
 
     UI e_small_is_zero = (e_small == 0) ? 1 : 0;
     UI underflow = (extract(ey2,9,9)==1 || e_big==0 || ey2==0 || my1_shift==26) ? 1 : 0;
-    UI overflow = (extract(ey2,8,8)==1 || e_big==2255 || ey2==255 ) ? 1 : 0;
+    UI overflow = (extract(ey2,8,8)==1 || e_big==255 || ey2==255 ) ? 1 : 0;
 
     UI sy = (x1_is_bigger) ? s1 : s2;
     UI ey = (e_small_is_zero==1) ? e_big : ((underflow ?  0 : (((overflow ? 255 : extract(ey2, 7,0))))));
@@ -485,12 +486,11 @@ UI fcvt_w_c(float f, int status){
     ) :
     (
       (ep==0) ? 0xffffffff:
-      ~((ep<=23) ? (1<<ep)+EX(m,22,23-ep)
+      (ep<=23) ? (~((1<<ep)+EX(m,22,23-ep))+1)
         : ( (ep<32) ? 
-          (1<<ep)+(m<<(ep-23)) :
-          ((ep==32) ? m<<9 : 0)
+          (~((1<<ep)+(m<<(ep-23)))+1) :
+          ((ep==32) ? (~(m<<9)+1) : 0)
           )
-      )+1
     );
     return y;
 }
@@ -697,6 +697,27 @@ float fcvt_s_w_c(unsigned int xi, int status){
 
 #define NONDEBUG
 #ifndef NONDEBUG
+unsigned int F2I(float input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.f=input;
+    return fui.ui;
+}
+
+float I2F(unsigned int input){
+    union f_ui
+    {
+        unsigned int ui;
+        float f;
+    };
+    union f_ui fui;
+    fui.ui=input;
+    return fui.f;
+}
 
 int main(void){
     printf("%f %d\n", 3.6, fround_c(3.6, 0));
@@ -706,7 +727,7 @@ int main(void){
     printf("%f %d\n", 1.75, fround_c(1.75, 0));
     printf("%f %d\n", 1.55, fround_c(1.55, 0));
     printf("%f %d\n", 1.3, fround_c(1.3, 0));
-    printf("%f %d\n", 0.697514, fround_c(0.697514, 0));
+    printf("%f %d\n", 0.6, fround_c(0.6, 0));
     printf("%f %d\n", 0.3, fround_c(0.3, 0));
     printf("%f %d\n", -0.3, fround_c(-0.3, 0));
     printf("%f %d\n", -0.6, fround_c(-0.6, 0));
@@ -728,7 +749,7 @@ int main(void){
     printf("%f %d\n", 1.55, floor_c(1.55, 0));
     printf("%f %d\n", 1.3, floor_c(1.3, 0)); 
     printf("%f %d\n", 1.0, floor_c(1.0, 0));
-    printf("%f %d\n", 0.697514,floor_c(0.697514, 0));
+    printf("%f %d\n", 0.6,floor_c(0.6, 0));
     printf("%f %d\n", 0.3,  floor_c(0.3, 0));
     printf("%f %d\n", 0.0, floor_c(0.0, 0));
     printf("%f %d\n", -0.0, floor_c(-0.0, 0));

@@ -27,6 +27,7 @@ extern int immediate_break, runmode;
 
 
 char* memory_access(unsigned long long addr, int wflag){
+    mem_accessed=1;
     if(addr<0 || addr >= N_MEMORY){
         fprintf(stderr, "data memory leaked. addr: %lld problematic PC: %d clk: %lld\n", addr, pc_ma, clk);
         print_registers();
@@ -60,18 +61,17 @@ char* memory_access(unsigned long long addr, int wflag){
         }
     }
     if(way_found==-1){
-        //Miss
+        //Missした場合
         for(way=0; way<N_WAYS; way++){
             char thisflag=flag[way][index];
             //valid==0 || dirty==0
-            if(thisflag%2==0 || (thisflag/2)%2==0){
+            if((thisflag/4)%2==0){
                 way_found=way;
             }
         }
         if(way_found==-1){
-            way_found=0;
-            //fprintf(stderr, "InternalError!: way elect failed\n");
-            //exit(1);
+            fprintf(stderr, "InternalError!: way elect failed\n");
+            exit(1);
         }
         
         int thisflag=flag[way_found][index];
@@ -80,12 +80,15 @@ char* memory_access(unsigned long long addr, int wflag){
         int olddirty=(thisflag/2)%2;
         
         //validを立てる
-        flag[way_found][index] |= 1;
+        flag[way_found][index]|= 1;
+        //accessを立てる
+        flag[way_found][index]|=4;
 
 
         unsigned long long base_addr=(ctag[way_found][index]<<(LEN_OFFSET+LEN_INDEX))+(index<<LEN_OFFSET);
         
         unsigned int i=0;
+
         //write back
         if(oldvalid==1 && olddirty==1){
            
@@ -106,6 +109,21 @@ char* memory_access(unsigned long long addr, int wflag){
     }
     //writeならdirtyを立てる
     if(wflag==1) flag[way_found][index]|=2;
+
+    //全てaccessが立っているならばaccessをall reset
+    int AAflag=1;
+    for(way=0; way<N_WAYS; way++){
+        char thisflag=flag[way][index];
+        //valid==0
+        if(thisflag/4%2==0) AAflag=0;
+    }
+    if(AAflag){
+        for(way=0; way<N_WAYS; way++){
+            //全てのaccessedを0に
+            flag[way][index]%=4;
+        }
+    }
+
     return cache[way_found][index]+offset;
 }
 

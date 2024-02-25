@@ -3,6 +3,7 @@ extern int skip, runmode, breakpoint, imode, mmediate_break;
 extern char outfilename[1000000];
 extern char infilename[1000000];
 
+extern unsigned int mem_accessed;
 extern unsigned int pc, max_pc, oldpc; 
 extern int pc_flag;
 extern int int_registers[32];

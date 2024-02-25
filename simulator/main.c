@@ -112,6 +112,7 @@ unsigned int m_addr=0;
 unsigned int new_m_addr=0;
 unsigned int m_data=0;
 unsigned int new_m_data=0;
+unsigned int mem_accessed=0;
 
 unsigned int ldhzd=0;
 unsigned long long n_ended=0;
@@ -349,7 +350,7 @@ int main(int argc, char *argv[]){
             
         }
 
-        
+        mem_accessed=0;
         if(delay_MA==0){
             ireg_wb=new_ireg_wb;
             pc_wb=new_pc_wb;      

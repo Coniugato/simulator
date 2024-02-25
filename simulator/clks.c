@@ -1,5 +1,5 @@
 //周波数
-unsigned long long Hz=60000000;
+unsigned long long Hz=61800000;
 
 //inにかかるクロック数
 unsigned long long ReadIntClk=2;
@@ -11,13 +11,13 @@ unsigned long long ReadFloatClk=2;
 unsigned long long WriteFloatClk=1;
 
 //Dcache　Hit時のReadにかかるクロック数
-unsigned long long DcacheReadClk=2;
+unsigned long long DcacheReadClk=3;
 //Dcache　Hit時のWriteにかかるクロック数
-unsigned long long DcacheWriteClk=2;
+unsigned long long DcacheWriteClk=3;
 //Dcache Miss時のReadにかかるクロック数
-unsigned long long Dcache_DRAMReadClk=100;
+unsigned long long Dcache_DRAMReadClk=30;
 //Dcache Miss時のWriteにかかるクロック数
-unsigned long long Dcache_DRAMWriteClk=100;
+unsigned long long Dcache_DRAMWriteClk=30;
 //Instruction Fetchにかかるクロック数
 unsigned long long IcacheReadClk=2;
 
@@ -33,9 +33,9 @@ unsigned long long FDivClk=5;
 //FSQRTにかかるクロック数
 unsigned long long FSqrtClk=3;
 //FSGNJ系にかかるクロック数
-unsigned long long FSgnjClk=1;
+unsigned long long FSgnjClk=2;
 //FMIN/FMAXにかかるクロック数
-unsigned long long FMinMaxClk=1;
+unsigned long long FMinMaxClk=2;
 //FCVT.W.S系にかかるクロック数
 unsigned long long FCvtSWClk=3;
 //FCVT.S.W系にかかるクロック数
@@ -43,9 +43,9 @@ unsigned long long FCvtWSClk=3;
 //FLOOR/FROUNDにかかるクロック数
 unsigned long long FRoundClk=3;
 //FMVにかかるクロック数
-unsigned long long FMvClk=1;
+unsigned long long FMvClk=2;
 //F比較演算にかかるクロック数
-unsigned long long FCmpClk=1;
+unsigned long long FCmpClk=2;
 
 //以下は使わない
 unsigned long long IcacheWriteClk=5;

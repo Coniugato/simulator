@@ -2,10 +2,12 @@
 #include "mainvars.h"
 #include "latency.h"
 #include "clks.h"
+#include "memory.h"
 
 void print_registers(void){
     printf("Main(Fetch) PC: %u->%u/%u \t ENDED_INSTS: %lld CLOCK: %lld->%lld\n", oldpc, pc, max_pc, n_ended, oldclk, clk);
     printf("estimated time so far: %f s\n", (float)clk/(float)Hz);
+    printf("\r[cache statistics]:(D-cache hit) %lld \t(D-cache miss) %lld \t(D-cache hit rate) %f\n", Dcache_hit, Dcache_miss, (double)Dcache_hit/(double)(Dcache_hit+Dcache_miss));
     int i; 
     for(i=0; i<32; i++){
         printf("\t\x1b[35mx%d\x1b[0m: \t%d", i, int_registers[i]);
