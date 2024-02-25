@@ -1,5 +1,5 @@
 //周波数
-unsigned long long Hz=61800000;
+unsigned long long Hz=60000000;
 
 //inにかかるクロック数
 unsigned long long ReadIntClk=2;
